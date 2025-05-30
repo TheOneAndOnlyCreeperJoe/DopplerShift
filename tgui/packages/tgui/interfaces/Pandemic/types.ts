@@ -39,6 +39,7 @@ type Virus = {
   description: string;
   spread: string;
   cure: string;
+  stability: number;
 };
 
 export type Symptom = {

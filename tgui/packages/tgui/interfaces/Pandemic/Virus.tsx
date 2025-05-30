@@ -40,7 +40,16 @@ export const VirusDisplay = (props) => {
 const Info = (props) => {
   const { act } = useBackend<Data>();
   const {
-    virus: { agent, can_rename, cure, description, index, name, spread },
+    virus: {
+      agent,
+      can_rename,
+      cure,
+      description,
+      index,
+      name,
+      spread,
+      stability,
+    },
   } = props;
 
   return (
@@ -68,6 +77,7 @@ const Info = (props) => {
       </LabeledList.Item>
       <LabeledList.Item label="Spread">{spread}</LabeledList.Item>
       <LabeledList.Item label="Possible Cure">{cure}</LabeledList.Item>
+      <LabeledList.Item label="Stability">{stability}%</LabeledList.Item>
     </LabeledList>
   );
 };
