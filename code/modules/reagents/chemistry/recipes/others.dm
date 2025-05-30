@@ -234,6 +234,7 @@
 	if(B?.data)
 		var/datum/disease/advance/D = locate(/datum/disease/advance) in B.data["viruses"]
 		if(D)
+			D.stability = clamp(D.stability - (floor(level_min / 2) * 5 + 30), 0, 100) // Ensure virus stability goes down when done so with chem mixing, favors random chems over precise chems.
 			D.Evolve(level_min, level_max)
 
 
@@ -313,6 +314,28 @@
 		var/datum/disease/advance/D = locate(/datum/disease/advance) in B.data["viruses"]
 		if(D)
 			D.Neuter()
+
+
+
+/datum/chemical_reaction/ssf
+	required_reagents = list(/datum/reagent/ssf = 1)
+	required_catalysts = list(/datum/reagent/blood = 1)
+	var/datum/reagent/ssf/symptomjuice
+	required_other = TRUE
+
+/datum/chemical_reaction/ssf/pre_reaction_other_checks(datum/reagents/holder)
+	symptomjuice = locate(/datum/reagent/ssf) in holder.reagent_list
+	if(symptomjuice)
+		return TRUE
+	else return FALSE
+
+/datum/chemical_reaction/ssf/on_reaction(datum/reagents/holder, datum/equilibrium/reaction, created_volume)
+	var/datum/symptom/S = symptomjuice.data["symptom"]
+	var/datum/reagent/blood/B = locate(/datum/reagent/blood) in holder.reagent_list
+	if(B?.data)
+		var/datum/disease/advance/D = locate(/datum/disease/advance) in B.data["viruses"]
+		if(D && S)
+			D.AddSymptom(S) // We don't call Evolve() here because we already have a specific symptom.
 
 
 

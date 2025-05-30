@@ -618,6 +618,9 @@
 /obj/item/circuitboard/computer/order_console/bitrunning
 	name = "Bitrunning Vendor Console"
 	build_path = /obj/machinery/computer/order_console/bitrunning
+/obj/item/circuitboard/computer/pathology
+	name = "PATH-0-LOGY Console"
+	build_path = /obj/machinery/computer/pathology
 
 /obj/item/circuitboard/computer/ferry
 	name = "Transport Ferry"

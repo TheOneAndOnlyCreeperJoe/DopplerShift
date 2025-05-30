@@ -354,6 +354,7 @@
 			traits["can_rename"] = ((disease_name == "Unknown") && adv_disease.mutable)
 			traits["is_adv"] = TRUE
 			traits["name"] = disease_name
+			traits["stability"] = adv_disease.stability
 			traits["resistance"] = adv_disease.totalResistance()
 			traits["stage_speed"] = adv_disease.totalStageSpeed()
 			traits["stealth"] = adv_disease.totalStealth()

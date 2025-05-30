@@ -2541,6 +2541,13 @@
 	taste_description = "the inside of a reactor"
 	chemical_flags = REAGENT_CAN_BE_SYNTHESIZED
 
+/datum/reagent/ssf
+	name = "Stabilized Symptom Fluid"
+	color = "#e4226c"
+	taste_description = "bleach and blood"
+	chemical_flags = REAGENT_NO_RANDOM_RECIPE
+	data = list("symptom" = null) // the symptom stored in the liquid
+
 // Bee chemicals
 
 /datum/reagent/royal_bee_jelly

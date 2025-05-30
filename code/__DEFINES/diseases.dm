@@ -56,18 +56,18 @@ DEFINE_BITFIELD(spread_flags, list(
 //Severity Guaranteed Cycles or how long before a disease can potentially self-cure
 /// Positive diseases should not self-cure by themselves, but if they do, they cure fast
 #define DISEASE_CYCLES_POSITIVE 15
-/// Roughly 6 minutes for a harmless virus
-#define DISEASE_CYCLES_NONTHREAT 180
-/// Roughly 5 minutes for a disruptive nuisance virus
-#define DISEASE_CYCLES_MINOR 150
-/// Roughly 4 minutes for a medium virus
-#define DISEASE_CYCLES_MEDIUM 120
-/// Roughly 3 minutes for a dangerous virus
-#define DISEASE_CYCLES_DANGEROUS 90
-/// Roughly 2 minutes for a harmful virus
-#define DISEASE_CYCLES_HARMFUL 60
-/// Roughly 1 minute for a biohazard kill-death-evil-bad virus
-#define DISEASE_CYCLES_BIOHAZARD 30
+/// Roughly 60 minutes for a harmless virus. Don't be lazy, cure it yourself.
+#define DISEASE_CYCLES_NONTHREAT 1800
+/// Roughly 30 minutes for a disruptive nuisance virus
+#define DISEASE_CYCLES_MINOR 900
+/// Roughly 20 minutes for a medium virus
+#define DISEASE_CYCLES_MEDIUM 600
+/// Roughly 15 minutes for a dangerous virus
+#define DISEASE_CYCLES_DANGEROUS 450
+/// Roughly 10 minutes for a harmful virus
+#define DISEASE_CYCLES_HARMFUL 300
+/// Roughly 5 minutes for a biohazard kill-death-evil-bad virus
+#define DISEASE_CYCLES_BIOHAZARD 150
 
 //Natural Immunity/Recovery Balance Levers
 /// Recovery Constant - starting point, 'base' recovery when you get initially infected.

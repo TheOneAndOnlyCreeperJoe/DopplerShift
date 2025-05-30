@@ -33,6 +33,8 @@
 	var/mutable = TRUE //set to FALSE to prevent most in-game methods of altering the disease via virology
 	var/oldres //To prevent setting new cures unless resistance changes.
 
+	var/last_mutation // last mutation, used for cooldown.
+
 	///Lists of cures and how hard we expect them to be to cure. Sentient diseases will pick two from 6+
 	var/static/list/advance_cures = list(
 		list( // level 1
@@ -163,6 +165,8 @@
 		if(!symptom_datum.neutered)
 			symptom_datum.Activate(src)
 
+	if(SPT_PROB(2 - (stability * (stability / 2) * 0.0004), seconds_per_tick) && (last_mutation+(2 MINUTES) < world.time)) // needs better maths later-on to make it more of a curve that heavily favors mutations at low stability.
+		Mutate()
 
 // Tell symptoms stage changed
 /datum/disease/advance/update_stage(new_stage)
@@ -190,6 +194,7 @@
 	A.id = id
 	A.mutable = mutable
 	A.oldres = oldres
+	A.stability = stability
 	//this is a new disease starting over at stage 1, so processing is not copied
 	return A
 
@@ -215,7 +220,7 @@
 	var/list/possible_symptoms = list()
 	for(var/symp in SSdisease.list_symptoms)
 		var/datum/symptom/S = new symp
-		if(S.can_generate_randomly() && S.level >= level_min && S.level <= level_max)
+		if(S.can_generate_randomly(src) && S.level >= level_min && S.level <= level_max)
 			if(!HasSymptom(S))
 				possible_symptoms += S
 
@@ -416,7 +421,7 @@
 
 // Neuter a symptom, so it will only affect stats
 /datum/disease/advance/proc/NeuterSymptom(datum/symptom/S)
-	if(!S.neutered)
+	if(!S.neutered && S.neuterable)
 		S.neutered = TRUE
 		S.name += " (neutered)"
 		S.OnRemove(src)
@@ -453,6 +458,7 @@
 
 	// Should be only 1 entry left, but if not let's only return a single entry
 	var/datum/disease/advance/to_return = pick(diseases)
+	to_return.stability = 0 // JOE: Remind me to invent a proper formula for mixing stability. It'll probably be complicated (and may show generousity to certain symptoms acuqired by specific means), but that's a balance topic for later.
 	to_return.Refresh(TRUE)
 	return to_return
 
@@ -565,3 +571,76 @@
 /datum/disease/advance/proc/make_visible()
 	visibility_flags &= ~HIDDEN_SCANNER
 	affected_mob.med_hud_set_status()
+
+/**
+* Mutation code; causes low stability viruses to randomly create new symptoms.
+*/
+/datum/disease/advance/proc/Mutate()
+	last_mutation = world.time
+	// Respect mutable.
+	if(!mutable)
+		return
+
+	var/datum/symptom/result = Mutation_Lottery()
+	AddSymptom(result)
+	stability = clamp(stability + (75 - (floor(result.level) * 5)), 0, 100)
+	Refresh(FALSE)
+	//name = name + "-" + rand(1,24)// JOE NOTE: Currently we use numbers, but later on I want this to be the Greek Alphabet.
+
+/**
+* LET'S GO GAMBLING; This handles randomly choosing the symptom.
+*/
+/datum/disease/advance/proc/Mutation_Lottery()
+	var/list/lottery = list()
+	var/roll = 0
+	var/datum/symptom/result
+	var/min_level = 1
+	var/max_level = 3
+	var/datum/symptom/mutation/mutation_symptom
+
+	for(var/s in src.symptoms) // If there is any mutation symptom, we need to use different maths. We check here if one's in the list.
+		if(istype(s, /datum/symptom/mutation))
+			mutation_symptom = s
+			max_level = 8
+
+	// Populate the lottery with symptoms and their circumstance bonuses
+	for(var/symp in SSdisease.list_symptoms)
+		var/datum/symptom/S = new symp
+		var/circumstance_bonus = S.check_circumstance(affected_mob)
+		if(mutation_symptom) // check if we have a mutation symptom we have to filter through
+			if(!mutation_symptom.check_mutation_criteria(S))
+				continue
+		if(circumstance_bonus > 0)
+			lottery[symp] = circumstance_bonus
+
+	// For the random calculation we use a lottery system; every symptom has a weight depending on the callback it got from check_circumstance earlier. It'll roll a number, and later on, it'll iterate down that number until it gets the 'winning number'
+	lottery["generic_mutation"] = 2
+	var/total_weight = 0
+	for(var/symp in lottery)
+		total_weight += lottery[symp]
+	roll = rand(1, total_weight)
+
+	// Handle the "generic_mutation" roll separately
+	if (lottery["generic_mutation"] && roll <= lottery["generic_mutation"])  // Check if the roll hits the generic mutation roll chance. If we don't have specific mutations, this always occurs.
+		var/list/possible_symptoms = list()
+		for(var/symp in SSdisease.list_symptoms)
+			var/datum/symptom/S = new symp
+			if(S.can_generate_randomly(src) && S.level >= min_level && S.level <= max_level && !HasSymptom(S) && S.mutateable)
+				if(!mutation_symptom || mutation_symptom.check_mutation_criteria(S))
+					possible_symptoms += S
+
+		if(mutation_symptom)
+			RemoveSymptom(mutation_symptom) // replace as per mutation symptom's effects
+		result = pick_n_take(possible_symptoms)
+		message_admins("Mutation rolled on generic mutations and got the following result: " + result.name) // SHOULD BE REMOVED LATER
+		return result
+	else // circumstance roll
+		for(var/symp in lottery)
+			if(symp == "generic_mutation")
+				continue
+			var/datum/symptom/S = new symp
+			roll -= lottery[symp]  // Decrement the roll by the symptom's weight, and eventually, once a number reaches or goes below 0, we have our 'winner'
+			if(roll <= 0)
+				result = S
+				message_admins("Mutation rolled and got the following result: " + result.name) // SHOULD BE REMOVED
+				return result

@@ -39,6 +39,10 @@
 	var/naturally_occuring = TRUE
 	///If the symptom requires an organ for the effects to function, robotic organs are immune to disease unless inorganic biology symptom is present
 	var/required_organ
+	// If the symptom can be neutered at all.
+	var/neuterable = TRUE
+	// If the symptom can be acquired through mutations.
+	var/mutateable = TRUE
 
 /datum/symptom/New()
 	var/list/S = SSdisease.list_symptoms
@@ -116,5 +120,9 @@
 	return data
 
 /// Check if we can generate randomly
-/datum/symptom/proc/can_generate_randomly()
+/datum/symptom/proc/can_generate_randomly(datum/disease/advance/advanced_disease)
 	return naturally_occuring
+
+// Runs a check to see if there's any circumstance modifiers currently applying to a symptom when it mutates. Returns a non-zero number for the modifier if it does, which is then used as it's value in the 'mutation lottery'
+/datum/symptom/proc/check_circumstance(mob/living/host)
+	return 0

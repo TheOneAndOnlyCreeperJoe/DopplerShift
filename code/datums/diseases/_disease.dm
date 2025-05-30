@@ -50,6 +50,9 @@
 	var/process_dead = FALSE //if this ticks while the host is dead
 	var/copy_type = null //if this is null, copies will use the type of the instance being copied
 
+	var/stability = 100 // Chance for advanced viruses not to mutate. Defaults to a 100.
+	// Not used by classical diseases, but necessary for health scanners (there may be a better way of implementing this?)
+
 /datum/disease/Destroy()
 	. = ..()
 	if(affected_mob)

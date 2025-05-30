@@ -428,6 +428,7 @@
 			Name: [disease.name].<br>\
 			Type: [disease.spread_text].<br>\
 			Stage: [disease.stage]/[disease.max_stages].<br>\
+			Stability: [disease.stability]%<br>\
 			Possible Cure: [disease.cure_text]</div>\
 			</span>"
 

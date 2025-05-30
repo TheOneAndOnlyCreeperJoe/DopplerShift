@@ -76,6 +76,12 @@
 		else
 			to_chat(living_mob, span_warning("[pick("You feel hot.", "You smell smoke.")]"))
 
+/datum/symptom/fire/check_circumstance(mob/living/host)
+// Circumstance: They're on fire. Make it extra saucy if they're *very much* on fire.
+	if(host.fire_stacks > 0)
+		return clamp(floor(host.fire_stacks / 5), 3, 10)
+	return 0
+
 /*
 Alkali perspiration
 	Hidden.
@@ -164,3 +170,12 @@ Bonus
 	if(chems)
 		M.reagents.add_reagent_list(list(/datum/reagent/napalm = 4 * power, /datum/reagent/clf3 = 4 * power))
 	return 1
+
+/datum/symptom/alkali/check_circumstance(mob/living/host)
+// Circumstance: They have CLF3 or Napalm in their bloodstream.
+	var/value = 0
+	if(host.reagents.has_reagent(/datum/reagent/clf3, needs_metabolizing = TRUE)) // Gets more weight because it is super quick to metabolize.
+		value += 3
+	if(host.reagents.has_reagent(/datum/reagent/napalm, needs_metabolizing = TRUE))
+		value += 99 // Just for testing lol
+	return value
