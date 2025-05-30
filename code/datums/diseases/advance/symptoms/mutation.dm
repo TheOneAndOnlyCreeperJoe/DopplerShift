@@ -33,7 +33,7 @@
 		descriptor = "neutral"
 	else if(istype(src, /datum/symptom/mutation/negative))
 		descriptor = "negative"
-	return "A symptom with mutative potential. By itself, it only affects the statistics of a virus. However, when the virus mutates, it will only be able to mutate into a symptom with a [descriptor] [statistic] stat, and causing your mutations to ignore level restrictions if it fails to roll a circumstance-based mutation.\n Note that mutation symptoms are special: they cannot be neutered, a virus can only have one mutation sympton at a time and when a mutation occurs it will always replace a mutation symptom (even if you have less than 6 symptoms)."
+	return "A symptom with mutative potential. By itself, it only affects the statistics of a virus. However, when the virus mutates, it will only be able to mutate into a symptom with a [descriptor] [statistic] stat, and causing your mutations to ignore level restrictions if it fails to roll a circumstance-based mutation.\n Note that mutation booster symptoms are special: they cannot be neutered, a virus can only have one mutation sympton at a time and when a mutation occurs it will always replace a mutation symptom (even if you have less than 6 symptoms)."
 
 /datum/symptom/mutation/can_generate_randomly(datum/disease/advance/advanced_disease)
 // Shouldn't be able to occur if you already have one.

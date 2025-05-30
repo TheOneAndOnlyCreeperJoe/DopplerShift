@@ -1,5 +1,5 @@
 /datum/pathology_shop
-	// Our current listing of stock, made through populate_stock()
+	// Our current listing of stock, made through cycle_stock()
 	var/list/shop_stock = list()
 	// The last time we had our stock cycled.
 	var/last_rotation
@@ -7,9 +7,14 @@
 /datum/pathology_shop/New()
 	. = ..()
 	last_rotation = world.time
-	populate_stock()
+	START_PROCESSING(SSobj, src)
+	cycle_stock()
 
-/datum/pathology_shop/proc/populate_stock()
+/datum/pathology_shop/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	return ..()
+
+/datum/pathology_shop/proc/cycle_stock()
 	shop_stock.Cut()
 	for(var/item in typesof(/datum/pathology_shop_item))
 		if(item == /datum/pathology_shop_item)
@@ -18,6 +23,13 @@
 
 /datum/pathology_shop/proc/get_stock()
 	return shop_stock
+
+/datum/pathology_shop/process(seconds_per_tick)
+	. = ..()
+	if((last_rotation+(10 MINUTES)) < world.time)
+		last_rotation = world.time
+		cycle_stock()
+	return 0
 
 /*
 	CATEGORIES

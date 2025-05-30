@@ -26,6 +26,7 @@ type Item = {
 
 type Data = {
   contents: Record<string, Item>;
+  time: string;
   health: number;
   color: string;
 };
@@ -46,6 +47,7 @@ export const Pathology = (props, context) => {
     <Window width={650} height={700}>
       <Window.Content scrollable>
         <Section title="Health status">
+          <NoticeBox>Next shop rotation in: {data.time}!</NoticeBox>
           <LabeledList>
             <LabeledList.Item label="Health">{data.health}</LabeledList.Item>
             <LabeledList.Item label="Color">{data.color}</LabeledList.Item>

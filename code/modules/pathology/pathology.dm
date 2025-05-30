@@ -11,8 +11,6 @@ GLOBAL_VAR_INIT(shared_pathology_shop, null)
 	icon_screen = null
 	base_icon_state = "genesploicer0"
 	resistance_flags = ACID_PROOF
-	var/health = "50"
-	var/colortest = "blue"
 	var/datum/pathology_shop/shop // the shop we're connected to, gets connected at new()
 	var/unique_shop = FALSE // determines if it gets the standard shop that everyones shares or their own instance of a shop.
 	circuit = /obj/item/circuitboard/computer/pathology
@@ -33,7 +31,6 @@ GLOBAL_VAR_INIT(shared_pathology_shop, null)
 			GLOB.shared_pathology_shop = new /datum/pathology_shop
 		shop = GLOB.shared_pathology_shop
 
-// I am learning TGUI lol so this has some example parts
 /obj/machinery/computer/pathology/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -41,11 +38,20 @@ GLOBAL_VAR_INIT(shared_pathology_shop, null)
 		ui = new(user, src, "Pathology", name)
 		ui.open()
 
+// Maths for the timer component in the TGUI. Yes, it is gross.
+/obj/machinery/computer/pathology/proc/calculate_time()
+	var/timeleft = max((shop.last_rotation + 10 MINUTES) - world.time, 0)
+	var/minutes = floor(timeleft / 600)
+	var/seconds = floor((timeleft % 600) / 10)
+	var/minstr = (minutes < 10) ? "0[minutes]" : "[minutes]"
+	var/secstr = (seconds < 10) ? "0[seconds]" : "[seconds]"
+
+	return "[minstr]:[secstr]"
+
 /obj/machinery/computer/pathology/ui_data(mob/user)
 	var/list/data = list()
 	var/list/stock = shop.get_stock()
-	data["health"] = health
-	data["color"] = colortest
+	data["time"] = calculate_time()
 
   // shamelessly stolen from smartfridges
 	var/listofitems = list()

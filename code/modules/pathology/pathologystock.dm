@@ -17,6 +17,9 @@
 	if(!desc)
 		desc = initial(item.desc)
 
+/datum/pathology_shop_item/proc/cycle_contents()
+	return
+
 // The Essentials Stock. Doesn't rotate, contains standard useful items.
 /datum/pathology_shop_item/essentials/monkeycubes
 	item = /obj/item/storage/box/monkeycubes
@@ -75,6 +78,8 @@
 	if(length(specialtext) > 0)
 		specialtext = copytext(specialtext, 1, length(specialtext) - 2)
 
+/datum/pathology_shop_item/virusbottle/cycle_contents()
+	roll_virus()
 
 /datum/pathology_shop_item/virusbottle/t2
 	name = "Level 3-4 Pathology Virus"
@@ -127,6 +132,9 @@
 			possible_symptoms += S
 	symptom = pick_n_take(possible_symptoms)
 	specialtext = "[symptom.name]"
+
+/datum/pathology_shop_item/symptominducer/cycle_contents()
+	roll_symptom()
 
 /datum/pathology_shop_item/symptominducer/l2
 	name = "Level 2 Symptom Inducer"
