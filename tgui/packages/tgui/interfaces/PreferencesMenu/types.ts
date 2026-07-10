@@ -279,8 +279,6 @@ export type PreferencesMenuData = {
   power_points: number;
   power_state_paths: PowerStateByPathId;
 
-  augment_location?: string | null;
-
   // DOPPLER EDIT END
   keybindings: Record<string, string[]>;
   overflow_role: string;
