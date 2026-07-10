@@ -14,6 +14,9 @@
 	menu_icon = 'icons/mob/actions/actions_changeling.dmi'
 	menu_icon_state = "fleshmend"
 
+	menu_icon = 'icons/mob/actions/actions_changeling.dmi'
+	menu_icon_state = "fleshmend"
+
 	/// how much we heal per second
 	var/healing = 0.2
 	/// How much hunger we generate for every 1 point of healing.
