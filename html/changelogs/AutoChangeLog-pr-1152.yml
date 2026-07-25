@@ -1,0 +1,4 @@
+author: "FoundInJune"
+delete-after: True
+changes:
+  - sound: "Adds sound effects to the cultivator alignment Shadow Walker, and gives the dash ability its own sound effect."
