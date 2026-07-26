@@ -1,4 +1,0 @@
-author: "carda-sometimesknownas-paxilmaniac"
-delete-after: True
-changes:
-  - rscadd: "bloom reactors now become unstable when unwrenched, giving a total safe timer of three and a half minutes before things can start going wrong, but have a significantly higher sale value"

@@ -1,5 +1,0 @@
-author: "carda-sometimesknownas-paxilmaniac"
-delete-after: True
-changes:
-  - rscadd: "adds demo charges and matching remotes to engineering and cargo lathes that only work (by default) on shipbreaking shuttles"
-  - rscadd: "suction effects that pull unanchored things towards the inlets of the recycler and collector in salvage yards"
