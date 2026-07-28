@@ -49,6 +49,9 @@
 /obj/item/organ/stomach/charging/get_hunger_range_minimum()
 	return CHARGING_STOMACH_CHARGE_LOW
 
+/obj/item/organ/stomach/charging/get_hunger_target_value()
+	return internal_cell.charge()
+
 /obj/item/organ/stomach/charging/spend_hunger(base_cost)
 	if(base_cost <= 0)
 		return
@@ -60,6 +63,9 @@
 
 /obj/item/organ/stomach/ethereal/get_hunger_range_minimum()
 	return ETHEREAL_CHARGE_LOWPOWER
+
+/obj/item/organ/stomach/ethereal/get_hunger_target_value()
+	return cell.charge()
 
 /obj/item/organ/stomach/ethereal/spend_hunger(base_cost)
 	if(base_cost <= 0)
