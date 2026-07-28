@@ -446,8 +446,7 @@ There are several things that need to be remembered:
 	apply_overlay(BELT_LAYER)
 
 /mob/living/carbon/human/update_worn_oversuit()
-	// DOPPLER EDIT ADDITION - see update_worn_undersuit(), wear_suit's chest coverage affects
-	// mutant bodypart overlays (e.g. breasts) the same way.
+	// DOPPLER EDIT ADDITION START - This is basically ONLY here to fix breast code as updating uniforms normally does not run update_body_parts(). I hate it here.
 	update_body_parts()
 	// DOPPLER EDIT ADDITION END
 	remove_overlay(SUIT_LAYER)
