@@ -15,8 +15,6 @@
 /datum/preferences/proc/check_doppler_character_savefile(list/save_data)
 	if(isnull(save_data))
 		save_data = list()
-	// Checks if any legacy power-names are present on the mob and renames them to their current equivalent.
-	rename_legacy_powers(save_data)
 	var/current_version = get_savefile_version(save_data)
 	if(!SHOULD_UPDATE_DOPPLER_DATA(current_version))
 		return
