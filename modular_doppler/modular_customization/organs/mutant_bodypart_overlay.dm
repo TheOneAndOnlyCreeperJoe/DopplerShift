@@ -132,5 +132,9 @@
 /datum/bodypart_overlay/mutant/proc/get_feature_key_for_overlay()
 	return sprite_datum?.key || feature_key
 
+/// Returns the DNA feature which controls whether this organ's overlay is present, favoring doppler's version and falling back to the og.
+/obj/item/organ/proc/get_bodypart_overlay_dna_feature_key()
+	return bodypart_overlay?.special_feature_key || bodypart_overlay?.feature_key
+
 #undef MAX_MATRIXED_COLORS
 #undef ALPHA_OPAQUE

@@ -9,23 +9,25 @@
 	if(!ishuman(target))
 		return
 
-	if(can_regenerate_mutant_feature(FEATURE_TAIL_LIZARD) && target.dna.features[FEATURE_TAIL_LIZARD] != /datum/sprite_accessory/blank::name)
+	// Because we both have None & Null as possible values we check target.dna.features twice. First for null, then afterwards for "None"
+	// can_regenerate_mutant_feature() is used to prevent giving mutant parts to species on GLOB.species_blacklist_no_mutant
+	if(target.dna.features[FEATURE_TAIL_LIZARD] && can_regenerate_mutant_feature(FEATURE_TAIL_LIZARD) && target.dna.features[FEATURE_TAIL_LIZARD] != /datum/sprite_accessory/blank::name)
 		var/obj/item/organ/replacement = SSwardrobe.provide_type(/obj/item/organ/tail/lizard)
 		replacement.Insert(target, special = TRUE, movement_flags = DELETE_IF_REPLACED)
 		return .
-	else if(can_regenerate_mutant_feature(FEATURE_TAIL_CAT) && target.dna.features[FEATURE_TAIL_CAT] != /datum/sprite_accessory/blank::name)
+	else if(target.dna.features[FEATURE_TAIL_CAT] && can_regenerate_mutant_feature(FEATURE_TAIL_CAT) && target.dna.features[FEATURE_TAIL_CAT] != /datum/sprite_accessory/blank::name)
 		var/obj/item/organ/replacement = SSwardrobe.provide_type(/obj/item/organ/tail/cat)
 		replacement.Insert(target, special = TRUE, movement_flags = DELETE_IF_REPLACED)
 		return .
-	else if(can_regenerate_mutant_feature(FEATURE_TAIL_MONKEY) && target.dna.features[FEATURE_TAIL_MONKEY] != /datum/sprite_accessory/blank::name)
+	else if(target.dna.features[FEATURE_TAIL_MONKEY] && can_regenerate_mutant_feature(FEATURE_TAIL_MONKEY) && target.dna.features[FEATURE_TAIL_MONKEY] != /datum/sprite_accessory/blank::name)
 		var/obj/item/organ/replacement = SSwardrobe.provide_type(/obj/item/organ/tail/monkey)
 		replacement.Insert(target, special = TRUE, movement_flags = DELETE_IF_REPLACED)
 		return .
-	else if(can_regenerate_mutant_feature(FEATURE_TAIL_FISH) && target.dna.features[FEATURE_TAIL_FISH] != /datum/sprite_accessory/blank::name)
+	else if(target.dna.features[FEATURE_TAIL_FISH] && can_regenerate_mutant_feature(FEATURE_TAIL_FISH) && target.dna.features[FEATURE_TAIL_FISH] != /datum/sprite_accessory/blank::name)
 		var/obj/item/organ/replacement = SSwardrobe.provide_type(/obj/item/organ/tail/fish)
 		replacement.Insert(target, special = TRUE, movement_flags = DELETE_IF_REPLACED)
 		return .
-	else if((can_regenerate_mutant_feature(FEATURE_TAIL_OTHER) && target.dna.features[FEATURE_TAIL_OTHER] != /datum/sprite_accessory/blank::name) && (target.dna.tail_type != NO_VARIATION))
+	else if((target.dna.features[FEATURE_TAIL_OTHER] && can_regenerate_mutant_feature(FEATURE_TAIL_OTHER) && target.dna.features[FEATURE_TAIL_OTHER] != /datum/sprite_accessory/blank::name) && (target.dna.tail_type != NO_VARIATION))
 		var/obj/item/organ/organ_path = text2path("/obj/item/organ/tail/[target.dna.tail_type]")
 		var/obj/item/organ/replacement = SSwardrobe.provide_type(organ_path)
 		replacement.Insert(target, special = TRUE, movement_flags = DELETE_IF_REPLACED)
@@ -33,6 +35,11 @@
 
 	var/obj/item/organ/tail/old_part = target.get_organ_slot(ORGAN_SLOT_EXTERNAL_TAIL)
 	if(istype(old_part))
+		// Keep an already-applied species tail (e.g regenerate_organs() for lizards) when no DNA-specific tail is appleid.
+		var/obj/item/organ/intrinsic_tail_type = get_mutant_organ_type_for_slot(ORGAN_SLOT_EXTERNAL_TAIL)
+		var/intrinsic_tail_feature_key = old_part.get_bodypart_overlay_dna_feature_key()
+		if(intrinsic_tail_type == old_part.type && (!intrinsic_tail_feature_key || isnull(target.dna.features[intrinsic_tail_feature_key])))
+			return .
 		old_part.Remove(target, special = TRUE, movement_flags = DELETE_IF_REPLACED)
 		old_part.moveToNullspace()
 
