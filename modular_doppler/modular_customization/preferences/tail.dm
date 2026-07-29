@@ -13,7 +13,7 @@
 	var/use_species_default_tail = FALSE
 	if(isnull(target.dna.tail_type)) // always false when the target has prefs
 		var/obj/item/organ/species_tail_type = get_mutant_organ_type_for_slot(ORGAN_SLOT_EXTERNAL_TAIL)
-		if(species_tail_type) // always false when a mob doesn't have a tail
+		if(species_tail_type) // always false when a species doesn't normally have a tail
 			var/default_tail_appearance = mutant_organs[species_tail_type]
 			var/tail_feature_key = get_bodypart_overlay_dna_feature_key_from_type(species_tail_type)
 			if(tail_feature_key && default_tail_appearance)
