@@ -39,6 +39,18 @@
 	apply_ripple_filter(FALSE)
 	. = ..()
 
+/// Makes it so that examining the reality anchor adds a red text to indicate that they do not like reality anchors.
+/obj/machinery/reality_anchor/examine(mob/user)
+	. = ..()
+	if(!isliving(user))
+		return
+	var/mob/living/living_user = user
+	for(var/datum/power/owned_power as anything in living_user.powers) // todo: replace with the powers2 helper for paths once thats merged
+		if(owned_power.archetype != POWER_ARCHETYPE_SORCEROUS && owned_power.archetype != POWER_ARCHETYPE_RESONANT)
+			continue
+		. += span_bold(span_red("Even looking at it makes you feel uncomfortable."))
+		break
+
 // Turns the thing on or off after the do_after.
 /obj/machinery/reality_anchor/attack_hand(mob/user, list/modifiers)
 	. = ..()
@@ -225,6 +237,7 @@
 
 /// Determines and stores the owner's archetype for all of the anchor's effects.
 /datum/status_effect/power/reality_anchor_silenced/proc/set_anchor_archetype()
+	// todo: replace with the powers2 helper for paths once thats merged
 	owner_archetype = POWER_ARCHETYPE_MORTAL
 	if(owner.has_power_in_path(POWER_PATH_THAUMATURGE) || owner.has_power_in_path(POWER_PATH_THEOLOGIST))
 		owner_archetype = POWER_ARCHETYPE_SORCEROUS
