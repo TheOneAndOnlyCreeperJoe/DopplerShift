@@ -150,13 +150,17 @@
 		return FALSE
 	return !!power_type.magic_flags
 
-/// Whether the target can cast standard spell actions.
+/// Whether the target has a special-type action (and it is magical)
 /datum/action/cooldown/power/imbued/mage_sight/proc/has_spell_type_action(mob/living/target_mob)
 	if(!length(target_mob?.actions))
 		return FALSE
 
 	for(var/datum/action/cooldown/action_datum as anything in target_mob.actions)
-		if(istype(action_datum, /datum/action/cooldown/spell))
+		if(!istype(action_datum, /datum/action/cooldown/spell))
+			continue
+
+		var/datum/action/cooldown/spell/spell_action = action_datum
+		if(spell_action.antimagic_flags) // we check if it has antimagic flags as to filter some non-magical spells like genemodded.
 			return TRUE
 
 	return FALSE

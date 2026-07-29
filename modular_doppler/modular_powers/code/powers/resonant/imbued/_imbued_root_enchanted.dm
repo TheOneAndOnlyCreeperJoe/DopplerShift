@@ -106,4 +106,8 @@
 		var/datum/action/cooldown/power/power_action = cooldown_action
 		return power_action.is_magical()
 
-	return istype(cooldown_action, /datum/action/cooldown/spell)
+	if(istype(cooldown_action, /datum/action/cooldown/spell))
+		var/datum/action/cooldown/spell/spell_action = cooldown_action
+		return !!spell_action.antimagic_flags // needs antimagic flags to filter non-magical spells like genetics actions (thanks /tg/)
+
+	return FALSE
