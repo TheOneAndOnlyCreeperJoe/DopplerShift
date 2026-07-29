@@ -1,10 +1,14 @@
-/obj/structure/reality_anchor
+/obj/machinery/reality_anchor
 	name = "miniature reality anchor"
 	desc = "The chiseled out Eschatite remains of an anchor, smoothed and cobbled together. Crude machinery is managing to keep it docile; but when enabled, it will start enforcing normality back in a large area around it."
 	icon = 'modular_doppler/modular_powers/icons/items/reality_anchor.dmi'
 	icon_state = "reality_anchor"
 	density = TRUE
+	anchored = FALSE
 	max_integrity = 600 // tonky
+	use_power = NO_POWER_USE
+	active_power_usage = 5 KILO WATTS
+	processing_flags = START_PROCESSING_MANUALLY
 
 	/// Is it on/off
 	var/active = FALSE
@@ -16,19 +20,32 @@
 
 	/// Range in turfs
 	var/pulse_range = 6
+	/// Baseline energy consumed by each pulse.
+	var/base_pulse_energy_usage = 50 KILO JOULES
+	/// Maximum proportional variance from the baseline active and pulse consumption.
+	var/consumption_variance = 0.25
+	/// Energy that the most recent pulse attempted to consume.
+	var/current_pulse_energy_usage
 
 	/// Ripple filter while active.
 	var/ripple_filter_id = "reality_anchor_ripple"
 
-/obj/structure/reality_anchor/Destroy()
+/obj/machinery/reality_anchor/Initialize(mapload)
+	. = ..()
+	RegisterSignal(src, COMSIG_ATOM_PSYKER_MANIPULATE, PROC_REF(on_manipulate))
+
+/obj/machinery/reality_anchor/Destroy()
 	STOP_PROCESSING(SSobj, src)
 	apply_ripple_filter(FALSE)
 	. = ..()
 
 // Turns the thing on or off after the do_after.
-/obj/structure/reality_anchor/attack_hand(mob/user, list/modifiers)
+/obj/machinery/reality_anchor/attack_hand(mob/user, list/modifiers)
 	. = ..()
 	if(.)
+		return
+	if(!active && !powered(ignore_use_power = TRUE))
+		balloon_alert(user, "no power supply!")
 		return
 	var/action_word = active ? "deactivate" : "activate"
 	var/action_word_past_tense = active ? "deactivating" : "activating"
@@ -38,30 +55,72 @@
 	)
 	if(!do_after(user, 3 SECONDS, target = src))
 		return
+	if(!toggle_anchor(user))
+		return
 	user.visible_message(
 		span_warning("[user] finishes [action_word_past_tense] the reality anchor."),
 		span_warning("You finish [action_word_past_tense] the reality anchor.")
 	)
-	toggle_anchor(user)
+
+/// Reality anchors cannot be operated with genetic telekinesis.
+/obj/machinery/reality_anchor/attack_tk(mob/user)
+	trigger_remote_interaction_backlash(user)
+	return COMPONENT_CANCEL_ATTACK_CHAIN
+
+/// Prevents Psyker Manipulate from falling through to the anchor's hand interaction.
+/obj/machinery/reality_anchor/proc/on_manipulate(datum/source, mob/living/user)
+	SIGNAL_HANDLER
+	INVOKE_ASYNC(src, PROC_REF(trigger_remote_interaction_backlash), user)
+	return COMPONENT_PSYKER_MANIPULATE_HANDLED
+
+/// Blasts anyone attempting to interact with the anchor through telekinetic means.
+/obj/machinery/reality_anchor/proc/trigger_remote_interaction_backlash(mob/user)
+	if(!isliving(user))
+		return
+	var/mob/living/living_user = user
+	to_chat(living_user, span_userdanger("Reaching out to the [name] exposes you to a heavy blast of anti-resonant force!"))
+	living_user.dispel(src, DISPEL_CASCADE_CARRIED)
+	if(!living_user.can_block_resonance(0) && !living_user.mind?.has_antag_datum(/datum/antagonist/heretic))
+		living_user.apply_status_effect(/datum/status_effect/power/reality_anchor_silenced)
+	living_user.emote("scream", forced = TRUE)
+
+/// An EMP forces an active reality anchor to shut down.
+/obj/machinery/reality_anchor/emp_act(severity)
+	. = ..()
+	if(!active || (. & EMP_PROTECT_SELF))
+		return
+	toggle_anchor()
 
 /// Switches it on or off.
-/obj/structure/reality_anchor/proc/toggle_anchor(mob/user)
-	active = !active
+/obj/machinery/reality_anchor/proc/toggle_anchor(mob/user)
 	if(active)
-		anchored = TRUE
-		apply_ripple_filter(TRUE)
-		playsound(src, 'sound/effects/magic/repulse.ogg', 75, TRUE)
-		pulse()
-		next_pulse_time = world.time + pulse_interval
-		START_PROCESSING(SSobj, src)
-		return
-	anchored = FALSE
-	apply_ripple_filter(FALSE)
-	STOP_PROCESSING(SSobj, src)
+		active = FALSE
+		anchored = FALSE
+		update_use_power(NO_POWER_USE)
+		apply_ripple_filter(FALSE)
+		STOP_PROCESSING(SSobj, src)
+		return TRUE
+	if(!powered(ignore_use_power = TRUE))
+		balloon_alert(user, "no power supply!")
+		return FALSE
+	active = TRUE
+	anchored = TRUE
+	update_use_power(ACTIVE_POWER_USE)
+	apply_ripple_filter(TRUE)
+	playsound(src, 'sound/effects/magic/repulse.ogg', 75, TRUE)
+	pulse()
+	if(!active) // pulsing may consume the last ounce of energy and forcefully turn it off.
+		return FALSE
+	next_pulse_time = world.time + pulse_interval
+	START_PROCESSING(SSobj, src)
+	return TRUE
 
 // Countdown til dispel pulse.
-/obj/structure/reality_anchor/process(seconds_per_tick)
+/obj/machinery/reality_anchor/process(seconds_per_tick)
 	if(!active)
+		return
+	if(!powered()) // turn off the anchor if we lose power
+		toggle_anchor()
 		return
 	if(world.time < next_pulse_time)
 		return
@@ -69,7 +128,11 @@
 	next_pulse_time = world.time + pulse_interval
 
 /// Dispel AoE effect.
-/obj/structure/reality_anchor/proc/pulse()
+/obj/machinery/reality_anchor/proc/pulse()
+	randomize_power_consumption()
+	if(!use_energy(current_pulse_energy_usage, force = FALSE)) // tries to consume a spike of energy
+		toggle_anchor()
+		return
 	var/turf/center = get_turf(src)
 	if(!center)
 		return
@@ -87,8 +150,20 @@
 		else if(isobj(target))
 			target.dispel(src)
 
+/// Because it is unpredictable resonant nonsense, as a flavor-thing we randomize the power consumption of the anchor whilst it is active.
+/// Gets the base value, applies a random variance, sets the value to the new value. This happesn every pulse.
+/obj/machinery/reality_anchor/proc/randomize_power_consumption()
+	update_mode_power_usage(ACTIVE_POWER_USE, rand(
+		initial(active_power_usage) * (1 - consumption_variance),
+		initial(active_power_usage) * (1 + consumption_variance),
+	))
+	current_pulse_energy_usage = rand(
+		base_pulse_energy_usage * (1 - consumption_variance),
+		base_pulse_energy_usage * (1 + consumption_variance),
+	)
+
 /// Applies a rippling effect.
-/obj/structure/reality_anchor/proc/apply_ripple_filter(active_state)
+/obj/machinery/reality_anchor/proc/apply_ripple_filter(active_state)
 	if(active_state)
 		add_filter(ripple_filter_id, 2, list("type" = "ripple", "flags" = WAVE_BOUNDED, "radius" = 0, "size" = 2))
 		var/filter = get_filter(ripple_filter_id)
@@ -115,6 +190,7 @@
 
 /datum/status_effect/power/reality_anchor_silenced/on_apply()
 	set_anchor_archetype()
+	send_initial_message()
 	if(owner_archetype != POWER_ARCHETYPE_MORTAL) // non-mortals hear a grating sound
 		owner.playsound_local(owner, 'sound/effects/curse/curse5.ogg', 50, FALSE) // specifically this one because it sounds like a scream.
 	ADD_TRAIT(owner, TRAIT_RESONANCE_SILENCED, TRAIT_STATUS_EFFECT(id))
@@ -137,6 +213,15 @@
 	if(owner_archetype == POWER_ARCHETYPE_MORTAL) // normies don't hear the heartbeat
 		return
 	owner.playsound_local(owner, 'sound/effects/health/slowbeat.ogg', 40, FALSE, channel = CHANNEL_HEARTBEAT, use_reverb = FALSE)
+
+/// Warns the owner when the anchor's silence is first applied.
+/datum/status_effect/power/reality_anchor_silenced/proc/send_initial_message()
+	if(owner_archetype == POWER_ARCHETYPE_SORCEROUS)
+		to_chat(owner, span_userdanger("You sense your powers being suppressed, and you are wracked with an excruciating pain spreading throughout your entire body! MAKE IT STOP!"))
+		return
+	if(owner_archetype == POWER_ARCHETYPE_RESONANT)
+		to_chat(owner, span_boldwarning("You sense your powers being suppressed, and you begin to feel extremely unwell!"))
+	// no message for mortal since they barely notice anything.
 
 /// Determines and stores the owner's archetype for all of the anchor's effects.
 /datum/status_effect/power/reality_anchor_silenced/proc/set_anchor_archetype()
@@ -191,7 +276,7 @@
 	icon = 'icons/hud/screen_gen.dmi'
 	icon_state = "noise"
 	screen_loc = "WEST,SOUTH to EAST,NORTH"
-	color = "#17333a"
+	color = "#202852"
 
 /atom/movable/screen/fullscreen/reality_anchor_static/sorcerous
 	alpha = 140
@@ -229,6 +314,3 @@
 	max_alpha = 20
 	duration = 0.5 SECONDS
 	amount_to_scale = 7
-
-/obj/structure/reality_anchor/update_overlays()
-	. = ..()

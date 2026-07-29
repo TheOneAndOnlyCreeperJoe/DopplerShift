@@ -90,6 +90,11 @@
 // Trait that allows a mob to keep UIs open beyond their normal range.
 #define TRAIT_NO_UI_DISTANCE "no_ui_distance"
 
+/// Sent to an object before Psyker Manipulate performs its default interaction: (mob/living/user, right_click)
+#define COMSIG_ATOM_PSYKER_MANIPULATE "atom_psyker_manipulate"
+/// The target handled the Manipulate interaction and no default interaction should follow.
+#define COMPONENT_PSYKER_MANIPULATE_HANDLED (1<<0)
+
 /**
  * SORCEROUS
  * All defines related to the sorcerous archetype.

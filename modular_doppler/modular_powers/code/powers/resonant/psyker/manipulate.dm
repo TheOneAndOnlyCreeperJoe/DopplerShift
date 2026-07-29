@@ -71,7 +71,14 @@
 // We use TRAIT_REMOTE_INTERACT (temporarily) as to bypass /mob/living/can_perform_action
 /datum/action/cooldown/power/psyker/manipulate/use_action(mob/living/user, atom/target)
 	ADD_TRAIT(user, TRAIT_REMOTE_INTERACT, src) // this is specifically for allowing us to bypass the range interaction gate.
-	new /obj/effect/temp_visual/telekinesis(get_turf(target))
+	new /obj/effect/temp_visual/telekinesis(get_turf(target)) // tk visual effect
+
+	// Sends a signal to the object to allow it to handle the interaction itself. If it does, we don't do any default interaction.
+	var/manipulate_signal_result = SEND_SIGNAL(target, COMSIG_ATOM_PSYKER_MANIPULATE, user, right_click)
+	if(manipulate_signal_result & COMPONENT_PSYKER_MANIPULATE_HANDLED)
+		finish_manipulation(user)
+		return TRUE
+
 	if(right_click) // rmb
 		target.attack_hand_secondary(user)
 	else // lmb
@@ -105,10 +112,14 @@
 			RegisterSignal(target, COMSIG_ATOM_DISPEL, PROC_REF(on_dispel))
 			RegisterSignal(ui, COMSIG_QDELETING, PROC_REF(on_ui_closed))
 
+	finish_manipulation(user)
+	return TRUE
+
+/// Cleans up the temporary interaction state and applies Manipulate's stress cost.
+/datum/action/cooldown/power/psyker/manipulate/proc/finish_manipulation(mob/living/user)
 	REMOVE_TRAIT(user, TRAIT_REMOTE_INTERACT, src)
 	right_click = FALSE
 	modify_stress(PSYKER_STRESS_TRIVIAL * 2)
-	return TRUE
 
 /// Ends the ongoing glow effect when the UI is closed.
 /datum/action/cooldown/power/psyker/manipulate/proc/on_ui_closed(datum/tgui/ui)
