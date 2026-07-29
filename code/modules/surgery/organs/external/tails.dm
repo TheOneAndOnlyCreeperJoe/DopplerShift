@@ -81,6 +81,7 @@
 	/* DOPPLER ADDITION END */
 	tail_spines_overlay = new
 	tail_spines_overlay.tail_spine_key = tail_spine_key
+	//DOPPLER REMOVAL: var/feature_name = bodypart.owner.dna.features[FEATURE_SPINES] //tail spines don't live in DNA, but share feature names with regular spines
 	tail_spines_overlay.set_appearance_from_name(feature_name)
 	bodypart.add_bodypart_overlay(tail_spines_overlay)
 
