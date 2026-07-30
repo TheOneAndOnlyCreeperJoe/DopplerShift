@@ -195,6 +195,8 @@
 	tick_interval = 1 SECONDS
 	/// The owner's power archetype when this effect was applied.
 	var/owner_archetype = POWER_ARCHETYPE_MORTAL
+	/// Whether mental antimagic blocked the psychological effects when this status was applied.
+	var/mental_effects_blocked = FALSE
 	/// Filter key used on the owner's game plane master.
 	var/blur_filter_id = "reality_anchor_blur"
 	/// Exact plane master carrying our filter, retained for reliable cleanup.
@@ -202,27 +204,53 @@
 
 /datum/status_effect/power/reality_anchor_silenced/on_apply()
 	set_anchor_archetype()
-	send_initial_message()
-	if(owner_archetype != POWER_ARCHETYPE_MORTAL) // non-mortals hear a grating sound
-		owner.playsound_local(owner, 'sound/effects/curse/curse5.ogg', 50, FALSE) // specifically this one because it sounds like a scream.
+	// Checks if mental antimagic existed on the mob upon application, which blocks all the negative mental effects, but not the silence.
+	mental_effects_blocked = owner.can_block_magic(MAGIC_RESISTANCE_MIND, charge_cost = 0)
+	if(mental_effects_blocked && owner_archetype != POWER_ARCHETYPE_MORTAL) // only show if it would've done something to the owner.
+		to_chat(owner, span_warning("Your mental resistance shields you from the excruciating effects of having your powers suppressed!"))
+	else
+		send_initial_message()
+		if(owner_archetype != POWER_ARCHETYPE_MORTAL) // non-mortals hear a grating sound
+			owner.playsound_local(owner, 'sound/effects/curse/curse5.ogg', 50, FALSE) // specifically this one because it sounds like a scream.
 	ADD_TRAIT(owner, TRAIT_RESONANCE_SILENCED, TRAIT_STATUS_EFFECT(id))
+	if(!mental_effects_blocked)
+		apply_mental_effects()
+	return TRUE
+
+/datum/status_effect/power/reality_anchor_silenced/on_remove()
+	REMOVE_TRAIT(owner, TRAIT_RESONANCE_SILENCED, TRAIT_STATUS_EFFECT(id))
+	clear_mental_effects()
+	return
+
+// Rechecks mental antimagic when the status effect is refreshed.
+/datum/status_effect/power/reality_anchor_silenced/refresh(effect, ...)
+	. = ..()
+	var/mental_effects_were_blocked = mental_effects_blocked
+	mental_effects_blocked = owner.can_block_magic(MAGIC_RESISTANCE_MIND, charge_cost = 0)
+	if(mental_effects_blocked == mental_effects_were_blocked)
+		return
+	if(mental_effects_blocked)
+		clear_mental_effects()
+		return
+	apply_mental_effects()
+
+/// Applies the mood and visual effects that mental antimagic can block.
+/datum/status_effect/power/reality_anchor_silenced/proc/apply_mental_effects()
 	owner.add_mood_event(id, get_anchor_moodlet())
 	var/screen_effect_type = get_anchor_screen_effect()
 	if(screen_effect_type)
 		owner.overlay_fullscreen("reality_anchor_static", screen_effect_type)
 	apply_anchor_blur()
-	return TRUE
 
-/datum/status_effect/power/reality_anchor_silenced/on_remove()
-	REMOVE_TRAIT(owner, TRAIT_RESONANCE_SILENCED, TRAIT_STATUS_EFFECT(id))
+/// Clears the mood, visual, and audio effects that mental antimagic can block.
+/datum/status_effect/power/reality_anchor_silenced/proc/clear_mental_effects()
 	owner.clear_mood_event(id)
 	owner.clear_fullscreen("reality_anchor_static")
 	owner.stop_sound_channel(CHANNEL_HEARTBEAT)
 	clear_anchor_blur()
-	return
 
 /datum/status_effect/power/reality_anchor_silenced/tick(seconds_between_ticks)
-	if(owner_archetype == POWER_ARCHETYPE_MORTAL) // normies don't hear the heartbeat
+	if(mental_effects_blocked || owner_archetype == POWER_ARCHETYPE_MORTAL) // normies and the mentally shielded don't hear the heartbeat
 		return
 	owner.playsound_local(owner, 'sound/effects/health/slowbeat.ogg', 40, FALSE, channel = CHANNEL_HEARTBEAT, use_reverb = FALSE)
 
