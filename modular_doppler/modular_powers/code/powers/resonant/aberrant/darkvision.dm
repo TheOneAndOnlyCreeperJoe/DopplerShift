@@ -7,6 +7,7 @@
 	value = 3
 	required_powers = list(/datum/power/aberrant_root)
 	required_allow_subtypes = TRUE
+	magic_flags = NONE // non-magical
 
 	menu_icon = 'icons/mob/actions/actions_changeling.dmi'
 	menu_icon_state = "darkness_adaptation"
