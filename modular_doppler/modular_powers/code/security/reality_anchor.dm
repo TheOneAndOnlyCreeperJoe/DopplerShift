@@ -91,9 +91,9 @@
 		return
 	var/mob/living/living_user = user
 	to_chat(living_user, span_userdanger("Reaching out to the [name] exposes you to a heavy blast of anti-resonant force!"))
-	living_user.dispel(src, DISPEL_CASCADE_CARRIED)
 	if(!living_user.can_block_resonance(0) && !living_user.mind?.has_antag_datum(/datum/antagonist/heretic))
 		living_user.apply_status_effect(/datum/status_effect/power/reality_anchor_silenced)
+	living_user.dispel(src, DISPEL_CASCADE_CARRIED)
 	living_user.emote("scream", forced = TRUE)
 
 /// An EMP forces an active reality anchor to shut down.
@@ -154,11 +154,10 @@
 	for(var/atom/movable/target in range(pulse_range, center))
 		if(isliving(target))
 			var/mob/living/living_target = target
-			living_target.dispel(src, DISPEL_CASCADE_CARRIED)
 			// Being immune to resonance or a heretic prevents the application of the silence effect
-			if(living_target.can_block_resonance() || living_target.mind?.has_antag_datum(/datum/antagonist/heretic))
-				continue
-			living_target.apply_status_effect(/datum/status_effect/power/reality_anchor_silenced)
+			if(!living_target.can_block_resonance() && !living_target.mind?.has_antag_datum(/datum/antagonist/heretic))
+				living_target.apply_status_effect(/datum/status_effect/power/reality_anchor_silenced)
+			living_target.dispel(src, DISPEL_CASCADE_CARRIED)
 		else if(isobj(target))
 			target.dispel(src)
 
