@@ -5,7 +5,7 @@
 /datum/preferences/proc/nuke_old_powers(list/save_data)
 	if(save_data && ("powers" in save_data))
 		save_data -= "powers"
-		var/ckey_to_log = parent?.ckey || "unknown"
+		var/ckey_to_log = parent?.ckey || "\[UNKNOWN CKEY\]"
 		log_game("[ckey_to_log]'s powers were migrated over from the old powers system.")
 
 /**
@@ -18,15 +18,12 @@
 	var/list/saved_powers = save_data?["all_powers"]
 	if(!islist(saved_powers))
 		return
-	var/index = saved_powers.Find(old_name)
-	if(!index)
+	if(!(old_name in saved_powers))
 		return
-	// Avoid a duplicate entry if the player somehow already has the new name saved too.
-	if(saved_powers.Find(new_name))
-		saved_powers.Cut(index, index + 1)
-	else
-		saved_powers[index] = new_name
-	var/ckey_to_log = parent?.ckey || "unknown"
+	saved_powers -= old_name
+	if(!(new_name in saved_powers))
+		saved_powers += new_name
+	var/ckey_to_log = parent?.ckey || "\[UNKNOWN CKEY\]"
 	log_game("[ckey_to_log]'s power \"[old_name]\" was renamed to \"[new_name]\" in their savefile.")
 
 /**

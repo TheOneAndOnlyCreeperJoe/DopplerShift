@@ -160,7 +160,7 @@
 			continue
 
 		var/datum/action/cooldown/spell/spell_action = action_datum
-		if(spell_action.antimagic_flags) // we check if it has antimagic flags as to filter some non-magical spells like genemodded.
+		if(spell_action.antimagic_flags != NONE) // we check if it has antimagic flags as to filter some non-magical spells like genemodded.
 			return TRUE
 
 	return FALSE

@@ -108,6 +108,6 @@
 
 	if(istype(cooldown_action, /datum/action/cooldown/spell))
 		var/datum/action/cooldown/spell/spell_action = cooldown_action
-		return !!spell_action.antimagic_flags // needs antimagic flags to filter non-magical spells like genetics actions (thanks /tg/)
+		return spell_action.antimagic_flags != NONE // needs antimagic flags to filter non-magical spells like genetics actions (thanks /tg/)
 
 	return FALSE
