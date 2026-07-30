@@ -12,9 +12,6 @@
 	menu_icon = 'icons/mob/actions/actions_changeling.dmi'
 	menu_icon_state = "darkness_adaptation"
 
-	menu_icon = 'icons/mob/actions/actions_changeling.dmi'
-	menu_icon_state = "darkness_adaptation"
-
 	/// Saves if we apply the cutoffs for darkvision.
 	var/eye_color_cutoffs_applied = FALSE
 	/// Default red cutoff for darkvision tint.
