@@ -35,7 +35,7 @@
 	if(imprint_on_next_insertion) //We only want this set *once*
 		var/feature_name = receiver.dna.features[feature_key] || receiver.dna.species.mutant_organs[parent.type]
 		if (isnull(feature_name))
-			stack_trace("[type] has no default feature name for organ [parent.type]!")
+			// DOPPLER REMOVAL (stack_trace works off of mutant part assumptions that aren't compatible with our own mutant part system) - stack_trace("[type] has no default feature name for organ [parent.type]!")
 			feature_name = get_consistent_feature_entry(get_global_feature_list()) //fallback to something
 		set_appearance_from_name(feature_name)
 		imprint_on_next_insertion = FALSE
