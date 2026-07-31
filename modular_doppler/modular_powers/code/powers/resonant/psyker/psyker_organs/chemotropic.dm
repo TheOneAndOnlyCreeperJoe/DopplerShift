@@ -7,8 +7,7 @@
 	\nThis gland particularly only functions through external chemical stimuli: particularly substances such as nicotine, ethanol and hard-drugs. Your passive stress recovery is much slower than usual, but you recover vast amounts from having any of the aforementioned \
 	substances inside your bloodstream, with hard-drugs yielding more recovery than nicotine and ethanol.\
 	\nOnly substances your body can actively metabolize provide recovery. Synthetic bodies can use compatible equivalents such as Synthanol.\
-	\nHaving matching negative quirks with the substance (such as the Smoker quirk with Nicotine) increases the stress recovery.\
-	\nBase stress threshold is 75 (increasing with investment in the Psyker Path), which determines how much stress you can handle before you start suffering negative events."
+	\nHaving matching negative quirks with the substance (such as the Smoker quirk with Nicotine) increases the stress recovery."
 	security_record_text = "Subject wields psionic abilities and recovers from it through substance consumption."
 	organ_type = /obj/item/organ/resonant/psyker/chemotropic
 	menu_icon = 'modular_doppler/modular_powers/icons/items/organs.dmi'
@@ -72,16 +71,18 @@
 
 /// Returns stress recovery per second based on substances in the host's bloodstream.
 /obj/item/organ/resonant/psyker/chemotropic/get_stress_recovery_per_second()
-	if(stress >= stress_threshold)
-		return 0
-
+	// Passive recovery stops at the threshold, but chemical recovery can bring stress back below it.
+	var/recovery_amount = stress <= stress_threshold ? recovery_per_second : 0 // zero out if at or above threshold, passive regen always stops above it.
 	var/recovery_multiplier = get_chemical_recovery_multiplier()
-	if(!recovery_multiplier)
-		return recovery_per_second
 
-	var/recovery_amount = base_recovery_amount * recovery_multiplier
-	// Wrong root? Recover only a third as much.
-	if(!has_matching_root())
-		recovery_amount *= PSYKER_MISMATCHED_ORGAN_EFFICIENCY
+	if(recovery_multiplier) // if we are gaining any recovery from chemicals, calculate it and add it to the total.
+		var/chemical_recovery_amount = base_recovery_amount * recovery_multiplier
+		// Wrong root? Recover less.
+		if(!has_matching_root())
+			chemical_recovery_amount *= PSYKER_MISMATCHED_ORGAN_EFFICIENCY
+		recovery_amount += chemical_recovery_amount
 
-	return recovery_amount + recovery_per_second
+	var/list/recovery_candidates = list(recovery_amount)
+	SEND_SIGNAL(owner, COMSIG_PSYKER_CHEMOTROPIC_RECOVERY_CANDIDATES, src, recovery_candidates)
+
+	return max(recovery_candidates)
