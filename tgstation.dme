@@ -7658,6 +7658,7 @@
 #include "modular_doppler\modular_powers\code\powers\resonant\psyker\psyker_events\severe\eyes_bleed.dm"
 #include "modular_doppler\modular_powers\code\powers\resonant\psyker\psyker_events\severe\hallucinate.dm"
 #include "modular_doppler\modular_powers\code\powers\resonant\psyker\psyker_events\severe\vomit.dm"
+#include "modular_doppler\modular_powers\code\powers\resonant\psyker\psyker_events\severe\zapped.dm"
 #include "modular_doppler\modular_powers\code\powers\resonant\psyker\psyker_organs\_psyker_organ.dm"
 #include "modular_doppler\modular_powers\code\powers\resonant\psyker\psyker_organs\chemotropic.dm"
 #include "modular_doppler\modular_powers\code\powers\resonant\psyker\psyker_organs\paracausal.dm"

@@ -101,6 +101,6 @@
 
 // Custom emp wave
 /obj/effect/temp_visual/circle_wave/emp_wave
-	color = COLOR_CYAN
+	color = COLOR_BLUE_VERY_LIGHT
 	duration = 0.5 SECONDS
 	amount_to_scale = 3
