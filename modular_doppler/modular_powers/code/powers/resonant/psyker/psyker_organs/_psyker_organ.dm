@@ -19,6 +19,8 @@
 	var/matching_root_type = /datum/power/psyker_root
 	/// Base recovery per second.
 	var/recovery_per_second = 0
+	/// The described action taken to recover stress. Used in the stress warning to communicate HOW you would relieve stress in your current state.
+	var/coping_method = "nothing"
 	/// Time between repeat backlash events while above the stress threshold.
 	var/stress_backlash_cooldown = 90 SECONDS
 
@@ -28,7 +30,7 @@
 	COOLDOWN_DECLARE(severe_stress_backlash_cooldown)
 
 	///The stress warning message
-	var/datum/status_effect/power/stress_warning
+	var/datum/status_effect/power/stress_warning/stress_warning
 
 /// Call to modify stress. Don't adjust directly.
 /obj/item/organ/resonant/psyker/proc/modify_stress(amount, override_cap)
@@ -91,6 +93,9 @@
 /obj/item/organ/resonant/psyker/proc/on_owner_fully_healed(datum/source, heal_flags)
 	SIGNAL_HANDLER
 	stress = 0
+	if(stress_warning)
+		owner.remove_status_effect(/datum/status_effect/power/stress_warning)
+		stress_warning = null
 
 /// Updates the flags on the medscanner in the event that the person with the organ is not a psyker and when the organ is killing them.
 /obj/item/organ/resonant/psyker/proc/update_medscan_flags()
@@ -125,6 +130,9 @@
 	if(has_compatible_root())
 		if(stress <= 0)
 			stress = 0
+			if(stress_warning) // removes the lingeirng status effect.
+				owner.remove_status_effect(/datum/status_effect/power/stress_warning)
+				stress_warning = null
 			return
 		stress = max(stress - (get_stress_recovery_per_second() * seconds_per_tick), 0)
 
@@ -144,10 +152,12 @@
 			COOLDOWN_START(src, mild_stress_backlash_cooldown, stress_backlash_cooldown)
 			stress_backlash(PSYKER_EVENT_TIER_MILD)
 
-		//Handle the warning status effect
-		if(stress >= stress_threshold && !stress_warning)
-			stress_warning = owner.apply_status_effect(/datum/status_effect/power/stress_warning)
-		else if(stress < stress_threshold && stress_warning)
+		// Handle the warning status effect at every positive stress level.
+		if(stress > 0)
+			if(!stress_warning)
+				stress_warning = owner.apply_status_effect(/datum/status_effect/power/stress_warning)
+			stress_warning?.update_stress_alert(stress, stress_threshold, coping_method)
+		else if(stress_warning)
 			owner.remove_status_effect(/datum/status_effect/power/stress_warning)
 			stress_warning = null
 
@@ -222,8 +232,35 @@
 	tick_interval = STATUS_EFFECT_NO_TICK // This one's just a warning
 	alert_type = /atom/movable/screen/alert/status_effect/stress_warning
 
+/// Updates the alert's threshold tier and gland-specific recovery guidance.
+/datum/status_effect/power/stress_warning/proc/update_stress_alert(current_stress, current_stress_threshold, coping_method)
+	if(!linked_alert || current_stress_threshold <= 0)
+		return
+
+	// calculates which special icon we should based on stress
+	var/stress_percentage = (current_stress / current_stress_threshold) * 100
+	var/icon_percentage = 0
+	var/is_extreme_stress = stress_percentage >= 100
+	if(is_extreme_stress)
+		icon_percentage = 100
+	else if(stress_percentage >= 75)
+		icon_percentage = 75
+	else if(stress_percentage >= 50)
+		icon_percentage = 50
+	else if(stress_percentage >= 25)
+		icon_percentage = 25
+
+	// dynamic desc, name and icon to describe what you need to do to fix the situation.
+	linked_alert.icon_state = "psyker_stress_[icon_percentage]"
+	linked_alert.name = is_extreme_stress ? "Extreme Stress" : "Stress Warning!"
+	if(coping_method)
+		if(is_extreme_stress)
+			linked_alert.desc = "Your stress is at capacity! You will suffer periodic negative events, escalating with your excess stress, and may suffer a catastrophic breakdown if you continue to stress yourself! You must [coping_method] to recover your stress, as it no longer regenerates naturally."
+		else
+			linked_alert.desc = "Your stress is building. At the backlash threshold, you will suffer periodic negative events until you [coping_method], and continued use of your powers will only make things worse!"
+
 /atom/movable/screen/alert/status_effect/stress_warning
-	icon = 'icons/mob/actions/actions_ecult.dmi'
-	name = "Stress Warning!"
-	desc = "Your stress is at the backlash threshold! You will suffer periodic negative events until you meditate, and continued use of your powers will only make things worse!"
-	icon_state = "mansus_link" // Placeholder
+	icon = 'modular_doppler/modular_powers/icons/powers/status_effects.dmi'
+	name = "stress status (you shouldn't see this)!"
+	desc = "You are meant to see something else in this description!"
+	icon_state = "psyker_stress_0"
