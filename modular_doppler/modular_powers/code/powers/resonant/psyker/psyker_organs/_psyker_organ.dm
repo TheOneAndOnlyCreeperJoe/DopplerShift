@@ -12,7 +12,9 @@
 	/// The psyker organ handles most of the stress to do with psyker abilities; which is their central currency. Without this organ, you can't use psyker abilities.
 	/// Stress is not correlated to organ damage, but organ damage does affect this gland.
 	var/stress = 0
-	/// Stress threshold is how much the psyker organ can handle before the bad events start befalling the user.
+	/// Unmodified stress threshold inherent to this organ type.
+	var/base_stress_threshold = PSYKER_STRESS_STANDARD_THRESHOLD
+	/// Effective stress threshold after scaling with the owner's Psyker power investment.
 	/// Usually, 1x is the minor events, 1.5x are the major events, and 2x are the catastrophic events.
 	var/stress_threshold = PSYKER_STRESS_STANDARD_THRESHOLD
 	/// The root subtype this organ is meant to work with at full efficiency.
@@ -36,7 +38,7 @@
 /obj/item/organ/resonant/psyker/proc/modify_stress(amount, override_cap)
 	if(!isnum(amount))
 		return
-	var/cap_to = isnum(override_cap) ? override_cap : PSYKER_STRESS_STANDARD_THRESHOLD * 2
+	var/cap_to = isnum(override_cap) ? override_cap : stress_threshold * 2
 	stress = clamp(stress + amount, 0, cap_to)
 
 /// Returns TRUE while the gland can still power psyker abilities.
@@ -45,7 +47,7 @@
 
 /// Returns how much stress should naturally recover each second.
 /obj/item/organ/resonant/psyker/proc/get_stress_recovery_per_second()
-	if(stress >= PSYKER_STRESS_STANDARD_THRESHOLD)
+	if(stress >= stress_threshold)
 		return 0
 
 	var/recovery_amount = max(recovery_per_second - (damage * 0.015), 0)
@@ -81,13 +83,31 @@
 	. = ..()
 	if(.)
 		RegisterSignal(organ_owner, COMSIG_LIVING_POST_FULLY_HEAL, PROC_REF(on_owner_fully_healed))
+		RegisterSignals(organ_owner, list(COMSIG_MOB_POWER_ADDED, COMSIG_MOB_POWER_REMOVED), PROC_REF(on_power_list_changed))
+		update_stress_threshold()
 		update_medscan_flags()
 
 /// Clears the flags on the organ before removal
 /obj/item/organ/resonant/psyker/Remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
-	UnregisterSignal(organ_owner, COMSIG_LIVING_POST_FULLY_HEAL)
+	UnregisterSignal(organ_owner, list(COMSIG_LIVING_POST_FULLY_HEAL, COMSIG_MOB_POWER_ADDED, COMSIG_MOB_POWER_REMOVED))
 	update_medscan_flags(FALSE)
 	return ..()
+
+/// Recalculates the effective stress threshold from the owner's Psyker power investment.
+/obj/item/organ/resonant/psyker/proc/update_stress_threshold()
+	var/psyker_power_points = 0
+	for(var/datum/power/power_instance as anything in owner?.powers)
+		if(power_instance.path != POWER_PATH_PSYKER)
+			continue
+		psyker_power_points += power_instance.value
+
+	stress_threshold = base_stress_threshold * (1 + (psyker_power_points * PSYKER_STRESS_THRESHOLD_MULTIPLIER_PER_POINT))
+
+/// Keeps the effective stress threshold synchronized with changes to the owner's power list.
+/obj/item/organ/resonant/psyker/proc/on_power_list_changed(mob/living/source, datum/power/changed_power)
+	SIGNAL_HANDLER
+	if(changed_power.path == POWER_PATH_PSYKER)
+		update_stress_threshold()
 
 /// Resets psyker stress after a full heal.
 /obj/item/organ/resonant/psyker/proc/on_owner_fully_healed(datum/source, heal_flags)
