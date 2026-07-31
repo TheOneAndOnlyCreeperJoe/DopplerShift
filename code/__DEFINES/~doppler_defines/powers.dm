@@ -301,6 +301,10 @@
 // Standard stress recovery per second before modifiers.
 #define PSYKER_STRESS_RECOVERY 1
 
+/// Fired by a Chemotropic gland to collect extra stress recovery rates.
+/// Args: (obj/item/organ/resonant/psyker/chemotropic/chemotropic_organ, list/recovery_candidates)
+#define COMSIG_PSYKER_CHEMOTROPIC_RECOVERY_CANDIDATES "psyker_chemotropic_recovery_candidates"
+
 // How much meditate recovers.
 #define PSYKER_STRESS_MEDITATION_POWER 10
 // How much chemotropic gland recovers with substances.
