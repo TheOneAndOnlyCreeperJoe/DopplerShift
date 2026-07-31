@@ -35,11 +35,10 @@
 	var/datum/status_effect/power/stress_warning/stress_warning
 
 /// Call to modify stress. Don't adjust directly.
-/obj/item/organ/resonant/psyker/proc/modify_stress(amount, override_cap)
+/obj/item/organ/resonant/psyker/proc/modify_stress(amount)
 	if(!isnum(amount))
 		return
-	var/cap_to = isnum(override_cap) ? override_cap : stress_threshold * 2
-	stress = clamp(stress + amount, 0, cap_to)
+	stress = max(stress + amount, 0)
 
 /// Returns TRUE while the gland can still power psyker abilities.
 /obj/item/organ/resonant/psyker/proc/is_functional()

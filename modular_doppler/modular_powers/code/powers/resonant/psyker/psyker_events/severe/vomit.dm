@@ -1,5 +1,8 @@
 /datum/psyker_event/severe/vomit
 
+/datum/psyker_event/severe/vomit/can_execute(mob/living/carbon/human/psyker)
+	return !HAS_TRAIT(psyker, TRAIT_NOHUNGER) && !HAS_TRAIT(psyker, TRAIT_TOXINLOVER)
+
 /datum/psyker_event/severe/vomit/execute(mob/living/carbon/human/psyker)
 	to_chat(psyker, span_userdanger("A wave of nausea overwhelms you, making you vomit!"))
 	psyker.vomit(VOMIT_CATEGORY_DEFAULT, lost_nutrition = 10)
