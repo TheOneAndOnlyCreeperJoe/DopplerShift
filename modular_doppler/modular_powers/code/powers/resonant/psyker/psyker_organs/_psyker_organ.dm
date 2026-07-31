@@ -202,6 +202,7 @@
 			base_type = /datum/psyker_event/severe
 		if(PSYKER_EVENT_TIER_CATASTROPHIC)
 			base_type = /datum/psyker_event/catastrophic
+			to_chat(human, span_userdanger("You lose control over your psychic powers!"))
 		else
 			return FALSE
 

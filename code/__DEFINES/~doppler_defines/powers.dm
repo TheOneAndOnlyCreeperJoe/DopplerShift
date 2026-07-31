@@ -323,7 +323,7 @@
 #define PSYKER_EVENT_RARITY_VERYRARE 10
 
 // Standard messages for Psyker Events
-#define PSYKER_EVENT_CATASTROPHIC_STANDARD_MESSAGE "As you strain your psychic powers past the breaking point, you are suddenly hit with a strange sense of clarity; as well as a feeling that something is very wrong."
+#define PSYKER_EVENT_CATASTROPHIC_STANDARD_MESSAGE "You are suddenly hit with a strange sense of clarity, yet also a strange underlying feeling that something is very wrong."
 
 // The trait for Psyker's Levitate power.
 #define TRAIT_PSYKER_LEVITATE_FLIGHT "psyker_levitate_flight"
