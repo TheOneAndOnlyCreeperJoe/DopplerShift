@@ -1,4 +1,4 @@
-import type { CSSProperties, Dispatch, ReactNode, SetStateAction } from 'react'; // DOPPLER EDIT ADDITION: Adds suport for recoloring header buttons. Was previously: import type { Dispatch, ReactNode, SetStateAction } from 'react';
+import type { CSSProperties, Dispatch, ReactNode, SetStateAction } from 'react'; // DOPPLER EDIT CHANGE - Adds support for recoloring header buttons - Original: import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { Button } from 'tgui-core/components';
 
 type Props<TPage> = {
@@ -11,8 +11,8 @@ type Props<TPage> = {
 };
 
 export function PageButton<TPage extends number>(props: Props<TPage>) {
-  const {activeStyle, children, currentPage, page, otherActivePages, setPage} = props; // DOPPLER EDIT ADDITION: Adds suport for recoloring header buttons. Was previously:  const { children, currentPage, page, otherActivePages, setPage } = props;
-
+  const {activeStyle, children, currentPage, page, otherActivePages, setPage} = props; // DOPPLER EDIT CHANGE - Adds suport for recoloring header buttons - Original:  const { children, currentPage, page, otherActivePages, setPage } = props;
+  
   const pageIsActive =
     currentPage === page ||
     (otherActivePages && otherActivePages.indexOf(currentPage) !== -1);

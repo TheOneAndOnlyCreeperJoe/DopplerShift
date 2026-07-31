@@ -84,11 +84,9 @@ export function CharacterPreferenceWindow(props) {
     powerCatalogData,
     selectedPowerPathId,
   );
-  /* DOPPLER EDIT END */
-
   const activePowersThemeColor =
     currentPage === Page.PowerPath ? powerPathConfig.themeColor : undefined;
-
+  /* DOPPLER EDIT END */
   let pageContents;
 
   switch (currentPage) {
