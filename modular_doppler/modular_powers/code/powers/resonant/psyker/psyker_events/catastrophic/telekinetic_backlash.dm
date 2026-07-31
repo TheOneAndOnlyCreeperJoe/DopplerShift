@@ -14,7 +14,7 @@
 	weight = PSYKER_EVENT_RARITY_UNCOMMON
 
 /datum/psyker_event/catastrophic/telekinetic_backlash/execute(mob/living/carbon/human/psyker)
-	to_chat(psyker, span_userdanger("<b>As you strain your psychic powers past the breaking point, you feel yourself wracked by pain, as your skin, bones and flesh are pulled in all manner of directions!</b>"))
+	to_chat(psyker, span_userdanger("<b>You are suddenly wracked by pain as unseen forces pull your skin, bones, and flesh in all directions!</b>"))
 
 	// Start the chain after ~1 second
 	addtimer(CALLBACK(src, PROC_REF(_backlash_tick), psyker, 0), 1 SECONDS)
