@@ -33,11 +33,7 @@
 /// Adds stimulant recovery as an alternative to the organ's normal recovery.
 /// Using the signaler basically tosses it to its final collection call and compares it against existing canidates.
 /// Chemotropic always takes the highest, so if you already are doing drugs, this doesn't do anything.
-/datum/power/psyker_power/stimulant_boost/proc/add_stimulant_recovery_candidate(
-	mob/living/source,
-	obj/item/organ/resonant/psyker/chemotropic/chemotropic_organ,
-	list/recovery_candidates,
-)
+/datum/power/psyker_power/stimulant_boost/proc/add_stimulant_recovery_candidate(mob/living/source, obj/item/organ/resonant/psyker/chemotropic/chemotropic_organ, list/recovery_candidates)
 	SIGNAL_HANDLER
 
 	// Originally this was going to be designed to be caffeine but nooo, we don't have that as chem, noooo we have to use this silly trait.
