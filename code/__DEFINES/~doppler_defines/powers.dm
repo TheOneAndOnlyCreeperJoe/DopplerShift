@@ -293,8 +293,10 @@
 
 // Standard stress threshold value for the Psyker's organ.
 #define PSYKER_STRESS_STANDARD_THRESHOLD 100
+// Standard stress cap for psyker organs.
+#define PSYKER_ORGAN_BASE_THRESHOLD 75
 // Multiplier added to a Psyker organ's stress threshold for each point invested in the Psyker path.
-#define PSYKER_STRESS_THRESHOLD_MULTIPLIER_PER_POINT 0.025
+#define PSYKER_STRESS_THRESHOLD_MULTIPLIER_PER_POINT 0.05
 
 // Standard stress recovery per second before modifiers.
 #define PSYKER_STRESS_RECOVERY 1

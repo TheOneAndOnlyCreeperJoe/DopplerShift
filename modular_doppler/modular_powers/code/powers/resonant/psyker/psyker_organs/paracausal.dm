@@ -4,7 +4,8 @@
 /datum/power/psyker_root/paracausal
 	name = "Paracausal Gland"
 	desc = "An unnatural organ that grows inside the chest-cavity of Psykers. Required as a catalyst to wield Psyker powers.\
-	\nYou passively recover stress, which can be boosted by using the Meditate power while holding still."
+	\nYou passively recover stress, which can be boosted by using the Meditate power while holding still.\
+	\nBase stress threshold is 75 (increasing with investment in the Psyker Path), which determines how much stress you can handle before you start suffering negative events."
 	security_record_text = "Subject wields psionic abilities."
 	organ_type = /obj/item/organ/resonant/psyker/paracausal
 	magic_flags = POWER_MAGIC_STANDARD | POWER_MAGIC_MENTAL

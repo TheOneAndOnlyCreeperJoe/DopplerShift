@@ -13,10 +13,10 @@
 	/// Stress is not correlated to organ damage, but organ damage does affect this gland.
 	var/stress = 0
 	/// Unmodified stress threshold inherent to this organ type.
-	var/base_stress_threshold = PSYKER_STRESS_STANDARD_THRESHOLD
+	var/base_stress_threshold = PSYKER_ORGAN_BASE_THRESHOLD
 	/// Effective stress threshold after scaling with the owner's Psyker power investment.
 	/// Usually, 1x is the minor events, 1.5x are the major events, and 2x are the catastrophic events.
-	var/stress_threshold = PSYKER_STRESS_STANDARD_THRESHOLD
+	var/stress_threshold
 	/// The root subtype this organ is meant to work with at full efficiency.
 	var/matching_root_type = /datum/power/psyker_root
 	/// Base recovery per second.
