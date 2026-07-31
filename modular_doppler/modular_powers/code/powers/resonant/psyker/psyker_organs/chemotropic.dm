@@ -4,9 +4,11 @@
 /datum/power/psyker_root/chemotropic
 	name = "Chemotropic Gland"
 	desc = "An unnatural organ that grows inside the chest-cavity of Psykers. Required as a catalyst to wield Psyker powers.\
-	\nThis gland particularly only functions through external chemical stimuli: particularly substances such as nicotine, ethanol and hard-drugs. You barely recover stress passively, but recover vast amounts from having any of the aforementioned \
+	\nThis gland particularly only functions through external chemical stimuli: particularly substances such as nicotine, ethanol and hard-drugs. Your passive stress recovery is much slower than usual, but you recover vast amounts from having any of the aforementioned \
 	substances inside your bloodstream, with hard-drugs yielding more recovery than nicotine and ethanol.\
-	\nHaving matching negative quirks with the substance (such as the Smoker quirk with Nicotine) increases the stress recovery."
+	\nOnly substances your body can actively metabolize provide recovery. Synthetic bodies can use compatible equivalents such as Synthanol.\
+	\nHaving matching negative quirks with the substance (such as the Smoker quirk with Nicotine) increases the stress recovery.\
+	\nBase stress threshold is 75 (increasing with investment in the Psyker Path), which determines how much stress you can handle before you start suffering negative events."
 	security_record_text = "Subject wields psionic abilities and recovers from it through substance consumption."
 	organ_type = /obj/item/organ/resonant/psyker/chemotropic
 	menu_icon = 'modular_doppler/modular_powers/icons/items/organs.dmi'
@@ -41,6 +43,9 @@
 
 	var/recovery_multiplier = 0
 	for(var/datum/reagent/reagent as anything in owner.reagents.reagent_list)
+		if(!reagent.metabolizing || !reagent_process_flags_valid(owner, reagent)) // doesn't do anything if the body can't metabolize it or if the process flags are invalid.
+			continue
+
 		// Nicotine is relatively common and less hamrful so its less the power.
 		if(istype(reagent, /datum/reagent/drug/nicotine))
 			var/nicotine_recovery = nicotine_multiplier
@@ -67,6 +72,9 @@
 
 /// Returns stress recovery per second based on substances in the host's bloodstream.
 /obj/item/organ/resonant/psyker/chemotropic/get_stress_recovery_per_second()
+	if(stress >= stress_threshold)
+		return 0
+
 	var/recovery_multiplier = get_chemical_recovery_multiplier()
 	if(!recovery_multiplier)
 		return recovery_per_second
