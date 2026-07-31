@@ -12,6 +12,7 @@
 	value = 2
 	required_powers = list(/datum/power/psyker_root/chemotropic)
 	required_allow_subtypes = FALSE
+	magic_flags = NONE // the only magic in chugging energy drinks is having your kidneys survive it.
 
 	menu_icon = 'icons/obj/drinks/soda.dmi'
 	menu_icon_state = "space_mountain_wind"
