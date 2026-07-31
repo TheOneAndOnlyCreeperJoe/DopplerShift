@@ -39,10 +39,23 @@
 	if(!isnum(amount))
 		return
 	stress = max(stress + amount, 0)
+	update_stress_warning()
 
 /// Returns TRUE while the gland can still power psyker abilities.
 /obj/item/organ/resonant/psyker/proc/is_functional()
 	return damage < maxHealth && !(organ_flags & ORGAN_FAILING)
+
+/// Creates, removes, or refreshes the stress warning to match the organ's current state.
+/obj/item/organ/resonant/psyker/proc/update_stress_warning()
+	if(!owner || !is_functional() || !has_compatible_root() || stress <= 0) // whenever we shouldn't display the warning. no owner, organ broke, no stress etc.
+		if(owner && stress_warning)
+			owner.remove_status_effect(/datum/status_effect/power/stress_warning)
+		stress_warning = null
+		return
+
+	if(!stress_warning) // apply the stress warning if its not there yet.
+		stress_warning = owner.apply_status_effect(/datum/status_effect/power/stress_warning)
+	stress_warning?.update_stress_alert(stress, stress_threshold, coping_method)
 
 /// Returns how much stress should naturally recover each second.
 /obj/item/organ/resonant/psyker/proc/get_stress_recovery_per_second()
@@ -89,6 +102,9 @@
 /// Clears the flags on the organ before removal
 /obj/item/organ/resonant/psyker/Remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	UnregisterSignal(organ_owner, list(COMSIG_LIVING_POST_FULLY_HEAL, COMSIG_MOB_POWER_ADDED, COMSIG_MOB_POWER_REMOVED))
+	if(stress_warning)
+		organ_owner.remove_status_effect(/datum/status_effect/power/stress_warning)
+		stress_warning = null
 	update_medscan_flags(FALSE)
 	return ..()
 
@@ -101,6 +117,7 @@
 		psyker_power_points += power_instance.value
 
 	stress_threshold = base_stress_threshold * (1 + (psyker_power_points * PSYKER_STRESS_THRESHOLD_MULTIPLIER_PER_POINT))
+	update_stress_warning()
 
 /// Keeps the effective stress threshold synchronized with changes to the owner's power list.
 /obj/item/organ/resonant/psyker/proc/on_power_list_changed(mob/living/source, datum/power/changed_power)
@@ -112,9 +129,7 @@
 /obj/item/organ/resonant/psyker/proc/on_owner_fully_healed(datum/source, heal_flags)
 	SIGNAL_HANDLER
 	stress = 0
-	if(stress_warning)
-		owner.remove_status_effect(/datum/status_effect/power/stress_warning)
-		stress_warning = null
+	update_stress_warning()
 
 /// Updates the flags on the medscanner in the event that the person with the organ is not a psyker and when the organ is killing them.
 /obj/item/organ/resonant/psyker/proc/update_medscan_flags()
@@ -140,18 +155,14 @@
 
 	// Organ doesn't work? Don't do anything.
 	if(!is_functional())
-		if(stress_warning)
-			owner.remove_status_effect(/datum/status_effect/power/stress_warning)
-			stress_warning = null
+		update_stress_warning()
 		return
 
 	// If you have the associated power. read; you are a psyker.
 	if(has_compatible_root())
 		if(stress <= 0)
 			stress = 0
-			if(stress_warning) // removes the lingeirng status effect.
-				owner.remove_status_effect(/datum/status_effect/power/stress_warning)
-				stress_warning = null
+			update_stress_warning()
 			return
 		stress = max(stress - (get_stress_recovery_per_second() * seconds_per_tick), 0)
 
@@ -171,14 +182,7 @@
 			COOLDOWN_START(src, mild_stress_backlash_cooldown, stress_backlash_cooldown)
 			stress_backlash(PSYKER_EVENT_TIER_MILD)
 
-		// Handle the warning status effect at every positive stress level.
-		if(stress > 0)
-			if(!stress_warning)
-				stress_warning = owner.apply_status_effect(/datum/status_effect/power/stress_warning)
-			stress_warning?.update_stress_alert(stress, stress_threshold, coping_method)
-		else if(stress_warning)
-			owner.remove_status_effect(/datum/status_effect/power/stress_warning)
-			stress_warning = null
+		update_stress_warning()
 
 	// In the event that you implant this into someone else.
 	// Currently placeholder til we settle on what it do on people that don't have it.
@@ -252,7 +256,7 @@
 	tick_interval = STATUS_EFFECT_NO_TICK // This one's just a warning
 	alert_type = /atom/movable/screen/alert/status_effect/stress_warning
 
-/// Updates the alert's threshold tier and gland-specific recovery guidance.
+/// Updates the alert's icon, name and desc to reflect stress + use the appropriate coping method per organ.
 /datum/status_effect/power/stress_warning/proc/update_stress_alert(current_stress, current_stress_threshold, coping_method)
 	if(!linked_alert || current_stress_threshold <= 0)
 		return
@@ -277,7 +281,7 @@
 		if(is_extreme_stress)
 			linked_alert.desc = "Your stress is at capacity! You will suffer periodic negative events, escalating with your excess stress, and may suffer a catastrophic breakdown if you continue to stress yourself! You must [coping_method] to recover your stress, as it no longer regenerates naturally."
 		else
-			linked_alert.desc = "Your stress is building. At the backlash threshold, you will suffer periodic negative events until you [coping_method], and continued use of your powers will only make things worse!"
+			linked_alert.desc = "Your stress is building. Once it reaches high enough to reach a threshold, you will suffer periodic negative events until you [coping_method], and continued use of your powers will only make things worse!"
 
 /atom/movable/screen/alert/status_effect/stress_warning
 	icon = 'modular_doppler/modular_powers/icons/powers/status_effects.dmi'
