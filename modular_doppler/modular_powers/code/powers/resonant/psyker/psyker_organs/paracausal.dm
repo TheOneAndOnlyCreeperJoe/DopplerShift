@@ -19,6 +19,7 @@
 	icon = 'modular_doppler/modular_powers/icons/items/organs.dmi'
 	icon_state = "paracausal"
 	recovery_per_second = PSYKER_STRESS_RECOVERY
+	coping_method = "meditate"
 	matching_root_type = /datum/power/psyker_root/paracausal
 
 	/// Meditation action owned by this organ.
