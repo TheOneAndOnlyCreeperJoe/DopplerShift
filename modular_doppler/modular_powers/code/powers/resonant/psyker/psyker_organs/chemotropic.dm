@@ -18,6 +18,7 @@
 	icon = 'modular_doppler/modular_powers/icons/items/organs.dmi'
 	icon_state = "chemotropic"
 	recovery_per_second = PSYKER_STRESS_RECOVERY * 0.25
+	coping_method = "consume substances"
 	matching_root_type = /datum/power/psyker_root/chemotropic
 	stress_backlash_cooldown = 180 SECONDS // double duration between backlash events since you can be stuck on a tier from the lack of accessible recovery.
 
