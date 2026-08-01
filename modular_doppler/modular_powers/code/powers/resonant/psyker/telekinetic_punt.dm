@@ -1,6 +1,6 @@
 #define TK_PUNT_CLICK_OVERLAY "psyker_telekinetic_punt_cursor"
 /*
-	So, power that launches the best nearby object at people. This has a lot of nuance, especially with my insistance on being able to preview which item you will throw.
+	So, power that launches the best nearby object at people. This has a lot of nuance, especially with my insistence on being able to preview which item you will throw.
 	This means we on the fly need to compute the best object, before its thrown, and in a way that does not kill the server's processing.
 	The datum/telekentic_punt_preview below the action is the best I could do there. When moving your mouse over a tile, it gets the best nearby object to be thrown towards that tile. You can lock objects with middle click too.
 */
@@ -82,7 +82,7 @@
 /// Handles middle-click target locking separately from the cooldowned punt activation so lock control still works while the action is cooling down.
 /datum/action/cooldown/power/psyker/telekinetic_punt/proc/handle_middle_click(mob/living/user, atom/target)
 	// Datum gets you your targets so if this is happening something's gone wroooong.
-	if(!preview_datum || QDELETED(preview_datum))
+	if(QDELETED(preview_datum))
 		user.balloon_alert(user, "power fizzles!")
 		return FALSE
 
@@ -111,7 +111,7 @@
 /// Throws the currently chambered object at the clicked target turf.
 /datum/action/cooldown/power/psyker/telekinetic_punt/use_action(mob/living/user, atom/target)
 	// Datum gets you your targets so if this is happening something's gone wroooong.
-	if(!preview_datum || QDELETED(preview_datum))
+	if(QDELETED(preview_datum))
 		user.balloon_alert(user, "power fizzles!")
 		return FALSE
 
