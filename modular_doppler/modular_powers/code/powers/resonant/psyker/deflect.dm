@@ -298,8 +298,14 @@
 /// The previous implementation, whilst it was more lightweight, had the issue in that it overrode regular click behaviour.
 /// We basically pass cursor movement directly along through signalers.
 /atom/movable/screen/fullscreen/cursor_catcher/psyker_deflect
-	plane = CLICKCATCHER_PLANE
+	plane = HUD_PLANE
 	mouse_opacity = MOUSE_OPACITY_OPAQUE
+
+/// Keep the deflection target current without requiring a click or drag event.
+/atom/movable/screen/fullscreen/cursor_catcher/psyker_deflect/MouseMove(location, control, params)
+	. = ..()
+	if(usr == owner)
+		calculate_params()
 
 /// Overrides standard params behaviour so that we get the actual turf we hover over; this doesn't normally work on fullscreen cursor catchers.
 /atom/movable/screen/fullscreen/cursor_catcher/psyker_deflect/calculate_params()
