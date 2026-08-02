@@ -28,5 +28,5 @@
 
 // Adds the backlash option as a smite for admins.
 /datum/smite/psyker_breakdown/zapped
-	name = "Psyker Event: Zapped"
+	name = "Psyker Event: Short Circuit (Robotic Only)"
 	event_type = /datum/psyker_event/severe/zapped

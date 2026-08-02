@@ -96,7 +96,7 @@
 
 // Adds the backlash option as a smite for admins.
 /datum/smite/psyker_breakdown/emp_wave
-	name = "Psyker Event: EMP Wave"
+	name = "Psyker Event: EMP Wave (Robotic Only)"
 	event_type = /datum/psyker_event/catastrophic/emp_wave
 
 // Custom emp wave
