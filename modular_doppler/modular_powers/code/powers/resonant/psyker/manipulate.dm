@@ -95,6 +95,7 @@
 				if(candidate.src_object == target || candidate.src_object.ui_host(user) == target)
 					ui = candidate
 					break
+		// Okay so now we should have an ui
 		if(ui)
 			var/filter_id = "manipulate_glow"
 			target.add_filter(filter_id, 1, list(type = "outline", color = POWER_COLOR_PSYKER, size = 2))
@@ -106,7 +107,7 @@
 
 			RegisterSignal(target, COMSIG_ATOM_DISPEL, PROC_REF(on_dispel))
 			RegisterSignal(ui, COMSIG_QDELETING, PROC_REF(on_ui_closed))
-		else
+		else // ui terminated or never got an ui
 			REMOVE_TRAIT(user, TRAIT_NO_UI_DISTANCE, origin_power)
 
 	REMOVE_TRAIT(user, TRAIT_REMOTE_INTERACT, src)
