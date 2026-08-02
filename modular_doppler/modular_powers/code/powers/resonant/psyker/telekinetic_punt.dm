@@ -14,7 +14,9 @@
 	security_threat = POWER_THREAT_MAJOR
 	value = 4
 	required_powers = list(/datum/power/psyker_power/telekinesis)
+	required_allow_subtypes = FALSE
 	action_path = /datum/action/cooldown/power/psyker/telekinetic_punt
+	magic_flags = POWER_MAGIC_STANDARD // You ain't targeting their mind you're targetting their skull
 
 /datum/action/cooldown/power/psyker/telekinetic_punt
 	name = "Telekinetic Punt"
@@ -29,12 +31,10 @@
 	cooldown_time = 15
 	click_cd_override = CLICK_CD_ACTIVATE_ABILITY / 2 // I normally do not change this but it largely has to do with being able to lock with middle-mouse is affected by this. This feels smoother, in a way.
 
-	mental = FALSE // You ain't targeting their mind you're targetting their skull
-
 	/// Minimum damage an item must have to qualify for punt selection.
 	var/min_damage_to_punt = 5
 	/// Maximum distance from the caster that we will consider puntable objects.
-	var/punt_object_distance = 8
+	var/punt_object_distance = 10
 	/// Square radius around the cursor that we scan for candidates.
 	var/punt_scan_radius = 6
 	/// Structures always count as this much base punt damage.
@@ -42,10 +42,10 @@
 	/// Additional damage structures deal on top of their base punt damage.
 	var/structure_bonus_damage = 0
 	/// Base knockback applied on a successful punt impact.
-	var/base_knockback = 1
+	var/base_knockback = 0
 	/// Additional knockback granted when the punted object is a structure.
-	var/structure_bonus_knockback = 0
-	/// Damage thresholds that marks objects as strong enough that we don't need to look further away for better, causing the expanding search area to stop expanding and only use its area for determening the best object.
+	var/structure_bonus_knockback = 1
+	/// Damage thresholds that marks objects as strong enough that we don't need to look further away for better, causing the expanding search area to stop expanding and only use its current area for determening the best object.
 	var/strong_object_threshold = 20
 	/// How much stress we generate upon use?
 	var/stress_cost = PSYKER_STRESS_MINOR * 1.5
@@ -245,7 +245,7 @@
 	// Item specific calculation
 	if(isitem(candidate))
 		var/obj/item/item_candidate = candidate
-		return max(item_candidate.throwforce, item_candidate.force)
+		return item_candidate.throwforce
 	// Structures and machinery default to 20 cause structures normally do 10 + 1 knockback on impact, and we boost that by another 10.
 	// This usually makes them desireable to punt.
 	if(isstructure(candidate) || ismachinery(candidate))
