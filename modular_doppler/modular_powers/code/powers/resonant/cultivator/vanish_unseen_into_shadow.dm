@@ -4,12 +4,15 @@
 
 /datum/power/cultivator/vanish_unseen_into_shadow
 	name = "Vanish Unseen into Shadow"
-	desc = "You are untrackable within the shadows. You are immune to resonant scrying and slowdowns while you're stood in darkness or are in alignment."
+	desc = "You are untrackable within the shadows. You are immune to resonant scrying and slowdowns while you're standing in darkness or are in alignment."
 	security_record_text = "Subject is exceedingly fast and immune to resonant-based detection while stood in darkness."
 	security_threat = POWER_THREAT_MAJOR
 	value = 5
 	required_powers = list(/datum/power/cultivator_root/shadow_walker)
 	power_flags = POWER_HUMAN_ONLY | POWER_PROCESSES
+
+	menu_icon = 'icons/effects/effects.dmi'
+	menu_icon_state = "void_conduit"
 
 	/// Cached alignment action for gating effects.
 	var/datum/action/cooldown/power/cultivator/alignment/shadow_walker/shadow_walker_alignment

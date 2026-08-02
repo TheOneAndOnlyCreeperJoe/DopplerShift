@@ -3,12 +3,14 @@
 */
 /datum/power/warfighter/tackler/greater_tackler
 	name = "Greater Tackler"
-	desc = "Your chances of landing a succesful tackle are greatly increased, as are your range and the duration you knockdown tackled foes."
+	desc = "Your chances of landing a successful tackle are greatly increased, as are your range and the duration you knockdown tackled foes."
 	security_record_text = "Subject is exceedingly good at landing tackles."
 	security_threat = POWER_THREAT_MAJOR
 	value = 5
-
 	required_powers = list(/datum/power/warfighter/tackler)
+
+	menu_icon = 'icons/obj/clothing/gloves.dmi'
+	menu_icon_state = "gorilla"
 
 	/// bonuses to success chance
 	var/skill_mod_bonus = 3

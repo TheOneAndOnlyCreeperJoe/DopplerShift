@@ -1,10 +1,10 @@
 /datum/power/cultivator_root/shadow_walker
 	name = "Shadow Walker Alignment"
 	desc = "You gain Energy through Aura by being in dark rooms and environments. Activating it wraps you in an aura of shadow.\
-	\nYou are entirely unrecognizeable in this state and your punches do extra brute damage.\
+	\nYou are entirely unrecognizable in this state and your punches do extra brute damage.\
 	\nPassively, you have enhanced darkvision, and gain full on night vision while your alignment is activated.\
 	\nYou gain armor IV across your whole body. Has diminishing effects with your worn armor."
-	security_record_text = "Subject can enter a heightened state by observing darkness, granting them resistance to damage, deadlier punches, the abiliy to become unrecognizeable as a dark silhouette and the ability to see perfectly in the dark."
+	security_record_text = "Subject can enter a heightened state by observing darkness, granting them resistance to damage, deadlier punches, the abiliy to become unrecognizable as a dark silhouette and the ability to see perfectly in the dark."
 	security_threat = POWER_THREAT_MAJOR
 	action_path = /datum/action/cooldown/power/cultivator/alignment/shadow_walker
 	value = 5
@@ -45,9 +45,10 @@
 	if(!shadowwalker_identity)
 		shadowwalker_identity = new(user)
 	refresh_echo_overlay(user)
+	playsound(user, 'sound/effects/magic/smoke.ogg', 40, TRUE)
 	//extra spooky 4 clown
 	if(is_clown_job(user.mind?.assigned_role))
-		playsound(user, 'sound/misc/scary_horn.ogg', 60, TRUE)
+		playsound(user, 'sound/misc/scary_horn.ogg', 30, TRUE)
 
 /datum/action/cooldown/power/cultivator/alignment/shadow_walker/disable_alignment(mob/living/carbon/user)
 	. = ..()
@@ -57,6 +58,8 @@
 	UnregisterSignal(user, COMSIG_LIVING_POST_UPDATE_TRANSFORM)
 	QDEL_NULL(shadowwalker_identity)
 	user.cut_overlay(echo_overlay)
+	// when the shadows dissipate
+	playsound(user, 'sound/effects/magic/voidblink.ogg', 30, TRUE)
 
 /datum/action/cooldown/power/cultivator/alignment/shadow_walker/aura_farm()
 	var/total = 0
