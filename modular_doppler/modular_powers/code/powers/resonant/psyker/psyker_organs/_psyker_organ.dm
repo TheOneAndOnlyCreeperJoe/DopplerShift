@@ -263,16 +263,8 @@
 
 	// calculates which special icon we should based on stress
 	var/stress_percentage = (current_stress / current_stress_threshold) * 100
-	var/icon_percentage = 0
+	var/icon_percentage = clamp(FLOOR(stress_percentage, 25), 0, 100)
 	var/is_extreme_stress = stress_percentage >= 100
-	if(is_extreme_stress)
-		icon_percentage = 100
-	else if(stress_percentage >= 75)
-		icon_percentage = 75
-	else if(stress_percentage >= 50)
-		icon_percentage = 50
-	else if(stress_percentage >= 25)
-		icon_percentage = 25
 
 	// dynamic desc, name and icon to describe what you need to do to fix the situation.
 	linked_alert.icon_state = "psyker_stress_[icon_percentage]"
