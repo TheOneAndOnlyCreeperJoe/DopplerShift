@@ -431,7 +431,6 @@
 		qdel(src)
 		return
 
-	// Is it grabbed by someone who is not our owner and is the component set to self termiante?
 	if(!istype(owner))
 		if(self_terminate)
 			qdel(src)
