@@ -14,9 +14,6 @@
 	menu_icon = 'icons/mob/actions/actions_changeling.dmi'
 	menu_icon_state = "biodegrade"
 
-	menu_icon = 'icons/mob/actions/actions_changeling.dmi'
-	menu_icon_state = "biodegrade"
-
 	/// how much we passively heal tox
 	var/passive_tox_healing = 0.05
 	/// how much we heal/convert per second
