@@ -45,11 +45,8 @@
 	if(!isliving(user))
 		return
 	var/mob/living/living_user = user
-	for(var/datum/power/owned_power as anything in living_user.powers) // todo: replace with the powers2 helper for paths once thats merged
-		if(owned_power.archetype != POWER_ARCHETYPE_SORCEROUS && owned_power.archetype != POWER_ARCHETYPE_RESONANT)
-			continue
+	if(living_user.has_power_in_archetype(POWER_ARCHETYPE_SORCEROUS) || living_user.has_power_in_archetype(POWER_ARCHETYPE_RESONANT))
 		. += span_bold(span_red("Even looking at it makes you feel uncomfortable."))
-		break
 
 // Turns the thing on or off after the do_after.
 /obj/machinery/reality_anchor/attack_hand(mob/user, list/modifiers)
@@ -264,12 +261,11 @@
 
 /// Determines and stores the owner's archetype for all of the anchor's effects.
 /datum/status_effect/power/reality_anchor_silenced/proc/set_anchor_archetype()
-	// todo: replace with the powers2 helper for paths once thats merged
 	owner_archetype = POWER_ARCHETYPE_MORTAL
-	if(owner.has_power_in_path(POWER_PATH_THAUMATURGE) || owner.has_power_in_path(POWER_PATH_THEOLOGIST))
+	if(owner.has_power_in_archetype(POWER_ARCHETYPE_SORCEROUS))
 		owner_archetype = POWER_ARCHETYPE_SORCEROUS
 		return
-	if(owner.has_power_in_path(POWER_PATH_PSYKER) || owner.has_power_in_path(POWER_PATH_CULTIVATOR) || owner.has_power_in_path(POWER_PATH_ABERRANT))
+	if(owner.has_power_in_archetype(POWER_ARCHETYPE_RESONANT))
 		owner_archetype = POWER_ARCHETYPE_RESONANT
 
 /// Delegates the appropriate moodlet to the appropriate archetype.
