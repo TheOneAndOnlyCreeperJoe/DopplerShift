@@ -2,24 +2,24 @@
 	You can be summoned by speaking a specific keyword, in a certain language, with a ton of caveats.
 */
 #define SUMMONABLE_LANGUAGE_ANY "Any"
-
-/// BIG TODO: Once Powers PR2 merges adjust this to Imbued and not Aberrant
-
-/datum/power/aberrant/summonable
+/datum/power/imbued/summonable
 	name = "Summonable"
 	desc = "By speaking a specific name or word (and depending on your choice: in a specific language), you appear next to the speaker after a short delay. The summoning takes time, you are stunned throughout, is entirely involuntary and can only be stopped by being silenced, buckled, wearing magboots or by being dispelled.\
 	\n After being successfully summoned, you are unable to be summoned again for 1 minute. \
 	\n The chosen word is a partial secret; the Security Records on your powers contain the word as well. It cannot contain any special characters, only standard letters and numbers."
 	security_threat = POWER_THREAT_MAJOR
 	value = 7
+	magic_flags = POWER_MAGIC_STANDARD
+	required_powers = list(/datum/power/imbued_root/enchanted)
 
-	required_powers = list(/datum/power/aberrant_root/anomalous)
+	menu_icon = 'icons/effects/eldritch.dmi'
+	menu_icon_state = "realitycrack"
 
 	/// Reference to the summonable component
 	var/datum/component/summonable/summon_component
 
 // Lists the word in sec records.
-/datum/power/aberrant/summonable/get_security_record_text()
+/datum/power/imbued/summonable/get_security_record_text()
 	var/resolved_keyword = summon_component?.keyword
 	var/resolved_language_name = summon_component?.language_name
 	if(!resolved_keyword)
@@ -32,8 +32,8 @@
 		return "Subject is summonable via keyword \"[resolved_keyword]\"."
 	return "Subject is summonable via keyword \"[resolved_keyword]\" when spoken in [resolved_language_name]."
 
-// Gets and sets various prefs + the component
-/datum/power/aberrant/summonable/add(client/client_source)
+// Gets and sets keywords
+/datum/power/imbued/summonable/add(client/client_source)
 	if(!power_holder)
 		return ..()
 
@@ -62,7 +62,7 @@
 
 	. = ..()
 
-/datum/power/aberrant/summonable/remove()
+/datum/power/imbued/summonable/remove()
 	. = ..()
 	if(summon_component)
 		QDEL_NULL(summon_component)
@@ -566,7 +566,7 @@
 	return
 
 /datum/power_constant_data/summonable
-	associated_typepath = /datum/power/aberrant/summonable
+	associated_typepath = /datum/power/imbued/summonable
 	customization_options = list(/datum/preference/text/summonable_keyword, /datum/preference/color/summonable_rune_color, /datum/preference/choiced/summonable_language)
 
 // Orbiting rune for Summonable arrival.
