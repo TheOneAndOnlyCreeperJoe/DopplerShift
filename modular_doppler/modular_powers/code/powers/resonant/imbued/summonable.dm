@@ -510,6 +510,7 @@
 	category = PREFERENCE_CATEGORY_MANUALLY_RENDERED
 	savefile_key = "summonable_language"
 	savefile_identifier = PREFERENCE_CHARACTER
+	can_randomize = FALSE
 	should_generate_icons = TRUE
 
 /datum/preference/choiced/summonable_language/create_default_value()
