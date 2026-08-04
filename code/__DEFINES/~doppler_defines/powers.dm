@@ -125,6 +125,9 @@
 // Trait that allows a mob to keep UIs open beyond their normal range.
 #define TRAIT_NO_UI_DISTANCE "no_ui_distance"
 
+/// Set when an effect has claimed responsibility for an attack's off-hand follow-up.
+#define OFFHAND_ATTACK_CLAIMED "offhand_attack_claimed"
+
 /**
  * SORCEROUS
  * All defines related to the sorcerous archetype.

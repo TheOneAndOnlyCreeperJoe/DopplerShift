@@ -192,7 +192,8 @@
 /// Rolls the bleed-scaled dual-wield chance and attacks once with the other held claw on success.
 /obj/item/raking_claw/proc/try_dual_wield_attack(obj/item/source, atom/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	SIGNAL_HANDLER
-	if(is_dual_wield_followup || isnull(manifesting_power) || !isliving(target))
+	// Prevents dual-wield attacks if this is a follow-up attack, if the power isn't active, if the target isn't living, or if the off-hand attack has already been claimed by another source.
+	if(is_dual_wield_followup || isnull(manifesting_power) || !isliving(target) || attack_modifiers[OFFHAND_ATTACK_CLAIMED])
 		return
 	var/mob/living/living_target = target
 
@@ -219,6 +220,7 @@
 
 	// If we roll it, do another attack.
 	if(prob(manifesting_power.rake_final_chance))
+		attack_modifiers[OFFHAND_ATTACK_CLAIMED] = TRUE
 		other_claw.is_dual_wield_followup = TRUE
 		user.do_item_attack_animation(living_target, used_item = other_claw)
 		other_claw.attack(living_target, user, modifiers, attack_modifiers)

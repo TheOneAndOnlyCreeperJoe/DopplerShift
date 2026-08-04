@@ -57,6 +57,8 @@
 		return
 
 	var/is_offhand = LAZYACCESS(attack_modifiers, DUAL_WIELD_OFFHAND)
+	if(attack_modifiers[OFFHAND_ATTACK_CLAIMED] && !is_offhand) // prevent off-hand attacks if something else already off-handed.
+		return
 	var/obj/item/main_item = source.get_active_held_item()
 	var/obj/item/off_item = source.get_inactive_held_item()
 	// Only apply dual-wield logic if both hands are valid melee weapons (force > 0).
@@ -74,7 +76,7 @@
 	var/offhand_miss = FALSE
 	if(!is_offhand)
 		offhand_miss = prob(dual_wield_miss_chance)
-		offhand_attempted = try_offhand_attack(source, target, modifiers, offhand_miss)
+		offhand_attempted = try_offhand_attack(source, target, modifiers, attack_modifiers, offhand_miss)
 
 	if(main_miss)
 		if(offhand_attempted && offhand_miss) // if you miss both
@@ -103,7 +105,7 @@
 	return TRUE
 
 /// Attempts an off-hand attack if it passes the vlaidation pipeline.
-/datum/action/cooldown/power/warfighter/dual_wielder/proc/try_offhand_attack(mob/living/source, atom/target, list/modifiers, offhand_miss)
+/datum/action/cooldown/power/warfighter/dual_wielder/proc/try_offhand_attack(mob/living/source, atom/target, list/modifiers, list/attack_modifiers, offhand_miss)
 	var/obj/item/offhand = source.get_inactive_held_item()
 	if(!is_valid_melee_item(offhand))
 		return FALSE
@@ -112,7 +114,8 @@
 	if(!source.Adjacent(target))
 		return FALSE
 
-	INVOKE_ASYNC(offhand, TYPE_PROC_REF(/obj/item, melee_attack_chain), source, target, modifiers, list(DUAL_WIELD_OFFHAND = TRUE, DUAL_WIELD_ATTACK_ITEM = offhand, DUAL_WIELD_HAS_FORCED_MISS = TRUE, DUAL_WIELD_FORCED_MISS = offhand_miss))
+	attack_modifiers[OFFHAND_ATTACK_CLAIMED] = TRUE
+	INVOKE_ASYNC(offhand, TYPE_PROC_REF(/obj/item, melee_attack_chain), source, target, modifiers, list(OFFHAND_ATTACK_CLAIMED = TRUE, DUAL_WIELD_OFFHAND = TRUE, DUAL_WIELD_ATTACK_ITEM = offhand, DUAL_WIELD_HAS_FORCED_MISS = TRUE, DUAL_WIELD_FORCED_MISS = offhand_miss))
 	return TRUE
 
 #undef DUAL_WIELD_OFFHAND
