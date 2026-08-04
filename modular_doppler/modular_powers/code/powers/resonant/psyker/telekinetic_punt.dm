@@ -301,7 +301,7 @@
 				var/atom/throw_target = get_edge_target_turf(living_target, throw_dir)
 				living_target.throw_at(throw_target, knockback, 2, owner)
 
-		playsound(living_target, 'sound/items/lead_pipe_hit.ogg', 75, TRUE, SHORT_RANGE_SOUND_EXTRARANGE) // Punt does it, so does ours. Its just funny.
+		playsound(living_target, 'sound/items/lead_pipe_hit.ogg', 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE) // Punt does it, so does ours. Its just funny.
 		living_target.log_message("was hit by a telekinetically punted [source] from [owner] for [damage] damage.", LOG_VICTIM)
 		owner?.log_message("telekinetically punted [source] into [living_target] for [damage] damage.", LOG_ATTACK)
 	// If it has integrity aka structures, damage it instead.
