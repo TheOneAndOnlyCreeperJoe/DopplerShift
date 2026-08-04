@@ -9,7 +9,7 @@
 	name = "Raking Claws"
 	desc = "Transforms both your hands into large, wicked claws. These claws deal 15 damage, are sharp and are excessively prone to causing and aggravating bleeding. Less effective against armor.\
 	\nIn addition, it comes with a built-in dual-wield mechanic, which gives you a 10% chance to rake a target with both claws simultaneously. This increases with how much bleeding the target has (7.5% per 1u), up to 75%.\
-	\nNon-humanoid mobs that can bleed instead gaining a stacking damage-over-time effect that scales your dual-wield chance as if it were bleed. \
+	\nNon-humanoid mobs that can bleed instead gain an escalating damage-over-time effect that scales your dual-wield chance as if it were bleed. \
 	\nYou cannot hold any objects while using raking claws, and activating it makes you instantly drop anything you are holding."
 	security_record_text = "Subject can manifest sharp, monstrous claws from their hands."
 	security_threat = POWER_THREAT_MAJOR
@@ -40,7 +40,7 @@
 	var/rake_final_chance
 
 	/// Chance that we aggrevate bleeding wounds on the target (increasing their tier)
-	var/aggrevate_bleed_chance = 50
+	var/aggrevate_bleed_chance = 75
 
 /// Registers the dispel handler when the power is granted.
 /datum/action/cooldown/power/aberrant/raking_claws/Grant(mob/granted_to)
@@ -71,14 +71,12 @@
 		return FALSE
 
 	var/obj/item/raking_claw/active_claw = new(user)
-	active_claw.aggrevate_bleed_chance = aggrevate_bleed_chance
 	active_claw.manifesting_power = src
 	if(!user.put_in_active_hand(active_claw))
 		qdel(active_claw)
 		return FALSE
 
 	var/obj/item/raking_claw/inactive_claw = new(user)
-	inactive_claw.aggrevate_bleed_chance = aggrevate_bleed_chance
 	inactive_claw.manifesting_power = src
 	if(!user.put_in_inactive_hand(inactive_claw))
 		user.temporarilyRemoveItemFromInventory(active_claw, TRUE)
@@ -149,9 +147,7 @@
 	sharpness = SHARP_EDGED
 	armour_penetration = 10
 	wound_bonus = 5
-	exposed_wound_bonus = 20
-	/// Inherited from the manifesting raking claws power; chance to promote an existing flesh slash wound.
-	var/aggrevate_bleed_chance
+	exposed_wound_bonus = 25 // really good at bleeding exposed bodyparts
 	/// Inherited reference to the power that manifested this claw and owns its dual-wield tuning.
 	var/datum/action/cooldown/power/aberrant/raking_claws/manifesting_power
 	/// Prevents propagation and mirrors the animation during a dual-wield follow-up attack.
@@ -163,6 +159,23 @@
 	ADD_TRAIT(src, TRAIT_NODROP, REF(src))
 	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(aggrevate_bleeding_wound))
 	RegisterSignal(src, COMSIG_ITEM_AFTERATTACK, PROC_REF(try_dual_wield_attack))
+
+/// Applies a signaler to the target so we can record how much damage we dealt with the claw.
+/obj/item/raking_claw/attack(mob/living/target_mob, mob/living/user, list/modifiers, list/attack_modifiers)
+	RegisterSignal(target_mob, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(record_attack_damage))
+	. = ..()
+	UnregisterSignal(target_mob, COMSIG_MOB_AFTER_APPLY_DAMAGE)
+	return .
+
+/// Records brute damage dealt by this claw so that we can apply the special status effect to bleeding non-carbons.
+/obj/item/raking_claw/proc/record_attack_damage(mob/living/source, damage_dealt, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, obj/item/attacking_item, wound_clothing)
+	SIGNAL_HANDLER
+	if(iscarbon(source)) // behaviour unique to non-carbons so we terminate before we do all teh other checks
+		return
+	if(attacking_item != src || damage_dealt <= 0) // needs to be our weapon and needs to be a successful attack
+		return
+	if(source.can_bleed(BLOOD_COVER_TURFS) == BLEED_SPLATTER) // if it bleeds, we can dot it.
+		source.apply_status_effect(/datum/status_effect/raking_claw_bleeding)
 
 /// Displays a red claw slash centered on the attacked atom instead of swinging the item's sprite from the attacker.
 /obj/item/raking_claw/animate_attack(atom/movable/attacker, atom/attacked_atom, animation_type)
@@ -192,22 +205,30 @@
 	if(isnull(other_claw))
 		return
 
+	// Calculates the chance on non-carbon mobs based upon the unique stacking debuf we apply.
+	var/effective_bleed_rate = living_target.get_bleed_rate()
+	if(!iscarbon(living_target))
+		var/datum/status_effect/raking_claw_bleeding/bleeding_effect = living_target.has_status_effect(/datum/status_effect/raking_claw_bleeding)
+		effective_bleed_rate = bleeding_effect?.stacks || 0
+
+	// Calculates the chance to make a follow-up with the other claw based on the target's bleed rate
 	manifesting_power.rake_final_chance = min(
-		manifesting_power.rake_base_chance + living_target.get_bleed_rate() * manifesting_power.rake_bleed_mult,
+		manifesting_power.rake_base_chance + effective_bleed_rate * manifesting_power.rake_bleed_mult,
 		manifesting_power.rake_max_chance,
 	)
-	if(!prob(manifesting_power.rake_final_chance))
-		return
 
-	other_claw.is_dual_wield_followup = TRUE
-	user.do_item_attack_animation(living_target, used_item = other_claw)
-	other_claw.attack(living_target, user, modifiers, attack_modifiers)
-	other_claw.is_dual_wield_followup = FALSE
+	// If we roll it, do another attack.
+	if(prob(manifesting_power.rake_final_chance))
+		other_claw.is_dual_wield_followup = TRUE
+		user.do_item_attack_animation(living_target, used_item = other_claw)
+		other_claw.attack(living_target, user, modifiers, attack_modifiers)
+		other_claw.is_dual_wield_followup = FALSE
+	return
 
 /// Attempts to promote an existing slash wound on the limb struck by this claw.
 /obj/item/raking_claw/proc/aggrevate_bleeding_wound(obj/item/source, mob/living/target, mob/living/user, target_zone)
 	SIGNAL_HANDLER
-	if(!iscarbon(target))
+	if(!iscarbon(target) || isnull(manifesting_power))
 		return
 
 	// Gets the targeted body-part
@@ -218,7 +239,7 @@
 
 	// Armor affects aggrevation chance. e.g 40 reduces the aggravation chance by 40% of its base.
 	var/target_limb_armor = clamp(carbon_target.getarmor(target_limb, MELEE), 0, 100)
-	var/armored_aggrevate_chance = aggrevate_bleed_chance * (1 - target_limb_armor * 0.01)
+	var/armored_aggrevate_chance = manifesting_power.aggrevate_bleed_chance * (1 - target_limb_armor * 0.01)
 	if(!prob(armored_aggrevate_chance))
 		return
 
@@ -244,3 +265,34 @@
 		span_danger("[user] tears the wound on [target]'s [target_limb.plaintext_zone] wide open with [source]!"),
 		span_danger("You tear the wound on [target]'s [target_limb.plaintext_zone] wide open with [source]!"),
 	)
+
+/*
+	Non-carbon bleeding code below. This uses its own stack counter because each application refreshes one shared status.
+*/
+/datum/status_effect/raking_claw_bleeding
+	id = "raking_claw_bleeding"
+	duration = 15 SECONDS
+	tick_interval = 1 SECONDS
+	status_type = STATUS_EFFECT_REFRESH
+	alert_type = null
+	/// Current severity of the simulated bleeding.
+	var/stacks = 1
+	/// Maximum severity obtainable from repeated claw hits.
+	var/max_stacks = 10
+	/// Prevents further full splatters after this application reaches maximum severity.
+	var/created_max_stack_splatter = FALSE
+
+/// Refreshes the bleeding duration, adds one stack, and creates a one-time full splatter at maximum severity.
+/datum/status_effect/raking_claw_bleeding/refresh(effect, ...)
+	. = ..()
+	stacks = min(stacks + 1, max_stacks)
+	if(stacks < max_stacks || created_max_stack_splatter)
+		return
+	created_max_stack_splatter = TRUE
+	owner.add_splatter_floor(get_turf(owner), small_drip = FALSE)
+
+/// Leaves a blood droplet and has a stack-scaled chance to inflict one brute damage each second.
+/datum/status_effect/raking_claw_bleeding/tick(seconds_between_ticks)
+	owner.add_splatter_floor(get_turf(owner), small_drip = TRUE)
+	if(prob(10 * stacks))
+		owner.apply_damage(2, BRUTE)
