@@ -1,0 +1,4 @@
+author: "TheOneAndOnlyCreeperJoe"
+delete-after: True
+changes:
+  - bugfix: "Fixes Manipulate not working on modular computers (e.g the identification console)."
