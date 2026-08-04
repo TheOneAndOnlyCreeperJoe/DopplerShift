@@ -58,7 +58,7 @@
 	raking_claws_extended = FALSE
 	if(active)
 		retract_claws(user)
-		playsound(user, 'sound/effects/blob/blobattack.ogg', 30, TRUE)
+		playsound(user, 'sound/effects/magic/exit_blood.ogg', 50, TRUE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 		user.visible_message(
 			span_warning("With a sickening crunch, [user]'s claws reform into hands!"),
 			span_notice("You assimilate the claws back into your body."),
@@ -83,7 +83,7 @@
 		qdel(inactive_claw)
 		return FALSE
 
-	playsound(user, 'sound/effects/blob/blobattack.ogg', 30, TRUE)
+	playsound(user, 'sound/effects/magic/exit_blood.ogg', 50, TRUE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 	user.visible_message(
 		span_warning("A pair of grotesque claws tear their way out of [user]'s hands!"),
 		span_notice("Your hands twist and mutate into deadly claws."),
