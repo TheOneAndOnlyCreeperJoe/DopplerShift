@@ -1,7 +1,6 @@
 /// Emits a series of EMP waves from a synthetic Psyker.
 /datum/psyker_event/catastrophic/emp_wave
 	lingering = TRUE
-	weight = PSYKER_EVENT_RARITY_UNCOMMON
 	/// Minimum number of EMP pulses in the sequence.
 	var/minimum_pulses = 1
 	/// Maximum number of EMP pulses in the sequence.
