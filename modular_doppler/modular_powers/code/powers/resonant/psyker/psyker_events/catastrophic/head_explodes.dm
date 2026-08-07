@@ -16,6 +16,10 @@
 	var/ring_volume_increase = 4
 	/// Random emote chance every tick before exploding
 	var/random_emote_chance = 30
+	/// Organ damage minimum damage per tick
+	var/organ_damage_min = 1
+	/// Organ damage maximum damage per tick
+	var/organ_damage_max = 15
 	/// Psyker whose screen is being tinted during the buildup.
 	var/mob/living/carbon/human/colour_owner
 	/// Client colour that becomes progressively redder during the buildup.
@@ -47,6 +51,13 @@
 	if(tick_count >= ringing_ticks)
 		explode_head(psyker)
 		return
+
+	// damage the psyker organ every tick to show its failing.
+	var/obj/item/organ/resonant/psyker/psyker_organ = psyker.get_organ_slot(ORGAN_SLOT_PSYKER)
+	psyker_organ?.apply_organ_damage(rand(organ_damage_min, organ_damage_max))
+	// damages the brain every tick to show it is getting ravaged.
+	var/obj/item/organ/brain/psyker_brain = psyker.get_organ_slot(ORGAN_SLOT_BRAIN)
+	psyker_brain?.apply_organ_damage(rand(organ_damage_min, organ_damage_max))
 
 	var/colour_strength = tick_count / ringing_ticks
 	// Keep the red channel intact while removing more green and blue each tick, making the screen progressively redder.
