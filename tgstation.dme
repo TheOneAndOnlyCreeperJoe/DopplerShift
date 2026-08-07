@@ -7637,6 +7637,7 @@
 #include "modular_doppler\modular_powers\code\powers\resonant\psyker\psyker_events\catastrophic\brain_trauma.dm"
 #include "modular_doppler\modular_powers\code\powers\resonant\psyker\psyker_events\catastrophic\cardiac_arrest.dm"
 #include "modular_doppler\modular_powers\code\powers\resonant\psyker\psyker_events\catastrophic\emp_wave.dm"
+#include "modular_doppler\modular_powers\code\powers\resonant\psyker\psyker_events\catastrophic\head_explodes.dm"
 #include "modular_doppler\modular_powers\code\powers\resonant\psyker\psyker_events\catastrophic\magic_trauma.dm"
 #include "modular_doppler\modular_powers\code\powers\resonant\psyker\psyker_events\catastrophic\mirage_gangup.dm"
 #include "modular_doppler\modular_powers\code\powers\resonant\psyker\psyker_events\catastrophic\silence_trauma.dm"
