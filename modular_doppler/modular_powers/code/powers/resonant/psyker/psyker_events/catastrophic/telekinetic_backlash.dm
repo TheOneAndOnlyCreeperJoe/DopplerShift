@@ -46,24 +46,38 @@
 		qdel(src)
 		return
 
-	// What wound type we apply for this instance.
-	var/wound_type = pick(applicable_bodyparts[target_limb])
-
 	// Roll which effect happens this tick (65/20/10/5)
 	var/roll = rand(1, 100)
+
+	// Gets the severity of the wound we are going to apply based on the roll
+	var/wound_severity
+	if(roll <= 65)
+		wound_severity = WOUND_SEVERITY_MODERATE
+	else if(roll <= 85)
+		wound_severity = WOUND_SEVERITY_SEVERE
+	else if(roll <= 95)
+		wound_severity = WOUND_SEVERITY_CRITICAL
+
+	var/datum/wound/wound_path
+	// picks a random wound from the cached wounds for that bodypart.
+	if(wound_severity)
+		wound_path = pick_applicable_wound_path(target_limb, wound_severity)
+		if(!wound_path)
+			qdel(src)
+			return
 
 	if(roll <= 65)
 		to_chat(psyker, span_warning("Your body lurches as invisible forces wrench at your flesh!"))
 		psyker.apply_damage(moderate_brute, BRUTE, def_zone = target_limb.body_zone)
-		psyker.cause_wound_of_type_and_severity(wound_type, target_limb, WOUND_SEVERITY_MODERATE, WOUND_SEVERITY_MODERATE)
+		target_limb.force_wound_upwards(wound_path)
 	else if(roll <= 85)
 		to_chat(psyker, span_danger("You feel something tear inside you as the force twists harder!"))
 		psyker.apply_damage(severe_brute, BRUTE, def_zone = target_limb.body_zone)
-		psyker.cause_wound_of_type_and_severity(wound_type, target_limb, WOUND_SEVERITY_SEVERE, WOUND_SEVERITY_CRITICAL)
+		target_limb.force_wound_upwards(wound_path)
 	else if(roll <= 95)
 		to_chat(psyker, span_userdanger("Agony spikes through you as feel your body being ripped apart!"))
 		psyker.apply_damage(critical_brute, BRUTE, def_zone = target_limb.body_zone)
-		psyker.cause_wound_of_type_and_severity(wound_type, target_limb, WOUND_SEVERITY_CRITICAL, WOUND_SEVERITY_CRITICAL)
+		target_limb.force_wound_upwards(wound_path)
 		psyker.emote("scream")
 	else
 		// MY LEG!
@@ -92,12 +106,12 @@
 			continue
 
 		// Checks what wounds can be applied to that bodypart
-		var/list/applicable_wound_types = get_applicable_wound_types(bodypart)
-		if(!length(applicable_wound_types))
+		var/list/applicable_wound_paths = get_applicable_wound_paths(bodypart)
+		if(!length(applicable_wound_paths))
 			continue
 
 		// Save the acquired info
-		applicable_bodyparts[bodypart] = applicable_wound_types
+		applicable_bodyparts[bodypart] = applicable_wound_paths
 
 /// Returns TRUE as soon as one compatible bodypart is found.
 /datum/psyker_event/catastrophic/telekinetic_backlash/proc/has_applicable_bodypart(mob/living/carbon/human/psyker)
@@ -108,7 +122,7 @@
 	for(var/obj/item/bodypart/bodypart as anything in psyker.bodyparts)
 		if(QDELETED(bodypart) || !bodypart.is_woundable())
 			continue
-		if(length(get_applicable_wound_types(bodypart)))
+		if(length(get_applicable_wound_paths(bodypart)))
 			return TRUE
 
 	return FALSE
@@ -134,23 +148,26 @@
 
 	return null
 
-/// Returns the backlash wound types which can be applied to a bodypart.
-/datum/psyker_event/catastrophic/telekinetic_backlash/proc/get_applicable_wound_types(obj/item/bodypart/bodypart)
-	var/list/applicable_wound_types = list()
-	// Picks a woundtype and populates all the corresponding wound types.
-	for(var/potential_wound_type in list(WOUND_SLASH, WOUND_PIERCE, WOUND_BLUNT))
-		var/datum/wound/corresponding_wound = get_corresponding_wound_type(potential_wound_type, bodypart, WOUND_SEVERITY_MODERATE, WOUND_SEVERITY_CRITICAL, duplicates_allowed = TRUE, care_about_existing_wounds = FALSE)
-		if(!corresponding_wound)
+/// Returns all wounds that can be applied to a bodypart, regardless of severity. This is used to cache the applicable wounds for later use.
+/datum/psyker_event/catastrophic/telekinetic_backlash/proc/get_applicable_wound_paths(obj/item/bodypart/bodypart)
+	var/list/applicable_wound_paths = list()
+	for(var/wound_path in GLOB.all_wound_pregen_data)
+		var/datum/wound_pregen_data/wound_data = GLOB.all_wound_pregen_data[wound_path]
+		if(!(wound_data.required_wounding_type in list(WOUND_SLASH, WOUND_PIERCE, WOUND_BLUNT)))
 			continue
+		if(wound_data.can_be_applied_to(bodypart, random_roll = FALSE, duplicates_allowed = TRUE, care_about_existing_wounds = FALSE))
+			applicable_wound_paths += wound_path
 
-		// Validation for if the wound actually works.
-		var/datum/wound_pregen_data/wound_data = GLOB.all_wound_pregen_data[corresponding_wound.type]
-		if((wound_data.required_limb_biostate & BIO_JOINTED) && !(bodypart.biological_state & BIO_JOINTED)) // only roll wounds that have bio_jointed if its actually on a limb
-			continue
+	return applicable_wound_paths
 
-		applicable_wound_types += potential_wound_type
+/// Picks a cached wound path matching the severity rolled by this backlash.
+/datum/psyker_event/catastrophic/telekinetic_backlash/proc/pick_applicable_wound_path(obj/item/bodypart/bodypart, wound_severity)
+	var/list/candidates = list()
+	for(var/datum/wound/wound_path as anything in applicable_bodyparts[bodypart])
+		if(initial(wound_path.severity) == wound_severity)
+			candidates += wound_path
 
-	return applicable_wound_types
+	return pick(candidates)
 
 // Adds the backlash option as a smite for admin
 /datum/smite/psyker_breakdown/telekinetic_backlash
