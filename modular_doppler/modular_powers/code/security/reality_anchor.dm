@@ -45,7 +45,7 @@
 	if(!isliving(user))
 		return
 	var/mob/living/living_user = user
-	if(living_user.has_power_in_archetype(POWER_ARCHETYPE_SORCEROUS) || living_user.has_power_in_archetype(POWER_ARCHETYPE_RESONANT))
+	if(living_user.has_power_in_archetype(POWER_ARCHETYPE_SORCEROUS, magic_filter = POWER_MAGIC_FILTER_MAGICAL) || living_user.has_power_in_archetype(POWER_ARCHETYPE_RESONANT, magic_filter = POWER_MAGIC_FILTER_MAGICAL))
 		. += span_bold(span_red("Even looking at it makes you feel uncomfortable."))
 
 // Turns the thing on or off after the do_after.
@@ -262,10 +262,10 @@
 /// Determines and stores the owner's archetype for all of the anchor's effects.
 /datum/status_effect/power/reality_anchor_silenced/proc/set_anchor_archetype()
 	owner_archetype = POWER_ARCHETYPE_MORTAL
-	if(owner.has_power_in_archetype(POWER_ARCHETYPE_SORCEROUS))
+	if(owner.has_power_in_archetype(POWER_ARCHETYPE_SORCEROUS, magic_filter = POWER_MAGIC_FILTER_MAGICAL))
 		owner_archetype = POWER_ARCHETYPE_SORCEROUS
 		return
-	if(owner.has_power_in_archetype(POWER_ARCHETYPE_RESONANT))
+	if(owner.has_power_in_archetype(POWER_ARCHETYPE_RESONANT, magic_filter = POWER_MAGIC_FILTER_MAGICAL))
 		owner_archetype = POWER_ARCHETYPE_RESONANT
 
 /// Delegates the appropriate moodlet to the appropriate archetype.
