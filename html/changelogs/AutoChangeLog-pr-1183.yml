@@ -1,0 +1,4 @@
+author: "Virelai"
+delete-after: True
+changes:
+  - bugfix: "Fixed some mirages and step_trigger teleports in the Changing Room."
