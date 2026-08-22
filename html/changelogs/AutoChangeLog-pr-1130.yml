@@ -1,7 +1,0 @@
-author: "DawsonKeyes"
-delete-after: True
-changes:
-  - rscadd: "Several new ERTs better suited to Doppler Shift's lore"
-  - rscadd: "A heap of new outfits, all with matching HUD icons and ID trims"
-  - rscadd: "New loadout items including the Void Corps uniform, Port Authority work outfit, and modern phorid envirosuit"
-  - bugfix: "Fixes a bug causing revolvers reloaded from shell casing piles to have one more empty chamber than usual"
