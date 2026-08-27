@@ -2,7 +2,7 @@
 	name = "Life-Leeching Claws"
 	desc = "Your raking claws rejuvenate you with each drop of blood you draw. Whilst at maximum Bloodlust, strikes against living targets or corpses with blood heal up to 1 brute damage across fleshy bodyparts and your transformed arms based on damage penetrating mitigation, doubled against large targets. \
 	\nButchering a corpse grants 5 Bloodlust and heals 15 brute damage."
-	security_record_text = "Subject can mend their wounds by maiming and butchering other creatures with their claws."
+	security_record_text = "Subject claws can mend their wounds by maiming and butchering other creatures."
 	security_threat = POWER_THREAT_MAJOR
 	value = 2
 	magic_flags = POWER_MAGIC_STANDARD

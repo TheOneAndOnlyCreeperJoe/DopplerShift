@@ -1,7 +1,7 @@
 /datum/power/aberrant/raking_claws_bestial_upgrade
 	name = "Maiming Claws"
 	desc = "Your raking claws leave lasting, deadly wounds on target body parts. You will now aggravate any bleeding wounds on the target on hit, upgrading it to a more deadly version of the existing wound, scaling with Bloodlust.\
-	\nIn addition, striking a limb that has the maximum accrued damage has a greatly increased chance to instantly dismember it proportional to your Bloodlust. This is calculated AFTER the claws have struck that limb and is calculated separately for each claw strike.\
+	\nIn addition, striking a limb that has the maximum accrued damage has a greatly increased chance to instantly dismember it proportional to your Bloodlust. This is calculated after the claws have struck that limb.\
 	\nOn non-carbon targets, every stack of Bloodlust instead grants you +1 damage against that target."
 	security_record_text = "Subject's claws can tear open existing wounds and sever heavily damaged limbs."
 	security_threat = POWER_THREAT_MAJOR
