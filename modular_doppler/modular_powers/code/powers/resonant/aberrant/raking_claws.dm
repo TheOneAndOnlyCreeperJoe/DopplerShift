@@ -10,7 +10,8 @@
 	name = "Raking Claws"
 	desc = "Transform both hands into wicked claws, dropping anything held and preventing you from holding items. Each claw deals 15 damage, has low armor penetration, can strike twice and readily causes and worsens bleeding.\
 	\nDamaging living targets grants Bloodlust, with bleeding targets potentially granting an additional stack. Bloodlust stacks up to 10 and decays by 1 every 5 seconds without gaining a stack. Your chance to strike with both claws is 15%, increased by 6% per Bloodlust and an additional 25% against large targets.\
-	\nAt maximum Bloodlust, damage to living targets or bloody corpses heals equal brute damage across fleshy bodyparts and your transformed arms, doubled against large targets. Butchering a corpse grants 5 Bloodlust and heals 15 brute damage."
+	\nAt maximum Bloodlust, strikes against living targets or bloody corpses heal up to 1 brute damage across fleshy bodyparts and your transformed arms based on damage penetrating mitigation, doubled against large targets. Butchering a corpse grants 5 Bloodlust and heals 15 brute damage.\
+	\n(Claw Style is purely cosmetic and has no impact on mechanics)"
 	security_record_text = "Subject can manifest sharp, monstrous claws from their hands."
 	security_threat = POWER_THREAT_MAJOR
 	value = 6
@@ -40,8 +41,8 @@
 	var/rake_large_target_bonus = 25
 	/// Chance per unit of target bleed rate to gain an additional Bloodlust stack.
 	var/bloodlust_bleed_mult = 7.5
-	/// Brute damage healed per point of post-mitigation damage dealt at maximum Bloodlust.
-	var/bloodlust_heal_per_damage = 1
+	/// Brute damage healed when a maximum-Bloodlust strike deals all of its unmitigated damage.
+	var/bloodlust_base_heal = 1
 	/// Multiplier applied to maximum-Bloodlust healing against large targets.
 	var/bloodlust_large_heal_mult = 2
 	/// Final calculated chance for the dual-wield rake attack.
@@ -50,6 +51,12 @@
 	var/butcher_heal = 15
 	/// How many bloodlust stacks butcher gives
 	var/butcher_bloodlust = 5
+	/// Fur colour shared by both manifested claws.
+	var/raking_claw_fur_color
+	/// Claw colour shared by both manifested claws.
+	var/raking_claw_claw_color
+	/// Numerical suffix selecting which set of beast-arm icon states to use.
+	var/raking_claw_arm_style
 
 	/// Chance that we aggrevate bleeding wounds on the target (increasing their tier)
 	var/aggrevate_bleed_chance = 75
@@ -58,6 +65,7 @@
 /datum/action/cooldown/power/aberrant/raking_claws/Grant(mob/granted_to)
 	. = ..()
 	RegisterSignal(granted_to, COMSIG_ATOM_DISPEL, PROC_REF(on_dispel))
+	initialize_claw_appearance_from_preferences()
 
 /// Retracts manifested claws and unregisters the dispel handler when the power is removed.
 /datum/action/cooldown/power/aberrant/raking_claws/Remove(mob/removed_from)
@@ -89,12 +97,14 @@
 
 	var/obj/item/raking_claw/active_claw = new(user)
 	active_claw.manifesting_power = src
+	active_claw.apply_claw_appearance(raking_claw_arm_style, raking_claw_fur_color, raking_claw_claw_color)
 	if(!user.put_in_active_hand(active_claw))
 		qdel(active_claw)
 		return FALSE
 
 	var/obj/item/raking_claw/inactive_claw = new(user)
 	inactive_claw.manifesting_power = src
+	inactive_claw.apply_claw_appearance(raking_claw_arm_style, raking_claw_fur_color, raking_claw_claw_color)
 	if(!user.put_in_inactive_hand(inactive_claw))
 		user.temporarilyRemoveItemFromInventory(active_claw, TRUE)
 		qdel(inactive_claw)
@@ -110,6 +120,23 @@
 	bypass_cost = TRUE
 	raking_claws_extended = TRUE
 	return TRUE
+
+/// Resolves the owner's saved fur colour, claw colour, and arm style once for both manifested claws.
+/datum/action/cooldown/power/aberrant/raking_claws/proc/initialize_claw_appearance_from_preferences()
+	var/fur_color_choice = owner?.client?.prefs?.read_preference(/datum/preference/color/raking_claws/fur)
+	var/claw_color_choice = owner?.client?.prefs?.read_preference(/datum/preference/color/raking_claws/claws)
+	var/arm_style_choice = owner?.client?.prefs?.read_preference(/datum/preference/choiced/raking_claws_arm_style)
+
+	raking_claw_fur_color = fur_color_choice || POWER_COLOR_ABERRANT
+	raking_claw_claw_color = claw_color_choice || COLOR_WHITE
+	if(!findtext(raking_claw_fur_color, "#", 1, 2))
+		raking_claw_fur_color = "#[raking_claw_fur_color]"
+	if(!findtext(raking_claw_claw_color, "#", 1, 2))
+		raking_claw_claw_color = "#[raking_claw_claw_color]"
+
+	raking_claw_arm_style = GLOB.raking_claw_arm_styles[arm_style_choice]
+	if(!isnum(raking_claw_arm_style))
+		raking_claw_arm_style = GLOB.raking_claw_arm_styles["Bear"]
 
 /// Charges hunger only when the claws were extended, allowing free retraction.
 /datum/action/cooldown/power/aberrant/raking_claws/on_action_success(mob/living/user, atom/target)
@@ -146,12 +173,13 @@
 /obj/item/raking_claw
 	name = "raking claw"
 	desc = "A long, wicked claw made for tearing open flesh and existing wounds."
-	icon = 'icons/obj/weapons/changeling_items.dmi'
-	icon_state = "arm_blade"
-	inhand_icon_state = "arm_blade"
+	icon = 'modular_doppler/modular_powers/icons/items/beastarm_items.dmi'
+	icon_state = "base_fur2"
+	inhand_icon_state = "base_fur2"
 	icon_angle = 180
-	lefthand_file = 'icons/mob/inhands/antag/changeling_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/antag/changeling_righthand.dmi'
+	lefthand_file = 'modular_doppler/modular_powers/icons/mob/inhands/beastarm_lefthand.dmi'
+	righthand_file = 'modular_doppler/modular_powers/icons/mob/inhands/beastarm_righthand.dmi'
+	color = POWER_COLOR_ABERRANT
 	item_flags = NEEDS_PERMIT | ABSTRACT | DROPDEL
 	w_class = WEIGHT_CLASS_HUGE
 	force = 15
@@ -169,6 +197,14 @@
 	var/datum/action/cooldown/power/aberrant/raking_claws/manifesting_power
 	/// Prevents propagation and mirrors the animation during a dual-wield follow-up attack.
 	var/is_dual_wield_followup = FALSE
+	/// Numerical suffix selecting this claw's icon states.
+	var/arm_style = 2
+	/// Colour applied only to the fur base.
+	var/fur_color = POWER_COLOR_ABERRANT
+	/// Colour applied only to the claw overlay.
+	var/claw_color = COLOR_WHITE
+	/// Damage this claw's current attack would deal before target mitigation.
+	var/unmitigated_attack_damage = 0
 
 /// Makes the manifested claw undroppable and registers its wound aggravation handler.
 /obj/item/raking_claw/Initialize(mapload)
@@ -178,6 +214,33 @@
 	RegisterSignal(src, COMSIG_ITEM_AFTERATTACK, PROC_REF(try_dual_wield_attack))
 	AddComponent(/datum/component/butchering, butcher_callback = CALLBACK(src, PROC_REF(on_butchering)))
 
+/// Applies the shared customization selected by the power owner.
+/obj/item/raking_claw/proc/apply_claw_appearance(new_arm_style, new_fur_color, new_claw_color)
+	arm_style = new_arm_style
+	fur_color = new_fur_color
+	claw_color = new_claw_color
+	icon_state = "base_fur[arm_style]"
+	inhand_icon_state = icon_state
+	color = fur_color
+	update_appearance(UPDATE_ICON)
+	update_inhand_icon()
+
+/// Adds the independently coloured claws over the fur base on the item sprite.
+/obj/item/raking_claw/update_overlays()
+	. = ..()
+	var/mutable_appearance/claw_overlay = mutable_appearance(icon, "claws_fur[arm_style]", appearance_flags = RESET_COLOR | KEEP_APART)
+	claw_overlay.color = claw_color
+	. += claw_overlay
+
+/// Adds the same independently coloured claws to the appropriate left- or right-hand sprite.
+/obj/item/raking_claw/worn_overlays(mutable_appearance/standing, isinhands = FALSE, icon_file)
+	. = ..()
+	if(!isinhands)
+		return
+	var/mutable_appearance/claw_overlay = mutable_appearance(icon_file, "claws_fur[arm_style]", appearance_flags = RESET_COLOR | KEEP_APART)
+	claw_overlay.color = claw_color
+	. += claw_overlay
+
 /// Reserves the off-hand follow-up before generic dual-wield effects can claim it.
 /obj/item/raking_claw/pre_attack(atom/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	. = ..()
@@ -186,9 +249,13 @@
 
 /// Applies a signaler to the target so successful claw damage can build Bloodlust.
 /obj/item/raking_claw/attack(mob/living/target_mob, mob/living/user, list/modifiers, list/attack_modifiers)
+	unmitigated_attack_damage = CALCULATE_FORCE(src, attack_modifiers)
+	if(target_mob.mob_biotypes & MOB_ROBOTIC)
+		unmitigated_attack_damage *= get_demolition_modifier(target_mob)
 	RegisterSignal(target_mob, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(record_attack_damage))
 	. = ..()
 	UnregisterSignal(target_mob, COMSIG_MOB_AFTER_APPLY_DAMAGE)
+	unmitigated_attack_damage = 0
 	return .
 
 /// Grants Bloodlust when this claw damages a living target, with a bleed-scaled chance for an additional stack.
@@ -208,9 +275,10 @@
 		bloodlust = claw_user.has_status_effect(/datum/status_effect/raking_claw_bloodlust)
 
 	// Bloody corpses deliberately remain valid so the user can keep clawing into them with suitably gory results.
-	if(!isnull(bloodlust) && bloodlust.stacks >= bloodlust.max_stacks && (source.stat != DEAD || source.can_bleed(BLOOD_COVER_TURFS) == BLEED_SPLATTER))
+	if(!isnull(bloodlust) && bloodlust.stacks >= bloodlust.max_stacks && unmitigated_attack_damage > 0 && (source.stat != DEAD || source.can_bleed(BLOOD_COVER_TURFS) == BLEED_SPLATTER))
+		var/damage_dealt_percentage = clamp(damage_dealt / unmitigated_attack_damage, 0, 1)
 		var/healing_multiplier = source.mob_size >= MOB_SIZE_LARGE ? manifesting_power.bloodlust_large_heal_mult : 1 // double healing against large targets
-		heal_bloodlust_brute(claw_user, damage_dealt * manifesting_power.bloodlust_heal_per_damage * healing_multiplier)
+		heal_bloodlust_brute(claw_user, manifesting_power.bloodlust_base_heal * damage_dealt_percentage * healing_multiplier)
 
 /// Rewards completing a butcher with Bloodlust and a fixed amount of brute healing.
 /obj/item/raking_claw/proc/on_butchering(mob/living/butcher, mob/living/target)
@@ -382,17 +450,68 @@
 	var/tint_strength = max_tint_strength * stacks / max_stacks
 	var/datum/client_colour/bloodlust_tint = owner.get_client_colour(REF(src))
 	// Red remains unchanged while green and blue are reduced per stack, progressively tinting the screen redder as you RIP AND TEAR.
-	bloodlust_tint?.update_color(list(1, 0, 0, 0, 0, 1 - tint_strength, 0, 0, 0, 0, 1 - tint_strength, 0, 0, 0, 0, 1, 0, 0, 0, 0), 0.25 SECONDS, SINE_EASING)
+	bloodlust_tint?.update_color(list(1, 0, 0, 0, 0, 1 - tint_strength, 0, 0, 0, 0, 1 - tint_strength, 0, 0, 0, 0, 1, 0, 0, 0, 0), -1)
 	linked_alert?.maptext = MAPTEXT_TINY_UNICODE("<span style='text-align:center'>[stacks]</span>")
 
 /datum/client_colour/raking_claw_bloodlust
 	priority = CLIENT_COLOR_IMPORTANT_PRIORITY
 	color = COLOR_MATRIX_IDENTITY
-	fade_in = 0.25 SECONDS
-	fade_out = 0.5 SECONDS
 
 /atom/movable/screen/alert/status_effect/raking_claw_bloodlust
 	name = "Bloodlust"
 	desc = "Each stack increases the chance of striking with both raking claws and forces you to shout. At maximum stacks, damaging living targets or bloody corpses heals fleshy bodyparts and your transformed arms. Bloodlust decays while you are not damaging living targets."
 	icon = 'icons/mob/actions/actions_ecult.dmi'
 	icon_state = "blood_siphon"
+
+/// Shared preference behavior for the independently coloured parts of Raking Claws.
+/datum/preference/color/raking_claws
+	abstract_type = /datum/preference/color/raking_claws
+	category = PREFERENCE_CATEGORY_MANUALLY_RENDERED
+	savefile_identifier = PREFERENCE_CHARACTER
+
+/datum/preference/color/raking_claws/is_accessible(datum/preferences/preferences)
+	return ..(preferences)
+
+/datum/preference/color/raking_claws/apply_to_human(mob/living/carbon/human/target, value)
+	return
+
+/datum/preference/color/raking_claws/fur
+	savefile_key = "raking_claws_fur_color"
+
+/datum/preference/color/raking_claws/fur/create_default_value()
+	return copytext(POWER_COLOR_ABERRANT, 2)
+
+/datum/preference/color/raking_claws/claws
+	savefile_key = "raking_claws_claw_color"
+
+/datum/preference/color/raking_claws/claws/create_default_value()
+	return copytext(COLOR_WHITE, 2)
+
+/// Preference selecting which beast-arm sprite variant Raking Claws manifests.
+/datum/preference/choiced/raking_claws_arm_style
+	category = PREFERENCE_CATEGORY_MANUALLY_RENDERED
+	savefile_key = "raking_claws_arm_style"
+	savefile_identifier = PREFERENCE_CHARACTER
+
+/datum/preference/choiced/raking_claws_arm_style/create_default_value()
+	return "Bear"
+
+/datum/preference/choiced/raking_claws_arm_style/init_possible_values()
+	var/list/values = list()
+	for(var/arm_style_name in GLOB.raking_claw_arm_styles)
+		values += arm_style_name
+	return values
+
+/datum/preference/choiced/raking_claws_arm_style/is_accessible(datum/preferences/preferences)
+	return ..(preferences)
+
+/datum/preference/choiced/raking_claws_arm_style/apply_to_human(mob/living/carbon/human/target, value)
+	return
+
+/datum/power_constant_data/raking_claws
+	associated_typepath = /datum/power/aberrant/raking_claws
+	customization_options = list(
+		/datum/preference/color/raking_claws/fur,
+		/datum/preference/color/raking_claws/claws,
+		/datum/preference/choiced/raking_claws_arm_style,
+	)
