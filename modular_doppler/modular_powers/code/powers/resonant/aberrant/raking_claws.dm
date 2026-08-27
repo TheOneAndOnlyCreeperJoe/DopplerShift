@@ -8,12 +8,9 @@
 */
 /datum/power/aberrant/raking_claws
 	name = "Raking Claws"
-	desc = "Transforms both your hands into large, wicked claws. These claws deal 15 damage, are sharp and are excessively prone to causing and aggravating bleeding. Less effective against armor.\
-	\nIn addition, it comes with a built-in dual-wield mechanic, which gives you a 15% chance to rake a target with both claws simultaneously. Each hit builds Bloodlust, increasing this chance by 6% per stack, up to 10 stacks. \
-	Bloodlust decays by one stack every 5 seconds without gaining a stack. Bleeding targets have a chance to grant an additional stack proportional to bleed magnitude.\
-	\nAt maximum Bloodlust, damage dealt to living targets or bloody corpses heals a small amount of brute damage, doubled against large targets. You also have an additional +25% chance to hit dual-wield attacks agianst Large targets regardless of Bloodlust. \
-	\nButchering a corpse grants 5 Bloodlust and heals 15 brute damage. \
-	\nYou cannot hold any objects while using raking claws, and activating it makes you instantly drop anything you are holding."
+	desc = "Transform both hands into wicked claws, dropping anything held and preventing you from holding items. Each claw deals 15 damage, has low armor penetration, can strike twice and readily causes and worsens bleeding.\
+	\nDamaging living targets grants Bloodlust, with bleeding targets potentially granting an additional stack. Bloodlust stacks up to 10 and decays by 1 every 5 seconds without gaining a stack. Your chance to strike with both claws is 15%, increased by 6% per Bloodlust and an additional 25% against large targets.\
+	\nAt maximum Bloodlust, damage to living targets or bloody corpses heals equal brute damage across fleshy bodyparts and your transformed arms, doubled against large targets. Butchering a corpse grants 5 Bloodlust and heals 15 brute damage."
 	security_record_text = "Subject can manifest sharp, monstrous claws from their hands."
 	security_threat = POWER_THREAT_MAJOR
 	value = 6
@@ -213,16 +210,45 @@
 	// Bloody corpses deliberately remain valid so the user can keep clawing into them with suitably gory results.
 	if(!isnull(bloodlust) && bloodlust.stacks >= bloodlust.max_stacks && (source.stat != DEAD || source.can_bleed(BLOOD_COVER_TURFS) == BLEED_SPLATTER))
 		var/healing_multiplier = source.mob_size >= MOB_SIZE_LARGE ? manifesting_power.bloodlust_large_heal_mult : 1 // double healing against large targets
-		claw_user.adjustBruteLoss(-damage_dealt * manifesting_power.bloodlust_heal_per_damage * healing_multiplier)
+		heal_bloodlust_brute(claw_user, damage_dealt * manifesting_power.bloodlust_heal_per_damage * healing_multiplier)
 
 /// Rewards completing a butcher with Bloodlust and a fixed amount of brute healing.
 /obj/item/raking_claw/proc/on_butchering(mob/living/butcher, mob/living/target)
 	butcher.apply_status_effect(/datum/status_effect/raking_claw_bloodlust, manifesting_power.butcher_bloodlust)
-	butcher.adjustBruteLoss(-manifesting_power.butcher_heal)
+	heal_bloodlust_brute(butcher, manifesting_power.butcher_heal)
 	butcher.visible_message(
 		span_warning("[butcher] butchers [target] with a bloodthirsty look!"),
 		span_notice("You revel in the bloodshed of tearing [target] apart! You feel invigorated."),
 	)
+
+/// Heals organic bodyparts and transformed arms while leaving other prosthetic bodyparts damaged.
+/// An exception is made for arms, since flavor-wise you are transforming your arms, which I figure would be a cute way to have situational healing in spite of robotic arms.
+/obj/item/raking_claw/proc/heal_bloodlust_brute(mob/living/claw_user, healing_amount)
+	if(!iscarbon(claw_user))
+		claw_user.adjustBruteLoss(-healing_amount)
+		return
+
+	var/mob/living/carbon/carbon_user = claw_user
+	var/list/obj/item/bodypart/eligible_bodyparts = list()
+
+	// Populates the limbs that can be healed, including prosthetic arms.
+	for(var/obj/item/bodypart/bodypart as anything in carbon_user.bodyparts)
+		if(bodypart.brute_dam <= 0)
+			continue
+		if((bodypart.bodytype & BODYTYPE_ORGANIC) || (bodypart.body_zone in GLOB.arm_zones))
+			eligible_bodyparts += bodypart
+
+	// Attempts to heal brute damage on the mob until we healed the max or nothing's left.
+	var/remaining_healing = healing_amount
+	while(remaining_healing > 0 && length(eligible_bodyparts))
+		var/obj/item/bodypart/selected_bodypart = pick(eligible_bodyparts)
+		var/brute_before_healing = selected_bodypart.brute_dam
+		selected_bodypart.heal_damage(remaining_healing, 0, updating_health = FALSE, required_bodytype = NONE)
+		remaining_healing -= brute_before_healing - selected_bodypart.brute_dam
+		eligible_bodyparts -= selected_bodypart
+
+	carbon_user.updatehealth()
+	carbon_user.update_damage_overlays()
 
 /// Displays a red claw slash centered on the attacked atom instead of swinging the item's sprite from the attacker.
 /obj/item/raking_claw/animate_attack(atom/movable/attacker, atom/attacked_atom, animation_type)
@@ -323,11 +349,15 @@
 	var/stacks = 0
 	/// Maximum Bloodlust obtainable from repeated claw hits.
 	var/max_stacks = 10
+	/// Maximum strength of the red screen tint at full Bloodlust.
+	var/max_tint_strength = 0.12
 
 /datum/status_effect/raking_claw_bloodlust/on_creation(mob/living/new_owner, stacks_to_add = 1)
 	. = ..()
 	if(!.)
 		return
+	AddComponent(/datum/component/speechmod, replacements = list("." = "!"), end_string = "!!", uppercase = TRUE) // YOU SHOUT LIKE THIS BECAUSE YOU ARE IN A FRENZY
+	owner.add_client_colour(/datum/client_colour/raking_claw_bloodlust, REF(src))
 	adjust_stacks(stacks_to_add)
 
 /// Adds new stacks and restarts the five-second decay delay.
@@ -340,15 +370,29 @@
 /datum/status_effect/raking_claw_bloodlust/tick(seconds_between_ticks)
 	adjust_stacks(-1)
 
+/datum/status_effect/raking_claw_bloodlust/on_remove()
+	owner.remove_client_colour(REF(src))
+	return ..()
+
 /datum/status_effect/raking_claw_bloodlust/proc/adjust_stacks(amount)
 	stacks = clamp(stacks + amount, 0, max_stacks)
 	if(stacks <= 0)
 		qdel(src)
 		return
+	var/tint_strength = max_tint_strength * stacks / max_stacks
+	var/datum/client_colour/bloodlust_tint = owner.get_client_colour(REF(src))
+	// Red remains unchanged while green and blue are reduced per stack, progressively tinting the screen redder as you RIP AND TEAR.
+	bloodlust_tint?.update_color(list(1, 0, 0, 0, 0, 1 - tint_strength, 0, 0, 0, 0, 1 - tint_strength, 0, 0, 0, 0, 1, 0, 0, 0, 0), 0.25 SECONDS, SINE_EASING)
 	linked_alert?.maptext = MAPTEXT_TINY_UNICODE("<span style='text-align:center'>[stacks]</span>")
+
+/datum/client_colour/raking_claw_bloodlust
+	priority = CLIENT_COLOR_IMPORTANT_PRIORITY
+	color = COLOR_MATRIX_IDENTITY
+	fade_in = 0.25 SECONDS
+	fade_out = 0.5 SECONDS
 
 /atom/movable/screen/alert/status_effect/raking_claw_bloodlust
 	name = "Bloodlust"
-	desc = "Each stack increases the chance of striking with both raking claws. At maximum stacks, damaging living targets or bloody corpses heals your brute damage. Bloodlust decays while you are not damaging living targets."
+	desc = "Each stack increases the chance of striking with both raking claws and forces you to shout. At maximum stacks, damaging living targets or bloody corpses heals fleshy bodyparts and your transformed arms. Bloodlust decays while you are not damaging living targets."
 	icon = 'icons/mob/actions/actions_ecult.dmi'
 	icon_state = "blood_siphon"
