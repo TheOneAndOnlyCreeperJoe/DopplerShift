@@ -16,7 +16,8 @@
 	security_threat = POWER_THREAT_MAJOR
 	value = 6
 	magic_flags = POWER_MAGIC_STANDARD
-	required_powers = list(/datum/power/aberrant_root/monstrous)
+	required_powers = list(/datum/power/aberrant_root)
+	required_allow_subtypes = TRUE
 	action_path = /datum/action/cooldown/power/aberrant/raking_claws
 
 /datum/action/cooldown/power/aberrant/raking_claws
