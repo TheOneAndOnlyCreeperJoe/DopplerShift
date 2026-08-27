@@ -1,7 +1,7 @@
 /datum/power/aberrant/raking_claws_monstrous_upgrade
 	name = "Life-Leeching Claws"
 	desc = "Your raking claws rejuvenate you with each drop of blood you draw. Whilst at maximum Bloodlust, strikes against living targets or corpses with blood heal up to 1 brute damage across fleshy bodyparts and your transformed arms based on damage penetrating mitigation, doubled against large targets. \
-	\nButchering a corpse grants 5 Bloodlust and heals 15 brute damage."
+	\nButchering a corpse grants 10 Bloodlust and heals 15 brute damage."
 	security_record_text = "Subject claws can mend their wounds by maiming and butchering other creatures."
 	security_threat = POWER_THREAT_MAJOR
 	value = 2
@@ -18,7 +18,7 @@
 	/// Fixed brute healing granted after butchering.
 	var/butcher_heal = 15
 	/// Bloodlust stacks granted after butchering.
-	var/butcher_bloodlust = 5
+	var/butcher_bloodlust = 10
 
 /datum/power/aberrant/raking_claws_monstrous_upgrade/add(client/client_source)
 	RegisterSignal(power_holder, COMSIG_RAKING_CLAW_AFTER_DAMAGE, PROC_REF(on_claw_damage))
