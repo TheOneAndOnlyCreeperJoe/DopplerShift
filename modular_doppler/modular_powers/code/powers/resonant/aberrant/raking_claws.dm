@@ -419,12 +419,14 @@
 	var/max_stacks = 10
 	/// Maximum strength of the red screen tint at full Bloodlust.
 	var/max_tint_strength = 0.12
+	/// Hulk-style speech modifier attached to the owner while Bloodlust remains active.
+	var/datum/component/speechmod/bloodlust_speech_modifier
 
 /datum/status_effect/raking_claw_bloodlust/on_creation(mob/living/new_owner, stacks_to_add = 1)
 	. = ..()
 	if(!.)
 		return
-	AddComponent(/datum/component/speechmod, replacements = list("." = "!"), end_string = "!!", uppercase = TRUE) // YOU SHOUT LIKE THIS BECAUSE YOU ARE IN A FRENZY
+	bloodlust_speech_modifier = owner.AddComponent(/datum/component/speechmod, replacements = list("." = "!"), end_string = "!!", uppercase = TRUE) // YOU SHOUT LIKE THIS BECAUSE YOU ARE IN A FRENZY
 	owner.add_client_colour(/datum/client_colour/raking_claw_bloodlust, REF(src))
 	adjust_stacks(stacks_to_add)
 
@@ -439,6 +441,7 @@
 	adjust_stacks(-1)
 
 /datum/status_effect/raking_claw_bloodlust/on_remove()
+	QDEL_NULL(bloodlust_speech_modifier)
 	owner.remove_client_colour(REF(src))
 	return ..()
 
