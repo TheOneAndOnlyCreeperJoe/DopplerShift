@@ -52,7 +52,7 @@
 
 	var/datum/status_effect/raking_claw_bloodlust/bloodlust = claw_user.has_status_effect(/datum/status_effect/raking_claw_bloodlust)
 	// If the limb-part is at the damage cap.
-	if(hit_bodypart.body_zone in GLOB.limb_zones && hit_bodypart.get_damage() >= hit_bodypart.max_damage)
+	if((hit_bodypart.body_zone in GLOB.limb_zones) && (hit_bodypart.get_damage() >= hit_bodypart.max_damage))
 		// Rolls a random chance to dismember the limb, with a bonus chance per stack of Bloodlust.
 		if(prob(dismember_chance + (bloodlust?.stacks * dismember_bloodlust_bonus)) && hit_bodypart.dismember(BRUTE, FALSE, WOUND_SLASH))
 			return // we already dismember the limb, no point in aggrevating.
