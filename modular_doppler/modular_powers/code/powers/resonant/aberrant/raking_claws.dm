@@ -219,12 +219,12 @@
 	claw_overlay.color = claw_color
 	. += claw_overlay
 
-/// Adds the same independently coloured claws to the appropriate left- or right-hand sprite.
-/obj/item/raking_claw/worn_overlays(mutable_appearance/standing, isinhands = FALSE, icon_file)
+/// Adds the independently coloured claws beside the fur layer so both remain grouped by worn transforms.
+/obj/item/raking_claw/separate_worn_overlays(mutable_appearance/standing, mutable_appearance/draw_target, isinhands = FALSE, icon_file)
 	. = ..()
 	if(!isinhands)
 		return
-	var/mutable_appearance/claw_overlay = mutable_appearance(icon_file, "claws_fur[arm_style]", appearance_flags = RESET_COLOR | KEEP_APART)
+	var/mutable_appearance/claw_overlay = mutable_appearance(icon_file, "claws_fur[arm_style]")
 	claw_overlay.color = claw_color
 	. += claw_overlay
 
