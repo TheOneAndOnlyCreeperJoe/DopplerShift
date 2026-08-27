@@ -1,15 +1,18 @@
 /*
 	Different version of a melee weapon power. While its comparible to the Armblade, it differs in a few important ways:
 	- It deals less damage, has less armor pen but bleeds more and upgrades existing bleed wounds on limbs they strike.
-	- Has a built-in dual-wield mechanic that focuses on making targets bleed.
+	- Has a built-in dual-wield mechanic that builds momentum through repeated hits.
+	- Has a lifeleech mechanic at max stacks, that's more-so catered to mining with double healing from large + a butcher mechanic.
 	- Occupies both hands.
 	- Doesn't table-break.
 */
 /datum/power/aberrant/raking_claws
 	name = "Raking Claws"
 	desc = "Transforms both your hands into large, wicked claws. These claws deal 15 damage, are sharp and are excessively prone to causing and aggravating bleeding. Less effective against armor.\
-	\nIn addition, it comes with a built-in dual-wield mechanic, which gives you a 10% chance to rake a target with both claws simultaneously. This increases with how much bleeding the target has (7.5% per 1u), up to 75%.\
-	\nNon-humanoid mobs that can bleed instead gain an escalating damage-over-time effect that scales your dual-wield chance as if it were bleed. \
+	\nIn addition, it comes with a built-in dual-wield mechanic, which gives you a 15% chance to rake a target with both claws simultaneously. Each hit builds Bloodlust, increasing this chance by 6% per stack, up to 10 stacks. \
+	Bloodlust decays by one stack every 5 seconds without gaining a stack. Bleeding targets have a chance to grant an additional stack proportional to bleed magnitude.\
+	\nAt maximum Bloodlust, damage dealt to living targets or bloody corpses heals a small amount of brute damage, doubled against large targets. You also have an additional +25% chance to hit dual-wield attacks agianst Large targets regardless of Bloodlust. \
+	\nButchering a corpse grants 5 Bloodlust and heals 15 brute damage. \
 	\nYou cannot hold any objects while using raking claws, and activating it makes you instantly drop anything you are holding."
 	security_record_text = "Subject can manifest sharp, monstrous claws from their hands."
 	security_threat = POWER_THREAT_MAJOR
@@ -20,7 +23,7 @@
 
 /datum/action/cooldown/power/aberrant/raking_claws
 	name = "Raking Claws"
-	desc = "Reform your hands into deadly claws, dropping everything you are holding. Using the power again retracts them."
+	desc = "Reform your hands into deadly, life-leeching claws, dropping everything you are holding. Using the power again retracts them."
 	button_icon = 'icons/mob/actions/actions_changeling.dmi'
 	button_icon_state = "sting_armblade"
 	active = FALSE
@@ -31,13 +34,25 @@
 	var/raking_claws_extended = FALSE
 
 	/// Base percentage chance for the dual-wield rake attack to trigger.
-	var/rake_base_chance = 10
+	var/rake_base_chance = 15
 	/// Maximum percentage chance for the dual-wield rake attack to trigger.
-	var/rake_max_chance = 75
-	/// Percentage added to the dual-wield rake chance per unit of the target's bleed rate.
-	var/rake_bleed_mult = 7.5
+	var/rake_max_chance = 100
+	/// Percentage added to the dual-wield rake chance per stack of Bloodlust.
+	var/rake_bloodlust_mult = 6
+	/// Percentage added to the dual-wield rake chance against large targets.
+	var/rake_large_target_bonus = 25
+	/// Chance per unit of target bleed rate to gain an additional Bloodlust stack.
+	var/bloodlust_bleed_mult = 7.5
+	/// Brute damage healed per point of post-mitigation damage dealt at maximum Bloodlust.
+	var/bloodlust_heal_per_damage = 1
+	/// Multiplier applied to maximum-Bloodlust healing against large targets.
+	var/bloodlust_large_heal_mult = 2
 	/// Final calculated chance for the dual-wield rake attack.
 	var/rake_final_chance
+	/// How much butchering heals
+	var/butcher_heal = 15
+	/// How many bloodlust stacks butcher gives
+	var/butcher_bloodlust = 5
 
 	/// Chance that we aggrevate bleeding wounds on the target (increasing their tier)
 	var/aggrevate_bleed_chance = 75
@@ -164,6 +179,7 @@
 	ADD_TRAIT(src, TRAIT_NODROP, REF(src))
 	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(aggrevate_bleeding_wound))
 	RegisterSignal(src, COMSIG_ITEM_AFTERATTACK, PROC_REF(try_dual_wield_attack))
+	AddComponent(/datum/component/butchering, butcher_callback = CALLBACK(src, PROC_REF(on_butchering)))
 
 /// Reserves the off-hand follow-up before generic dual-wield effects can claim it.
 /obj/item/raking_claw/pre_attack(atom/target, mob/living/user, list/modifiers, list/attack_modifiers)
@@ -171,22 +187,42 @@
 	if(!. && !attack_modifiers[OFFHAND_ATTACK_CLAIMED] && isliving(target) && istype(user.get_inactive_held_item(), /obj/item/raking_claw))
 		attack_modifiers[OFFHAND_ATTACK_CLAIMED] = src
 
-/// Applies a signaler to the target so we can record how much damage we dealt with the claw.
+/// Applies a signaler to the target so successful claw damage can build Bloodlust.
 /obj/item/raking_claw/attack(mob/living/target_mob, mob/living/user, list/modifiers, list/attack_modifiers)
 	RegisterSignal(target_mob, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(record_attack_damage))
 	. = ..()
 	UnregisterSignal(target_mob, COMSIG_MOB_AFTER_APPLY_DAMAGE)
 	return .
 
-/// Records brute damage dealt by this claw so that we can apply the special status effect to bleeding non-carbons.
+/// Grants Bloodlust when this claw damages a living target, with a bleed-scaled chance for an additional stack.
 /obj/item/raking_claw/proc/record_attack_damage(mob/living/source, damage_dealt, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, obj/item/attacking_item, wound_clothing)
 	SIGNAL_HANDLER
-	if(iscarbon(source)) // behaviour unique to non-carbons so we terminate before we do all teh other checks
+	if(attacking_item != src || damage_dealt <= 0)
 		return
-	if(attacking_item != src || damage_dealt <= 0) // needs to be our weapon and needs to be a successful attack
+	if(isnull(manifesting_power))
 		return
-	if(source.can_bleed(BLOOD_COVER_TURFS) == BLEED_SPLATTER) // if it bleeds, we can dot it.
-		source.apply_status_effect(/datum/status_effect/raking_claw_bleeding)
+	var/mob/living/claw_user = get(src, /mob/living)
+	if(isnull(claw_user))
+		return
+	var/datum/status_effect/raking_claw_bloodlust/bloodlust = claw_user.has_status_effect(/datum/status_effect/raking_claw_bloodlust)
+	if(source.stat != DEAD)
+		var/stacks_to_add = 1 + prob(source.get_bleed_rate() * manifesting_power.bloodlust_bleed_mult)
+		claw_user.apply_status_effect(/datum/status_effect/raking_claw_bloodlust, stacks_to_add)
+		bloodlust = claw_user.has_status_effect(/datum/status_effect/raking_claw_bloodlust)
+
+	// Bloody corpses deliberately remain valid so the user can keep clawing into them with suitably gory results.
+	if(!isnull(bloodlust) && bloodlust.stacks >= bloodlust.max_stacks && (source.stat != DEAD || source.can_bleed(BLOOD_COVER_TURFS) == BLEED_SPLATTER))
+		var/healing_multiplier = source.mob_size >= MOB_SIZE_LARGE ? manifesting_power.bloodlust_large_heal_mult : 1 // double healing against large targets
+		claw_user.adjustBruteLoss(-damage_dealt * manifesting_power.bloodlust_heal_per_damage * healing_multiplier)
+
+/// Rewards completing a butcher with Bloodlust and a fixed amount of brute healing.
+/obj/item/raking_claw/proc/on_butchering(mob/living/butcher, mob/living/target)
+	butcher.apply_status_effect(/datum/status_effect/raking_claw_bloodlust, manifesting_power.butcher_bloodlust)
+	butcher.adjustBruteLoss(-manifesting_power.butcher_heal)
+	butcher.visible_message(
+		span_warning("[butcher] butchers [target] with a bloodthirsty look!"),
+		span_notice("You revel in the bloodshed of tearing [target] apart! You feel invigorated."),
+	)
 
 /// Displays a red claw slash centered on the attacked atom instead of swinging the item's sprite from the attacker.
 /obj/item/raking_claw/animate_attack(atom/movable/attacker, atom/attacked_atom, animation_type)
@@ -200,7 +236,7 @@
 	var/matrix/final_transform = matrix(claw_attack.transform).Scale(1.15)
 	animate(claw_visual, alpha = 0, transform = final_transform, time = 0.5 SECONDS, easing = CIRCULAR_EASING|EASE_OUT)
 
-/// Rolls the bleed-scaled dual-wield chance and attacks once with the other held claw on success.
+/// Rolls the Bloodlust-scaled dual-wield chance and attacks once with the other held claw on success.
 /obj/item/raking_claw/proc/try_dual_wield_attack(obj/item/source, atom/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	SIGNAL_HANDLER
 	var/offhand_attack_claim = attack_modifiers[OFFHAND_ATTACK_CLAIMED]
@@ -218,15 +254,10 @@
 	if(isnull(other_claw))
 		return
 
-	// Calculates the chance on non-carbon mobs based upon the unique stacking debuf we apply.
-	var/effective_bleed_rate = living_target.get_bleed_rate()
-	if(!iscarbon(living_target))
-		var/datum/status_effect/raking_claw_bleeding/bleeding_effect = living_target.has_status_effect(/datum/status_effect/raking_claw_bleeding)
-		effective_bleed_rate = bleeding_effect?.stacks || 0
-
-	// Calculates the chance to make a follow-up with the other claw based on the target's bleed rate
+	var/datum/status_effect/raking_claw_bloodlust/bloodlust = user.has_status_effect(/datum/status_effect/raking_claw_bloodlust)
+	var/large_target_bonus = living_target.mob_size >= MOB_SIZE_LARGE ? manifesting_power.rake_large_target_bonus : 0
 	manifesting_power.rake_final_chance = min(
-		manifesting_power.rake_base_chance + effective_bleed_rate * manifesting_power.rake_bleed_mult,
+		manifesting_power.rake_base_chance + bloodlust?.stacks * manifesting_power.rake_bloodlust_mult + large_target_bonus,
 		manifesting_power.rake_max_chance,
 	)
 
@@ -280,33 +311,44 @@
 		span_danger("You tear the wound on [target]'s [target_limb.plaintext_zone] wide open with [source]!"),
 	)
 
-/*
-	Non-carbon bleeding code below. This uses its own stack counter because each application refreshes one shared status.
-*/
-/datum/status_effect/raking_claw_bleeding
-	id = "raking_claw_bleeding"
-	duration = 15 SECONDS
-	tick_interval = 1 SECONDS
+/// Attacker-owned momentum that increases the chance of a raking claw follow-up.
+/datum/status_effect/raking_claw_bloodlust
+	id = "raking_claw_bloodlust"
+	duration = STATUS_EFFECT_PERMANENT
+	tick_interval = 5 SECONDS
 	status_type = STATUS_EFFECT_REFRESH
-	alert_type = null
-	/// Current severity of the simulated bleeding.
-	var/stacks = 1
-	/// Maximum severity obtainable from repeated claw hits.
+	alert_type = /atom/movable/screen/alert/status_effect/raking_claw_bloodlust
+	show_duration = FALSE
+	/// Current Bloodlust intensity.
+	var/stacks = 0
+	/// Maximum Bloodlust obtainable from repeated claw hits.
 	var/max_stacks = 10
-	/// Prevents further full splatters after this application reaches maximum severity.
-	var/created_max_stack_splatter = FALSE
 
-/// Refreshes the bleeding duration, adds one stack, and creates a one-time full splatter at maximum severity.
-/datum/status_effect/raking_claw_bleeding/refresh(effect, ...)
+/datum/status_effect/raking_claw_bloodlust/on_creation(mob/living/new_owner, stacks_to_add = 1)
 	. = ..()
-	stacks = min(stacks + 1, max_stacks)
-	if(stacks < max_stacks || created_max_stack_splatter)
+	if(!.)
 		return
-	created_max_stack_splatter = TRUE
-	owner.add_splatter_floor(get_turf(owner), small_drip = FALSE)
+	adjust_stacks(stacks_to_add)
 
-/// Leaves a blood droplet and has a stack-scaled chance to inflict one brute damage each second.
-/datum/status_effect/raking_claw_bleeding/tick(seconds_between_ticks)
-	owner.add_splatter_floor(get_turf(owner), small_drip = TRUE)
-	if(prob(10 * stacks))
-		owner.apply_damage(2, BRUTE)
+/// Adds new stacks and restarts the five-second decay delay.
+/datum/status_effect/raking_claw_bloodlust/refresh(effect, stacks_to_add = 1)
+	. = ..()
+	adjust_stacks(stacks_to_add)
+	tick_interval = world.time + initial(tick_interval)
+
+/// Removes one stack after five uninterrupted seconds without gaining one.
+/datum/status_effect/raking_claw_bloodlust/tick(seconds_between_ticks)
+	adjust_stacks(-1)
+
+/datum/status_effect/raking_claw_bloodlust/proc/adjust_stacks(amount)
+	stacks = clamp(stacks + amount, 0, max_stacks)
+	if(stacks <= 0)
+		qdel(src)
+		return
+	linked_alert?.maptext = MAPTEXT_TINY_UNICODE("<span style='text-align:center'>[stacks]</span>")
+
+/atom/movable/screen/alert/status_effect/raking_claw_bloodlust
+	name = "Bloodlust"
+	desc = "Each stack increases the chance of striking with both raking claws. At maximum stacks, damaging living targets or bloody corpses heals your brute damage. Bloodlust decays while you are not damaging living targets."
+	icon = 'icons/mob/actions/actions_ecult.dmi'
+	icon_state = "blood_siphon"
