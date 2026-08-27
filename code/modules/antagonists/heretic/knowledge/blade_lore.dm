@@ -215,17 +215,15 @@
 	var/offand_force_decrement = 0
 	/// How much force was the last weapon we offhanded with? If it's different, we need to re-calculate the decrement
 	var/last_weapon_force = -1
-	var/offhand_attack_claimed = FALSE // DOPPLER EDIT ADDITION - Communicates whether the current item attack claimed the off-hand follow-up.
 
 /datum/heretic_knowledge/blade_upgrade/blade/on_gain(mob/user, datum/antagonist/heretic/our_heretic)
 	. = ..()
 	RegisterSignal(user, COMSIG_TOUCH_HANDLESS_CAST, PROC_REF(on_grasp_cast))
 	RegisterSignal(user, COMSIG_MOB_EQUIPPED_ITEM, PROC_REF(on_blade_equipped))
-	RegisterSignal(user, COMSIG_MOB_ITEM_ATTACK, PROC_REF(on_melee_attack)) // DOPPLER EDIT ADDITION - Adds a signaler to coordinate off-hand attacks with other sources to prevent attack stacking.
 
 /datum/heretic_knowledge/blade_upgrade/blade/on_lose(mob/user, datum/antagonist/heretic/our_heretic)
 	. = ..()
-	UnregisterSignal(user, list(COMSIG_TOUCH_HANDLESS_CAST, COMSIG_MOB_EQUIPPED_ITEM, COMSIG_MOB_ITEM_ATTACK)) // DOPPLER EDIT ADDITION - Adds a signaler to coordinate off-hand attacks with other sources to prevent attack stacking. ORIGINAL: UnregisterSignal(user, list(COMSIG_TOUCH_HANDLESS_CAST, COMSIG_MOB_EQUIPPED_ITEM))
+	UnregisterSignal(user, list(COMSIG_TOUCH_HANDLESS_CAST, COMSIG_MOB_EQUIPPED_ITEM))
 
 ///Tries to infuse our held blade with our mansus grasp
 /datum/heretic_knowledge/blade_upgrade/blade/proc/on_grasp_cast(mob/living/carbon/cast_on)
@@ -249,37 +247,7 @@
 
 	return COMPONENT_CAST_HANDLESS
 
-// DOPPLER EDIT ADDITION START - Coordinate overlapping off-hand attack sources.
-/// Claims the off-hand strike as to prevent stacking with other dual-wield sources.
-/datum/heretic_knowledge/blade_upgrade/blade/proc/on_melee_attack(mob/living/source, atom/target, mob/living/user, list/modifiers, list/attack_modifiers)
-	SIGNAL_HANDLER
-
-	offhand_attack_claimed = FALSE
-	if(target == source)
-		return
-	if(attack_modifiers[OFFHAND_ATTACK_CLAIMED])
-		return
-
-	var/obj/item/melee/sickly_blade/blade = source.get_active_held_item()
-	if(QDELETED(blade) || !istype(blade))
-		return
-
-	var/obj/item/off_hand = source.get_inactive_held_item()
-	if(QDELETED(off_hand) || !istype(off_hand, /obj/item/melee/sickly_blade))
-		return
-
-	attack_modifiers[OFFHAND_ATTACK_CLAIMED] = TRUE
-	offhand_attack_claimed = TRUE
-
-// DOPPLER EDIT ADDITION END
-
 /datum/heretic_knowledge/blade_upgrade/blade/do_melee_effects(mob/living/source, atom/target, obj/item/melee/sickly_blade/blade)
-	// DOPPLER EDIT ADDITION START - prevent off-hand attacks if something else already off-handed.
-	if(!offhand_attack_claimed)
-		return
-	offhand_attack_claimed = FALSE
-	// DOPPLER EDIT ADDITION END
-
 	if(target == source)
 		return
 
@@ -320,7 +288,7 @@
 			hits_to_crit_on_average = ROUND_UP(100 / (blade.force * 2 - offand_force_decrement))
 
 	// Perform the offhand attack
-	blade.melee_attack_chain(source, target, null, list(FORCE_MODIFIER = -offand_force_decrement, OFFHAND_ATTACK_CLAIMED = TRUE)) // DOPPLER EDIT - Preserve the off-hand claim used for dual-wield abilities on the follow-up.
+	blade.melee_attack_chain(source, target, null, list(FORCE_MODIFIER = -offand_force_decrement))
 
 ///Modifies our blade demolition modifier so we can take down doors with it
 /datum/heretic_knowledge/blade_upgrade/blade/proc/on_blade_equipped(mob/user, obj/item/equipped, slot)

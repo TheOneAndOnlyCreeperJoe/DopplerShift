@@ -1,6 +1,6 @@
 /*
 	Different version of a melee weapon power. While its comparible to the Armblade, it differs in a few important ways:
-	- It deals less damage but bleeds more and upgrades existing bleed wounds on limbs they strike.
+	- It deals less damage, has less armor pen but bleeds more and upgrades existing bleed wounds on limbs they strike.
 	- Has a built-in dual-wield mechanic that focuses on making targets bleed.
 	- Occupies both hands.
 	- Doesn't table-break.
@@ -20,7 +20,7 @@
 
 /datum/action/cooldown/power/aberrant/raking_claws
 	name = "Raking Claws"
-	desc = "Reform your hands into deadly claws. Using the power again retracts them."
+	desc = "Reform your hands into deadly claws, dropping everything you are holding. Using the power again retracts them."
 	button_icon = 'icons/mob/actions/actions_changeling.dmi'
 	button_icon_state = "sting_armblade"
 	active = FALSE
@@ -51,6 +51,11 @@
 /datum/action/cooldown/power/aberrant/raking_claws/Remove(mob/removed_from)
 	retract_claws(removed_from)
 	UnregisterSignal(removed_from, COMSIG_ATOM_DISPEL)
+	return ..()
+
+/// Add a guard so that disabling does not run the can_use check on hunger.
+/datum/action/cooldown/power/aberrant/raking_claws/can_use(mob/living/user, atom/target)
+	bypass_cost = active
 	return ..()
 
 /// Manifests a claw in each hand, or retracts both claws when already active.
@@ -160,6 +165,12 @@
 	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(aggrevate_bleeding_wound))
 	RegisterSignal(src, COMSIG_ITEM_AFTERATTACK, PROC_REF(try_dual_wield_attack))
 
+/// Reserves the off-hand follow-up before generic dual-wield effects can claim it.
+/obj/item/raking_claw/pre_attack(atom/target, mob/living/user, list/modifiers, list/attack_modifiers)
+	. = ..()
+	if(!. && !attack_modifiers[OFFHAND_ATTACK_CLAIMED] && isliving(target) && istype(user.get_inactive_held_item(), /obj/item/raking_claw))
+		attack_modifiers[OFFHAND_ATTACK_CLAIMED] = src
+
 /// Applies a signaler to the target so we can record how much damage we dealt with the claw.
 /obj/item/raking_claw/attack(mob/living/target_mob, mob/living/user, list/modifiers, list/attack_modifiers)
 	RegisterSignal(target_mob, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(record_attack_damage))
@@ -192,8 +203,9 @@
 /// Rolls the bleed-scaled dual-wield chance and attacks once with the other held claw on success.
 /obj/item/raking_claw/proc/try_dual_wield_attack(obj/item/source, atom/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	SIGNAL_HANDLER
+	var/offhand_attack_claim = attack_modifiers[OFFHAND_ATTACK_CLAIMED]
 	// Prevents dual-wield attacks if this is a follow-up attack, if the power isn't active, if the target isn't living, or if the off-hand attack has already been claimed by another source.
-	if(is_dual_wield_followup || isnull(manifesting_power) || !isliving(target) || attack_modifiers[OFFHAND_ATTACK_CLAIMED])
+	if(is_dual_wield_followup || isnull(manifesting_power) || !isliving(target) || (offhand_attack_claim && offhand_attack_claim != source))
 		return
 	var/mob/living/living_target = target
 
@@ -220,7 +232,7 @@
 
 	// If we roll it, do another attack.
 	if(prob(manifesting_power.rake_final_chance))
-		attack_modifiers[OFFHAND_ATTACK_CLAIMED] = TRUE
+		attack_modifiers[OFFHAND_ATTACK_CLAIMED] = source
 		other_claw.is_dual_wield_followup = TRUE
 		user.do_item_attack_animation(living_target, used_item = other_claw)
 		other_claw.attack(living_target, user, modifiers, attack_modifiers)
