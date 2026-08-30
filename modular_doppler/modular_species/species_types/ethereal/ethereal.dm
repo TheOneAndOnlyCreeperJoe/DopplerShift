@@ -1,6 +1,25 @@
 /datum/species/ethereal
 	preview_outfit = /datum/outfit/ethereal_preview
 	hair_alpha = 140
+	mutanteyes = /obj/item/organ/eyes/ethereal
+
+/obj/item/organ/eyes/ethereal
+	var/eye_overlay_icon = 'modular_doppler/modular_species/species_types/ethereal/icons/organs/ethereal_eyes.dmi'
+
+/obj/item/organ/eyes/ethereal/Initialize(mapload)
+	. = ..() // need to do it here because these are normally set by the parent init
+	eyelid_left.icon = eye_overlay_icon
+	eyelid_right.icon = eye_overlay_icon
+
+/// Redirects only this organ's eye appearances to the Ethereal eye icon file.
+/obj/item/organ/eyes/ethereal/generate_body_overlay(mob/living/carbon/human/parent)
+	. = ..()
+	var/left_eye_icon_state = "[eye_icon_state]_l"
+	var/right_eye_icon_state = "[eye_icon_state]_r"
+	for(var/mutable_appearance/eye_overlay as anything in .)
+		if(eye_overlay.icon_state != left_eye_icon_state && eye_overlay.icon_state != right_eye_icon_state)
+			continue
+		eye_overlay.icon = eye_overlay_icon
 
 /datum/outfit/ethereal_preview
 	name = "Ethereal (Species Preview)"
