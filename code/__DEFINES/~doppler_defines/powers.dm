@@ -225,6 +225,11 @@
 // Trait made as to prevent duplicate smites.
 #define TRAIT_HAS_SMITING_STRIKE "has_smiting_strike"
 
+/// Fired by modular_doppler\modular_powers\code\powers\sorcerous\theologist\_theologist_root_twisted.dm to collect modifiers to damage conversion rates.
+/// Args: (list/twisted_conversion_modifiers)
+#define COMSIG_THEOLOGIST_TWISTED_CONVERSION_MODIFIERS "theologist_twisted_conversion_modifiers"
+
+
 // Standard Theologian costs
 #define THEOLOGIST_PIETY_TRIVIAL (THEOLOGIST_PIETY_MAX / 100)
 #define THEOLOGIST_PIETY_MINOR (THEOLOGIST_PIETY_MAX / 10)

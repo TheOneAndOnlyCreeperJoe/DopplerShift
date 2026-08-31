@@ -7698,6 +7698,8 @@
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\smiting_strike.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\smiting_strike_upgrades.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\time_of_need.dm"
+#include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\twisted_fixed_fate.dm"
+#include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\twisted_pious_touch.dm"
 #include "modular_doppler\modular_powers\code\security\reality_anchor.dm"
 #include "modular_doppler\modular_powers\code\security\resonant_cuffs.dm"
 #include "modular_doppler\modular_powers\code\signalers\martial_arts_signal.dm"

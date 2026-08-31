@@ -89,7 +89,7 @@
 			to_chat(owner, span_notice("Your target has no other damage left to twist!"))
 			break
 		// The damaging
-		deal_damage_type(target, damage_type, healed_amount * heal_to_damage_ratio)
+		deal_damage_type(target, damage_type, healed_amount * get_modified_conversion_ratio())
 		// effects/feedback
 		new /obj/effect/temp_visual/heal(get_turf(target), "#cf2525")
 		playsound(owner, 'sound/effects/magic/cosmic_expansion.ogg', 75, TRUE, MEDIUM_RANGE_SOUND_EXTRARANGE)
@@ -178,6 +178,17 @@
 				healed_amount += target.adjustOxyLoss(-min(healing_remaining, target.getOxyLoss()))
 	healing_done += healed_amount
 	return healed_amount
+
+/// Collects additive damage conversion modifiers and applies them as a divider to the base damage ratio.
+/datum/action/cooldown/power/theologist/theologist_root/twisted/proc/get_modified_conversion_ratio()
+	var/list/conversion_modifiers = list()
+	SEND_SIGNAL(owner, COMSIG_THEOLOGIST_TWISTED_CONVERSION_MODIFIERS, conversion_modifiers)
+
+	var/total_conversion_modifier = 1
+	for(var/conversion_modifier in conversion_modifiers)
+		total_conversion_modifier += conversion_modifier
+
+	return heal_to_damage_ratio / total_conversion_modifier
 
 /// Deals the appropriate damage back after healing.
 /datum/action/cooldown/power/theologist/theologist_root/twisted/proc/deal_damage_type(mob/living/target, damage_type, damage_amount)
