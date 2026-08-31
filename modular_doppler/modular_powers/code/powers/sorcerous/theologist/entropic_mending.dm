@@ -9,9 +9,10 @@ Entropic Mending removes wounds (sometimes) and speeds up the target's metabolis
 	Invoking this power will cause temporary, lingering entropic effects on the target; such as increased metabolism, hunger and blood replenishment, at triple pace."
 	security_record_text = "Subject can accelerate a target's bodily functions (e.g metabolism) to be thrice as fast, and mend lingering wounds."
 	action_path = /datum/action/cooldown/power/theologist/entropic_mending
-	value = 4
+	value = 5
 
-	required_powers = list(/datum/power/theologist_root/twisted)
+	required_powers = list(/datum/power/theologist_root)
+	required_allow_subtypes = TRUE
 
 /datum/action/cooldown/power/theologist/entropic_mending
 	name = "Entropic Mending"

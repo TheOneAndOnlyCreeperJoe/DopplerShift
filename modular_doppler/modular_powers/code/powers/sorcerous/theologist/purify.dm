@@ -15,7 +15,8 @@
 	action_path = /datum/action/cooldown/power/theologist/purify
 	value = 5
 
-	required_powers = list(/datum/power/theologist_root/shared)
+	required_powers = list(/datum/power/theologist_root)
+	required_allow_subtypes = TRUE
 
 /datum/action/cooldown/power/theologist/purify
 	name = "Purify"
