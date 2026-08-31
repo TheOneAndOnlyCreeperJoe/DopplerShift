@@ -260,8 +260,8 @@
 
 		if("tox")
 			amount = clamp((giver.getToxLoss() - taker.getToxLoss()) / heal_division_factor, heal_min, heal_max)
-			adjust_tox_noinvert(giver, -amount)
-			adjust_tox_noinvert(taker, amount)
+			giver.adjustToxLoss(-amount, forced = TRUE)
+			taker.adjustToxLoss(amount, forced = TRUE)
 
 		if("oxy")
 			amount = clamp((giver.getOxyLoss() - taker.getOxyLoss()) / heal_division_factor, heal_min, heal_max)
@@ -293,7 +293,7 @@
 		var/oxyloss = clamp((user.getOxyLoss() - target.oxyloss) / heal_division_factor, heal_min, heal_max)
 		user.adjustBruteLoss(-bruteloss)
 		user.adjustFireLoss(-fireloss)
-		adjust_tox_noinvert(user, -toxloss)
+		user.adjustToxLoss(-toxloss, forced = TRUE)
 		user.adjustOxyLoss(-oxyloss)
 		target.bruteloss -= bruteloss
 		target.fireloss -= fireloss
@@ -310,7 +310,7 @@
 		var/oxyloss = clamp((target.oxyloss - user.getOxyLoss()) / heal_division_factor, heal_min, heal_max)
 		user.adjustBruteLoss(bruteloss)
 		user.adjustFireLoss(fireloss)
-		adjust_tox_noinvert(user, toxloss)
+		user.adjustToxLoss(toxloss, forced = TRUE)
 		user.adjustOxyLoss(oxyloss)
 		target.bruteloss += bruteloss
 		target.fireloss += fireloss
