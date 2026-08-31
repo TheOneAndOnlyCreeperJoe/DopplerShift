@@ -22,11 +22,14 @@
 	. = ..()
 	UnregisterSignal(power_holder, COMSIG_THEOLOGIST_HEALING_MODIFIERS)
 
-/// Adds Do No Harm's percentage bonus to the additive healing modifiers.
+/// Adds Do No Harm's percentage bonus to the additive healing modifiers while the holder remains a pacifist.
 /datum/power/theologist/do_no_harm/proc/add_healing_modifier(mob/living/source, atom/healing_target, list/additive_healing_modifiers, list/multiplicative_healing_modifiers)
 	SIGNAL_HANDLER
 
 	if(!istype(source))
+		return NONE
+	// Just make sure Pacifism is still there.
+	if(!HAS_TRAIT(source, TRAIT_PACIFISM))
 		return NONE
 
 	additive_healing_modifiers += healing_bonus
