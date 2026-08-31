@@ -38,11 +38,6 @@
 	features -= "feature_ethcolor"
 	return features
 
-/// Applies the appropriate mutant colors to the lustrous variant.
-/datum/species/ethereal/lustrous/on_species_gain(mob/living/carbon/new_lustrous, datum/species/old_species, pref_load, regenerate_icons)
-	new_lustrous.dna.features[FEATURE_MUTANT_COLOR] = GLOB.color_list_lustrous[pick(GLOB.color_list_lustrous)]
-	return ..()
-
 /datum/outfit/ethereal_preview
 	name = "Ethereal (Species Preview)"
 	uniform = /obj/item/clothing/under/frontier_colonist
