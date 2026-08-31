@@ -1,6 +1,6 @@
 /datum/power/theologist_root/twisted
 	name = "A Burden Twisted"
-	desc = "Channel chaotic energies into another creature next to you. The target is healed in wildly varying amounts every few seconds, except for one randomly chosen damage-type (which cannot be suffocation, or it's currently highest damage taken). The target is then damaged for half that amount with the damage-type. \
+	desc = "Channel chaotic energies into another creature next to you. The target is healed in wildly varying amounts every few seconds, except for one randomly chosen damage-type (which cannot be suffocation, or it's currently highest damage taken). The target is then damaged for half that amount with the chosen damage-type. \
 	\nOnce you heal a target with A Burden Twisted, all further uses of A Burden Twisted on that target twist all damage into that type for 5 minutes. \
 	\nGives Piety proportional to the net-positive amount of damage healed. Works on synthetic bodyparts."
 	security_record_text = "Subject can rapidly transmute the wounds of a target into smaller, insubstantial wounds."
@@ -10,7 +10,7 @@
 
 /datum/action/cooldown/power/theologist/theologist_root/twisted
 	name = "A Burden Twisted"
-	desc = "Channel chaotic energies into another creature next to you. The target is healed in wildly varying amounts every few seconds, except for one randomly chosen damage-type (which cannot be suffocation, or it's currently highest damage taken). The is then damaged for half that amount with the chosen damage-type. \
+	desc = "Channel chaotic energies into another creature next to you. The target is healed in wildly varying amounts every few seconds, except for one randomly chosen damage-type (which cannot be suffocation, or it's currently highest damage taken). The target is then damaged for half that amount with the chosen damage-type. \
 	\nOnce you heal a target with A Burden Twisted, all further uses of A Burden Twisted on that target twist all damage into that type for 5 minutes. \
 	\nGives Piety proportional to the net-positive amount of damage healed. Works on synthetic bodyparts."
 	button_icon = 'icons/mob/actions/actions_cult.dmi'
