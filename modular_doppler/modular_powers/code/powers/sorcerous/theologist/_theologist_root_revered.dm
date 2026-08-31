@@ -2,7 +2,8 @@
 /datum/power/theologist_root/revered
 	name = "A Burden Revered"
 	desc = "Nullifies pain and slowly heals the targeted creature's burn and brute damage over a prolonged period of time. This may be yourself. \
-	\nGrants piety based on healing done, ends prematurely if the target reaches full health or if it is cast again. Does not work on synthetic bodyparts."
+	\nGrants piety based on healing done, ends prematurely if the target reaches full health or if it is cast again. Does not work on synthetic bodyparts.\
+	\nModifiers to healing amount increase the maximum healing of this power as well as the healing rate."
 	security_record_text = "Subject can magically mend their own wounds and the wounds of others slowly over a long duration."
 	security_threat = POWER_THREAT_MAJOR
 	action_path = /datum/action/cooldown/power/theologist/theologist_root/revered
@@ -34,6 +35,8 @@
 /datum/action/cooldown/power/theologist/theologist_root/revered/use_action(mob/living/user, mob/living/target)
 	if(active_effect)
 		qdel(active_effect)
+	// Snapshot healing modifiers once for the entire status effect.
+	snapshot_healing_multiplier(target)
 	active_effect = target.apply_status_effect(/datum/status_effect/power/burden_revered, src)
 	active = TRUE
 	if(active_effect && target == owner)
@@ -88,8 +91,8 @@
 	. = ..()
 	burden_power = passed_power
 	if(burden_power) // inherit the healing from the power, for potential future upgrades / varedits.
-		healing_max = burden_power.healing_max
-		base_healing_amount = burden_power.healing_amount
+		healing_max = burden_power.healing_max * burden_power.healing_multiplier
+		base_healing_amount = burden_power.healing_amount * burden_power.healing_multiplier
 
 
 // You might wonder why we run Destroy as well as on_remove. The issue is that on_remove can trigger on qdel, which invalidates burden_power, which prevents us from efficiently passing on the piety back to the owner.

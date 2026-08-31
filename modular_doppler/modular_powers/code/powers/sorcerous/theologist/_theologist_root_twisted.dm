@@ -47,6 +47,8 @@
 /datum/action/cooldown/power/theologist/theologist_root/twisted/use_action(mob/living/user, mob/living/target)
 	// We define the target just for the on_dispel listener
 	current_target = target
+	// Snapshot healing modifiers once for the entire channel.
+	snapshot_healing_multiplier(target)
 	// Because this proc channels in a loop, it won't get to the usual unset_click_ability() until after the effect resolves, so we have to run it here.
 	unset_click_ability(owner, FALSE)
 	owner.visible_message(span_warning("[owner.get_visible_name()] lays a hand on [target.get_visible_name()], twisting their injuries into other, smaller injuries!"), span_notice("You twist [target.get_visible_name()]'s injuries!"))
@@ -83,7 +85,7 @@
 			to_chat(owner, span_notice("Your target has no suitable damage left to twist!"))
 			break
 		// The healing
-		healing_amount = rand(heal_min, heal_max) // rolls a random heal for that tick
+		healing_amount = rand(heal_min, heal_max) * healing_multiplier // rolls a random heal for that tick
 		var/healed_amount = heal_other_damage_types(target, damage_type)
 		if(!healed_amount)
 			to_chat(owner, span_notice("Your target has no other damage left to twist!"))

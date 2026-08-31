@@ -12,6 +12,9 @@
 	/// Cost in Piety to use.
 	var/cost
 
+	/// Healing multiplier collected and snapshotted when a healing power is used.
+	var/healing_multiplier = 1
+
 /datum/action/cooldown/power/theologist/Grant(mob/grant_to)
 	. = ..()
 	ValidatePietyComponent()
@@ -33,6 +36,20 @@
 /// Gets the current piety of the mob.
 /datum/action/cooldown/power/theologist/proc/get_piety()
 	return piety_component.piety
+
+/// Snapshots additive and multiplicative healing modifiers for the current use of a healing power.
+/datum/action/cooldown/power/theologist/proc/snapshot_healing_multiplier(atom/healing_target)
+	var/list/additive_healing_modifiers = list()
+	var/list/multiplicative_healing_modifiers = list()
+	SEND_SIGNAL(owner, COMSIG_THEOLOGIST_HEALING_MODIFIERS, healing_target, additive_healing_modifiers, multiplicative_healing_modifiers)
+
+	healing_multiplier = 1
+	for(var/additive_healing_modifier in additive_healing_modifiers)
+		healing_multiplier += additive_healing_modifier
+	for(var/multiplicative_healing_modifier in multiplicative_healing_modifiers)
+		healing_multiplier *= multiplicative_healing_modifier
+
+	return healing_multiplier
 
 // We check to see if our piety component is actually there, because usually things will go bad if they don't.
 /datum/action/cooldown/power/theologist/try_use(mob/living/user, mob/living/target)

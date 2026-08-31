@@ -67,7 +67,6 @@
 #define COMSIG_MOB_POWER_ADDED "mob_power_added"
 /// Sent when a power is removed from a mob's power list: (datum/power/removed_power)
 #define COMSIG_MOB_POWER_REMOVED "mob_power_removed"
-
 /// Any traits granted by powers.
 #define POWER_TRAIT "power_trait"
 
@@ -229,6 +228,10 @@
 /// Args: (list/twisted_conversion_modifiers)
 #define COMSIG_THEOLOGIST_TWISTED_CONVERSION_MODIFIERS "theologist_twisted_conversion_modifiers"
 
+/// Fired once when a Theologist healing power is used to collect modifiers to its snapshotted healing multiplier.
+/// Additive modifiers are summed onto 1 first, then every multiplicative factor is applied to that result.
+/// Args: (atom/healing_target, list/additive_healing_modifiers, list/multiplicative_healing_modifiers)
+#define COMSIG_THEOLOGIST_HEALING_MODIFIERS "theologist_healing_modifiers"
 
 // Standard Theologian costs
 #define THEOLOGIST_PIETY_TRIVIAL (THEOLOGIST_PIETY_MAX / 100)

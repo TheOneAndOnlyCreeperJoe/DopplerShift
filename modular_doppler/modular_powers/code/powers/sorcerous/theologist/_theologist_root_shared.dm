@@ -143,14 +143,14 @@
  * Starts (or re-targets) the link between the user and a clicked target.
  * Returning TRUE means: the power was used successfully and should start cooldown (and unset targeting mode).
  */
-/datum/action/cooldown/power/theologist/theologist_root/shared/use_action(mob/living/carbon/user, atom/target)
-	var/mob/living/new_target = target
-
+/datum/action/cooldown/power/theologist/theologist_root/shared/use_action(mob/living/carbon/user, mob/living/target)
 	// If already active, cleanly drop the existing link before re-targeting.
 	if(active)
 		clear_link(manual = TRUE)
 
-	current_target = new_target
+	// Snapshot healing modifiers once for the entire link.
+	snapshot_healing_multiplier(target)
+	current_target = target
 	last_check = 0
 	active = TRUE
 
@@ -249,22 +249,22 @@
 	// To summarize; heals the target by the amount (which is capped at 5)
 	switch(damage_type)
 		if("brute")
-			amount = clamp((giver.getBruteLoss() - taker.getBruteLoss()) / heal_division_factor, heal_min, heal_max)
+			amount = clamp((giver.getBruteLoss() - taker.getBruteLoss()) / heal_division_factor, heal_min, heal_max) * healing_multiplier
 			giver.adjustBruteLoss(-amount)
 			taker.adjustBruteLoss(amount)
 
 		if("burn")
-			amount = clamp((giver.getFireLoss() - taker.getFireLoss()) / heal_division_factor, heal_min, heal_max)
+			amount = clamp((giver.getFireLoss() - taker.getFireLoss()) / heal_division_factor, heal_min, heal_max) * healing_multiplier
 			giver.adjustFireLoss(-amount)
 			taker.adjustFireLoss(amount)
 
 		if("tox")
-			amount = clamp((giver.getToxLoss() - taker.getToxLoss()) / heal_division_factor, heal_min, heal_max)
+			amount = clamp((giver.getToxLoss() - taker.getToxLoss()) / heal_division_factor, heal_min, heal_max) * healing_multiplier
 			giver.adjustToxLoss(-amount, forced = TRUE)
 			taker.adjustToxLoss(amount, forced = TRUE)
 
 		if("oxy")
-			amount = clamp((giver.getOxyLoss() - taker.getOxyLoss()) / heal_division_factor, heal_min, heal_max)
+			amount = clamp((giver.getOxyLoss() - taker.getOxyLoss()) / heal_division_factor, heal_min, heal_max) * healing_multiplier
 			giver.adjustOxyLoss(-amount)
 			taker.adjustOxyLoss(amount)
 
@@ -291,6 +291,10 @@
 		var/fireloss = clamp((user.getFireLoss() - target.fireloss) / heal_division_factor, heal_min, heal_max)
 		var/toxloss = clamp((user.getToxLoss() - target.toxloss) / heal_division_factor, heal_min, heal_max)
 		var/oxyloss = clamp((user.getOxyLoss() - target.oxyloss) / heal_division_factor, heal_min, heal_max)
+		bruteloss *= healing_multiplier
+		fireloss *= healing_multiplier
+		toxloss *= healing_multiplier
+		oxyloss *= healing_multiplier
 		user.adjustBruteLoss(-bruteloss)
 		user.adjustFireLoss(-fireloss)
 		user.adjustToxLoss(-toxloss, forced = TRUE)
@@ -308,6 +312,10 @@
 		var/fireloss = clamp((target.fireloss - user.getFireLoss()) / heal_division_factor, heal_min, heal_max)
 		var/toxloss = clamp((target.toxloss - user.getToxLoss()) / heal_division_factor, heal_min, heal_max)
 		var/oxyloss = clamp((target.oxyloss - user.getOxyLoss()) / heal_division_factor, heal_min, heal_max)
+		bruteloss *= healing_multiplier
+		fireloss *= healing_multiplier
+		toxloss *= healing_multiplier
+		oxyloss *= healing_multiplier
 		user.adjustBruteLoss(bruteloss)
 		user.adjustFireLoss(fireloss)
 		user.adjustToxLoss(toxloss, forced = TRUE)
