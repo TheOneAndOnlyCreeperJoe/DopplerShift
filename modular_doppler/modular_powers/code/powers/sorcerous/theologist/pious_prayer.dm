@@ -3,7 +3,7 @@
 /datum/power/theologist/pious_prayer
 	name = "Pious Prayer"
 	desc = "Focus yourself into prayer. If you are in the Chapel, this grants you Piety unless you have 10 or more Piety. Performing prayers elsewhere only has a small chance to grant Piety. Being religious increases the efficiency of this skill.\
-	\nIn addition, all healing with Theologist powers is 20% better while you or your target are stood inside the Chapel."
+	\nIn addition, all healing with Theologist powers is increased by 20% while you or your target are stood inside the Chapel."
 	security_record_text = "Subject fuels their powers with visits to the Chapel."
 	value = 2
 
