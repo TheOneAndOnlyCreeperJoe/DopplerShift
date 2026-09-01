@@ -12,7 +12,7 @@
 	security_record_text = "Subject's healing powers transfer all damage on the target onto themselves, and allow them to remain conscious even in critical condition."
 	security_threat = POWER_THREAT_MINOR
 	value = 3
-	power_flags = POWER_HUMAN_ONLY | POWER_PROCESSES
+	power_flags = POWER_HUMAN_ONLY | POWER_PROCESSES | POWER_HEALING
 	required_powers = list(/datum/power/theologist_root/shared)
 
 	menu_icon = 'modular_doppler/modular_powers/icons/powers/actions_icons.dmi'

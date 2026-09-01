@@ -81,7 +81,7 @@
 #define POWER_PROCESSES (1<<1)
 /// This power is has a visual aspect in that it changes how the player looks. Used in generating dummies.
 #define POWER_CHANGES_APPEARANCE (1<<2)
-/// This power has healing mechanics which scale with global power healing modifiers.
+/// This power either has healing mechanics which scale with power healing modifiers or provides those modifiers.
 #define POWER_HEALING (1<<3)
 
 /// Security record categories for powers.

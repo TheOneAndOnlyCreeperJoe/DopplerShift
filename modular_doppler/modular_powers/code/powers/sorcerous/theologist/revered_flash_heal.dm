@@ -9,6 +9,7 @@
 	value = 3
 	required_powers = list(/datum/power/theologist_root/revered)
 	action_path = /datum/action/cooldown/power/theologist/revered_flash_heal
+	power_flags = POWER_HUMAN_ONLY | POWER_HEALING
 
 	/// Multiplier on the cooldown if Flash Heal was used on someone else.
 	var/recovery_period = 2.5

@@ -6,6 +6,7 @@
 	\nIn addition, all healing powers are increased by 20% while you or your target are stood inside the Chapel."
 	security_record_text = "Subject fuels their powers with visits to the Chapel."
 	value = 2
+	power_flags = POWER_HUMAN_ONLY | POWER_HEALING
 
 	action_path = /datum/action/cooldown/power/theologist/pious_prayer
 	required_powers = list(/datum/power/theologist_root)

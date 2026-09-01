@@ -11,6 +11,7 @@
 	\nYour healing powers now heal more if the target is laying down on a table or bed (scaling with that location's surgery efficiency, 15% on an operating table), if the target is under the effect of painkillers (15%) and if they are sleeping or sedated (20%).\
 	\nAll of these bonuses are additive with eachother, but the final number is multiplicative with other modifiers."
 	value = 4
+	power_flags = POWER_HUMAN_ONLY | POWER_HEALING
 
 	required_powers = list(/datum/power/theologist_root)
 	required_allow_subtypes = TRUE

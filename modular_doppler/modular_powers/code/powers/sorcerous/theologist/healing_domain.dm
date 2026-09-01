@@ -4,6 +4,7 @@
 	\n(Blessed Ground are tiles splashed with holy water. Conditions are snap-shot on cast, so the requirements only have to be fulfilled when you use the healing action.)"
 	mob_trait = TRAIT_SEE_BLESSED_TILES
 	value = 3
+	power_flags = POWER_HUMAN_ONLY | POWER_HEALING
 
 	required_powers = list(/datum/power/theologist_root)
 	required_allow_subtypes = TRUE

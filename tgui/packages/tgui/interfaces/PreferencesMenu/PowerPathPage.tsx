@@ -44,7 +44,7 @@ const powerIndicatorOrder = ['healing'] as const;
 const powerIndicatorConfig = {
   healing: {
     assetName: 'flag_healing_icon.png',
-    tooltip: 'This power has healing mechanics which scale with healing bonuses.',
+    tooltip: 'This power uses or provides power healing modifiers.',
   },
 } as const;
 const powerMagicIndicatorOrder = [

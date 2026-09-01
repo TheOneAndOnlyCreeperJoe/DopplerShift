@@ -8,5 +8,5 @@
 	menu_icon_state = "ash"
 
 	// removes magical and healing flags cause you are literally just a guy
-	power_flags = POWER_HUMAN_ONLY
+	power_flags = NONE
 	magic_flags = NONE

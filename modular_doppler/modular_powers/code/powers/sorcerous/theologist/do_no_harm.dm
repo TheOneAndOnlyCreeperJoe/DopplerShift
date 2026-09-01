@@ -4,6 +4,7 @@
 	Your healing powers are increased by a percentage equal to your Piety, but you are now a pacifist and unable to do harm onto others."
 	mob_trait = TRAIT_PACIFISM
 	value = 3
+	power_flags = POWER_HUMAN_ONLY | POWER_HEALING
 
 	required_powers = list(/datum/power/theologist_root)
 	required_allow_subtypes = TRUE
