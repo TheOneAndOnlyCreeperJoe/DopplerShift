@@ -35,11 +35,14 @@
 /datum/action/cooldown/power/theologist/theologist_root/revered/use_action(mob/living/user, mob/living/target)
 	if(active_effect)
 		qdel(active_effect)
-	// Snapshot healing modifiers once for the entire status effect.
-	snapshot_healing_multiplier(target)
 	active_effect = target.apply_status_effect(/datum/status_effect/power/burden_revered, src)
+	if(!active_effect)
+		return FALSE
+	// Snapshot after applying the status so Doctor's Craft can detect Burden Revered's analgesia.
+	snapshot_healing_multiplier(target)
+	active_effect.refresh_healing_values()
 	active = TRUE
-	if(active_effect && target == owner)
+	if(target == owner)
 		healing_self = TRUE
 	playsound(target, 'sound/effects/magic/staff_healing.ogg', 75, TRUE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 	to_chat(target, span_notice("[user] lays [user.p_their()] hand on you, and your wounds start to heal!"))
@@ -90,9 +93,13 @@
 /datum/status_effect/power/burden_revered/on_creation(mob/living/new_owner,	datum/action/cooldown/power/theologist/theologist_root/revered/passed_power)
 	. = ..()
 	burden_power = passed_power
-	if(burden_power) // inherit the healing from the power, for potential future upgrades / varedits.
-		healing_max = burden_power.healing_max * burden_power.healing_multiplier
-		base_healing_amount = burden_power.healing_amount * burden_power.healing_multiplier
+
+/// Refreshes the status effect's healing budget after the power snapshots its modifiers.
+/datum/status_effect/power/burden_revered/proc/refresh_healing_values()
+	if(!burden_power)
+		return
+	healing_max = burden_power.healing_max * burden_power.healing_multiplier
+	base_healing_amount = burden_power.healing_amount * burden_power.healing_multiplier
 
 
 // You might wonder why we run Destroy as well as on_remove. The issue is that on_remove can trigger on qdel, which invalidates burden_power, which prevents us from efficiently passing on the piety back to the owner.
