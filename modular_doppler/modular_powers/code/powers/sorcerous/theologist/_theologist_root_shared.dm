@@ -44,9 +44,9 @@
 	/// healing values
 	/// How much we divide HP by to determine our healing
 	var/heal_division_factor = 20
-	/// How much we heal at the minimum per tick
+	/// How much we heal at the minimum per second
 	var/heal_min = 0.5
-	/// How much we heal at the maximum per tick
+	/// How much we heal at the maximum per second
 	var/heal_max = 3
 
 /datum/action/cooldown/power/theologist/theologist_root/shared/Destroy()

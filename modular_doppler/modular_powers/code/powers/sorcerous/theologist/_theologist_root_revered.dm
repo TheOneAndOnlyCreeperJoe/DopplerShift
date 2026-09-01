@@ -15,7 +15,7 @@
 	desc = "Nullifies pain and slowly heals the targeted creature's burn and brute damage over a prolonged period of time. This may be yourself. \
 	Grants piety based on healing done, ends prematurely if the target reaches full health or if it is cast again. Does not work on synthetic bodyparts."
 	button_icon = 'modular_doppler/modular_powers/icons/powers/actions_icons.dmi'
-	button_icon_state = "burden_revered" // I need something better
+	button_icon_state = "burden_revered"
 	cooldown_time = 50
 	target_range = 1
 	target_type = /mob/living
@@ -29,7 +29,7 @@
 	var/healing_self = FALSE
 	/// The maximum amount we will heal.
 	var/healing_max = THEOLOGIST_ROOT_HEALING
-	/// The amount we heal per tick
+	/// The amount we heal per second
 	var/healing_amount = 1
 
 /datum/action/cooldown/power/theologist/theologist_root/revered/use_action(mob/living/user, mob/living/target)

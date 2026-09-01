@@ -1,6 +1,6 @@
 /datum/power/theologist_root/twisted
 	name = "A Burden Twisted"
-	desc = "Channel chaotic energies into another creature next to you. The target is healed in wildly varying amounts every few seconds, except for one randomly chosen damage-type (which cannot be suffocation, or it's currently highest damage taken). The target is then damaged for half that amount with the chosen damage-type. \
+	desc = "Channel chaotic energies into another creature next to you. The target is healed in wildly varying amounts every few seconds, except for one randomly chosen damage-type (which cannot be suffocation, or it's currently highest damage taken). The target is then damaged for half the healed amount with the chosen damage-type. \
 	\nOnce you heal a target with A Burden Twisted, all further uses of A Burden Twisted on that target twist all damage into that type for 5 minutes. \
 	\nGives Piety proportional to the net-positive amount of damage healed. Works on synthetic bodyparts."
 	security_record_text = "Subject can rapidly transmute the wounds of a target into smaller, insubstantial wounds."
@@ -10,7 +10,7 @@
 
 /datum/action/cooldown/power/theologist/theologist_root/twisted
 	name = "A Burden Twisted"
-	desc = "Channel chaotic energies into another creature next to you. The target is healed in wildly varying amounts every few seconds, except for one randomly chosen damage-type (which cannot be suffocation, or it's currently highest damage taken). The target is then damaged for half that amount with the chosen damage-type. \
+	desc = "Channel chaotic energies into another creature next to you. The target is healed in wildly varying amounts every few seconds, except for one randomly chosen damage-type (which cannot be suffocation, or it's currently highest damage taken). The target is then damaged for half the healed amount with the chosen damage-type. \
 	\nOnce you heal a target with A Burden Twisted, all further uses of A Burden Twisted on that target twist all damage into that type for 5 minutes. \
 	\nGives Piety proportional to the net-positive amount of damage healed. Works on synthetic bodyparts."
 	button_icon = 'icons/mob/actions/actions_cult.dmi'
@@ -22,12 +22,14 @@
 	target_self = FALSE
 	unset_after_click = TRUE
 
-	/// Minimum amount of healing from A Burden Twisted
+	/// Minimum amount of healing per application (heal_tick_wait)
 	var/heal_min = 1
-	/// Maximum amount of healing from A Burden Twisted
+	/// Maximum amount of healing per application (heal_tick_wait)
 	var/heal_max = 8
 	/// How much do we multiply the healing by and dish it out again as damage?
 	var/heal_to_damage_ratio = 0.5
+	/// How long it takes to the tick each heal
+	var/heal_tick_wait = 2 SECONDS
 	/// Set this to a damage type to bypass random selection and the highest-damage restriction.
 	var/fixed_damage_type
 	/// Tracks net-positive healing for piety.
@@ -63,7 +65,7 @@
 	// Does the healing and damage
 	while(active)
 		// Checks if we're interupted
-		if(!do_after(owner, 25, target = target))
+		if(!do_after(owner, heal_tick_wait, target = target))
 			break
 		// A dispel can occur while do_after is running, so check before applying another tick.
 		if(!active)
