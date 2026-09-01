@@ -99,11 +99,11 @@
 	for(var/additive_healing_modifier in additive_healing_modifiers)
 		healing_multiplier += additive_healing_modifier
 
-	// As to prevent hyperscaling, all multiplicatives are calculated adiditvely with eachother and then applied as one totaled multiplicative bonus.
-	var/combined_multiplicative_bonus = 0
+	// Compound all multiplicative bonus factors together, then apply the combined factor to the additive result in one batch.
+	var/combined_multiplicative_factor = 1
 	for(var/multiplicative_healing_modifier in multiplicative_healing_modifiers)
-		combined_multiplicative_bonus += multiplicative_healing_modifier
-	healing_multiplier *= (1 + combined_multiplicative_bonus)
+		combined_multiplicative_factor *= (1 + multiplicative_healing_modifier)
+	healing_multiplier *= combined_multiplicative_factor
 
 	healing_multiplier = max(0, healing_multiplier)
 	return healing_multiplier
