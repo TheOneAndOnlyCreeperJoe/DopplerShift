@@ -48,7 +48,7 @@
 		return FALSE
 	if(shared_target.ckey) // don't get piety from healing nobides
 		piety_component.adjust_piety(floor(oxyloss * THEOLOGIST_PIETY_HEALING_COEFFICIENT))
-		to_chat(owner, span_notice("Restoring [shared_target]'s breath has gained you piety!"))
+		to_chat(power_holder, span_notice("Restoring [shared_target]'s breath has gained you piety!"))
 
 	if(iscarbon(shared_target))
 		START_PROCESSING(SSpowers, src)

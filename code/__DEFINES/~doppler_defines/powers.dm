@@ -67,6 +67,7 @@
 #define COMSIG_MOB_POWER_ADDED "mob_power_added"
 /// Sent when a power is removed from a mob's power list: (datum/power/removed_power)
 #define COMSIG_MOB_POWER_REMOVED "mob_power_removed"
+
 /// Any traits granted by powers.
 #define POWER_TRAIT "power_trait"
 

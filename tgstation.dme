@@ -7699,6 +7699,7 @@
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\purify.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\revered_flash_heal.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\shared_breath_of_life.dm"
+#include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\shared_martyr_sacrifice.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\smiting_strike.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\smiting_strike_upgrades.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\time_of_need.dm"
