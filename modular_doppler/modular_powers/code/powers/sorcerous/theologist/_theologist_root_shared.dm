@@ -235,12 +235,12 @@
 	for(var/damage_type in user_damage)
 		var/user_amount = user_damage[damage_type]
 		var/target_amount = target_damage[damage_type]
-		if(transfer_mode == BURDEN_TRANSFER_DRAW_ALL)
+		if(transfer_mode == BURDEN_TRANSFER_DRAW_ALL) // Behaviour for when we only want to draw damage to us.
 			if(target_amount > 0)
 				equalize(target, user, damage_type, target_amount)
-		else if(target_amount > user_amount)
+		else if(target_amount > user_amount) // Standard behaviour where we transfer from the target to us.
 			equalize(target, user, damage_type, target_amount - user_amount)
-		else if(transfer_mode == BURDEN_TRANSFER_EQUALIZE && target_amount < user_amount)
+		else if(transfer_mode == BURDEN_TRANSFER_EQUALIZE && target_amount < user_amount) // Standard behaviour where we trasnfer from us to the target if our transfer-type allows it.
 			equalize(user, target, damage_type, user_amount - target_amount)
 
 /// Gets the damage of the affected creature.
@@ -276,15 +276,16 @@
 	adjust_transfer_piety(giver, taker, amount)
 
 /// Equalizes a carbon caster with a non-carbon target using their total damage rather than individual damage types.
+/// Carbons are different with damage-types compared to simples so we have to do this funky side-proc.
 /datum/action/cooldown/power/theologist/theologist_root/shared/proc/equalize_noncarbon(mob/living/carbon/user, mob/living/target)
 	var/user_damage = user.get_total_damage()
 	var/target_damage = target.get_total_damage()
-	if(transfer_mode == BURDEN_TRANSFER_DRAW_ALL)
+	if(transfer_mode == BURDEN_TRANSFER_DRAW_ALL) // Behaviour for when we only want to draw damage to us.
 		if(target_damage > 0)
 			transfer_noncarbon_damage(target, user, target_damage)
-	else if(target_damage > user_damage)
+	else if(target_damage > user_damage) // Standard behaviour where we transfer from the target to us.
 		transfer_noncarbon_damage(target, user, target_damage - user_damage)
-	else if(transfer_mode == BURDEN_TRANSFER_EQUALIZE && user_damage > target_damage)
+	else if(transfer_mode == BURDEN_TRANSFER_EQUALIZE && user_damage > target_damage) // Standard behaviour where we trasnfer from us to the target if our transfer-type allows it.
 		transfer_noncarbon_damage(user, target, user_damage - target_damage)
 
 /// Moves damage from a more-damaged living mob to a less-damaged one during non-carbon equalization.
@@ -294,7 +295,7 @@
 	if(iscarbon(giver))
 		amount_healed = giver.heal_ordered_damage(amount, list(BRUTE, BURN, TOX, OXY))
 	else
-		amount_healed = giver.adjustBruteLoss(-amount, forced = TRUE)
+		amount_healed = giver.adjustBruteLoss(-amount, forced = TRUE) // Non-carbons basically only have brute.
 	if(amount_healed <= 0)
 		return
 	taker.adjustBruteLoss(amount_healed, forced = !iscarbon(taker))
