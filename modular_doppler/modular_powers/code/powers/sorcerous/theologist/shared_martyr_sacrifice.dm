@@ -8,7 +8,7 @@
 	name = "Martyr's Sacrifice"
 	desc = "You give your life onto others, right up until the bitter end. A Burden Shared no longer transfers damage away from you, transfers at the maximum rate at all times (rather than scaling off of health difference) and will now keep transfering damage to you without an upper limit. It also has a much shorter cooldown. \
 	\nIn turn, you no longer fall unconscious in critical condition. Whilst in critical condition, you are incapable of partaking in combat and are afflicted with pacifism. If you do not have A Burden Shared active while in critical, your condition will deteriorate at an increasing rate. You will die as normal when reaching maximum damage.\
-	\nYour Theologist healing powers are much more potent the closer you are to death: 1% increased healing for every percentage of health lost. This bonus is multiplicative"
+	\nYour healing powers are much more potent the closer you are to death: 1% more healing for every percentage of health lost. This bonus is multiplicative"
 	security_record_text = "Subject's healing powers transfer all damage on the target onto themselves, and allow them to remain conscious even in critical condition."
 	security_threat = POWER_THREAT_MINOR
 	value = 3
@@ -41,12 +41,12 @@
 	power_holder.add_traits(list(TRAIT_NOSOFTCRIT, TRAIT_NOHARDCRIT), REF(src))
 	RegisterSignal(power_holder, COMSIG_POWER_ACTION_SUCCESS, PROC_REF(on_power_action_success))
 	RegisterSignal(power_holder, COMSIG_LIVING_HEALTH_UPDATE, PROC_REF(on_holder_health_updated))
-	RegisterSignal(power_holder, COMSIG_THEOLOGIST_HEALING_MODIFIERS, PROC_REF(add_healing_modifier))
+	RegisterSignal(power_holder, COMSIG_POWER_HEALING_MODIFIERS, PROC_REF(add_healing_modifier))
 	power_holder.updatehealth()
 
 /datum/power/theologist/shared_martyr_sacrifice/remove()
 	STOP_PROCESSING(SSpowers, src)
-	UnregisterSignal(power_holder, list(COMSIG_POWER_ACTION_SUCCESS, COMSIG_LIVING_HEALTH_UPDATE, COMSIG_THEOLOGIST_HEALING_MODIFIERS))
+	UnregisterSignal(power_holder, list(COMSIG_POWER_ACTION_SUCCESS, COMSIG_LIVING_HEALTH_UPDATE, COMSIG_POWER_HEALING_MODIFIERS))
 	power_holder?.remove_traits(list(TRAIT_NOSOFTCRIT, TRAIT_NOHARDCRIT), REF(src))
 	power_holder?.remove_status_effect(/datum/status_effect/power/martyrs_sacrifice)
 	power_holder?.updatehealth()
@@ -84,7 +84,7 @@
 	else
 		power_holder.remove_status_effect(/datum/status_effect/power/martyrs_sacrifice)
 
-/// Scales Theologist healing with the holder's missing-health percentage while protected by martyrdom.
+/// Scales healing powers with the holder's missing-health percentage while protected by martyrdom.
 /datum/power/theologist/shared_martyr_sacrifice/proc/add_healing_modifier(mob/living/source, atom/healing_target, list/additive_healing_modifiers, list/multiplicative_healing_modifiers)
 	SIGNAL_HANDLER
 	var/missing_health_percentage = (source.maxHealth - source.health) / source.maxHealth

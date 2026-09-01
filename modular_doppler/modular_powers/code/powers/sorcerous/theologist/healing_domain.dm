@@ -1,6 +1,6 @@
 /datum/power/theologist/healing_domain
 	name = "Healer's Domain"
-	desc = "There is an ambient power to Holy Water that you can wield. Your healing with Theologist powers is increased by 25% while you or your target are stood on blessed ground.\
+	desc = "There is an ambient power to Holy Water that you can wield. Your healing powers are increased by 25% while you or your target are stood on blessed ground.\
 	\n(Blessed Ground are tiles splashed with holy water. Conditions are snap-shot on cast, so the requirements only have to be fulfilled when you use the healing action.)"
 	mob_trait = TRAIT_SEE_BLESSED_TILES
 	value = 3
@@ -16,11 +16,11 @@
 
 /datum/power/theologist/healing_domain/add(client/client_source)
 	. = ..()
-	RegisterSignal(power_holder, COMSIG_THEOLOGIST_HEALING_MODIFIERS, PROC_REF(add_healing_modifier))
+	RegisterSignal(power_holder, COMSIG_POWER_HEALING_MODIFIERS, PROC_REF(add_healing_modifier))
 
 /datum/power/theologist/healing_domain/remove()
 	. = ..()
-	UnregisterSignal(power_holder, COMSIG_THEOLOGIST_HEALING_MODIFIERS)
+	UnregisterSignal(power_holder, COMSIG_POWER_HEALING_MODIFIERS)
 
 /// Adds Healing Domain's bonus if the caster or target is on blessed ground when the healing power snapshots its modifiers.
 /datum/power/theologist/healing_domain/proc/add_healing_modifier(mob/living/source, atom/healing_target, list/additive_healing_modifiers, list/multiplicative_healing_modifiers)

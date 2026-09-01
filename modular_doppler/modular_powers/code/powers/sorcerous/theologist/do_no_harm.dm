@@ -1,7 +1,7 @@
 /datum/power/theologist/do_no_harm
 	name = "Do No Harm"
 	desc = "Those that take the Hippocratic Oath abstain from all intentional wrong-doing and harm; and your adherence to this oath empowers you. \
-	Your healing with Theologist powers is increased by a percentage equal to your Piety, but you are now a pacifist and unable to do harm onto others."
+	Your healing powers are increased by a percentage equal to your Piety, but you are now a pacifist and unable to do harm onto others."
 	mob_trait = TRAIT_PACIFISM
 	value = 3
 
@@ -16,11 +16,11 @@
 
 /datum/power/theologist/do_no_harm/add(client/client_source)
 	. = ..()
-	RegisterSignal(power_holder, COMSIG_THEOLOGIST_HEALING_MODIFIERS, PROC_REF(add_healing_modifier))
+	RegisterSignal(power_holder, COMSIG_POWER_HEALING_MODIFIERS, PROC_REF(add_healing_modifier))
 
 /datum/power/theologist/do_no_harm/remove()
 	. = ..()
-	UnregisterSignal(power_holder, COMSIG_THEOLOGIST_HEALING_MODIFIERS)
+	UnregisterSignal(power_holder, COMSIG_POWER_HEALING_MODIFIERS)
 
 /// Adds Do No Harm's percentage bonus to the additive healing modifiers while the holder remains a pacifist.
 /datum/power/theologist/do_no_harm/proc/add_healing_modifier(mob/living/source, atom/healing_target, list/additive_healing_modifiers, list/multiplicative_healing_modifiers)

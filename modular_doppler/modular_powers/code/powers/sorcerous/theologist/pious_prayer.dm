@@ -3,7 +3,7 @@
 /datum/power/theologist/pious_prayer
 	name = "Pious Prayer"
 	desc = "Focus yourself into prayer. If you are in the Chapel, this grants you Piety unless you have 10 or more Piety. Performing prayers elsewhere only has a small chance to grant Piety. Being religious increases the efficiency of this skill.\
-	\nIn addition, all healing with Theologist powers is increased by 20% while you or your target are stood inside the Chapel."
+	\nIn addition, all healing powers are increased by 20% while you or your target are stood inside the Chapel."
 	security_record_text = "Subject fuels their powers with visits to the Chapel."
 	value = 2
 
@@ -16,11 +16,11 @@
 
 /datum/power/theologist/pious_prayer/add(client/client_source)
 	. = ..()
-	RegisterSignal(power_holder, COMSIG_THEOLOGIST_HEALING_MODIFIERS, PROC_REF(add_healing_modifier))
+	RegisterSignal(power_holder, COMSIG_POWER_HEALING_MODIFIERS, PROC_REF(add_healing_modifier))
 
 /datum/power/theologist/pious_prayer/remove()
 	. = ..()
-	UnregisterSignal(power_holder, COMSIG_THEOLOGIST_HEALING_MODIFIERS)
+	UnregisterSignal(power_holder, COMSIG_POWER_HEALING_MODIFIERS)
 
 /// Adds Pious Prayer's healing bonus if either the healer or their target is inside the Chapel when healing is snapshotted.
 /datum/power/theologist/pious_prayer/proc/add_healing_modifier(mob/living/source, atom/healing_target, list/additive_healing_modifiers, list/multiplicative_healing_modifiers)

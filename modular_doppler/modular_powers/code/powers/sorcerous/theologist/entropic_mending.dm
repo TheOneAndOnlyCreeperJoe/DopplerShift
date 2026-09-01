@@ -10,6 +10,7 @@ Entropic Mending removes wounds (sometimes) and speeds up the target's metabolis
 	security_record_text = "Subject can accelerate a target's bodily functions (e.g metabolism) to be thrice as fast, and mend lingering wounds."
 	action_path = /datum/action/cooldown/power/theologist/entropic_mending
 	value = 5
+	power_flags = POWER_HUMAN_ONLY | POWER_HEALING
 
 	required_powers = list(/datum/power/theologist_root)
 	required_allow_subtypes = TRUE

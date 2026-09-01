@@ -8,7 +8,7 @@
 /datum/power/theologist/doctors_craft
 	name = "Doctor's Craft"
 	desc = "Even if your healing magic works as is, you manage to mix your craft with modern technology to get the most out of it.\
-	\nYour Theologist powers now heal more if the target is laying down on a table or bed (scaling with that location's surgery efficiency, 15% on an operating table), if the target is under the effect of painkillers (15%) and if they are sleeping or sedated (20%).\
+	\nYour healing powers now heal more if the target is laying down on a table or bed (scaling with that location's surgery efficiency, 15% on an operating table), if the target is under the effect of painkillers (15%) and if they are sleeping or sedated (20%).\
 	\nAll of these bonuses are additive with eachother, but the final number is multiplicative with other modifiers."
 	value = 4
 
@@ -27,11 +27,11 @@
 
 /datum/power/theologist/doctors_craft/add(client/client_source)
 	. = ..()
-	RegisterSignal(power_holder, COMSIG_THEOLOGIST_HEALING_MODIFIERS, PROC_REF(add_healing_modifier))
+	RegisterSignal(power_holder, COMSIG_POWER_HEALING_MODIFIERS, PROC_REF(add_healing_modifier))
 
 /datum/power/theologist/doctors_craft/remove()
 	. = ..()
-	UnregisterSignal(power_holder, COMSIG_THEOLOGIST_HEALING_MODIFIERS)
+	UnregisterSignal(power_holder, COMSIG_POWER_HEALING_MODIFIERS)
 
 /// Adds bonuses for treating a properly positioned, pain-free, and/or sedated patient when healing is snapshotted.
 /datum/power/theologist/doctors_craft/proc/add_healing_modifier(mob/living/source, atom/healing_target, list/additive_healing_modifiers, list/multiplicative_healing_modifiers)
