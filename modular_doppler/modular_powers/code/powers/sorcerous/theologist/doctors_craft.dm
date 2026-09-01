@@ -60,5 +60,5 @@
 
 	// Maths out the total bonus and sends it.
 	if(total_healing_bonus)
-		multiplicative_healing_modifiers += (1 + total_healing_bonus)
+		multiplicative_healing_modifiers += total_healing_bonus
 	return NONE

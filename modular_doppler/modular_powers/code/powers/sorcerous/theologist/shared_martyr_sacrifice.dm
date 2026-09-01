@@ -88,7 +88,7 @@
 /datum/power/theologist/shared_martyr_sacrifice/proc/add_healing_modifier(mob/living/source, atom/healing_target, list/additive_healing_modifiers, list/multiplicative_healing_modifiers)
 	SIGNAL_HANDLER
 	var/missing_health_percentage = (source.maxHealth - source.health) / source.maxHealth
-	multiplicative_healing_modifiers += max(1, 1 + missing_health_percentage)
+	multiplicative_healing_modifiers += max(0, missing_health_percentage)
 	return NONE
 
 /// Rewards a death under martyrdom and increases the user's max piety for that round.

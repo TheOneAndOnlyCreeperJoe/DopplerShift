@@ -68,7 +68,7 @@
 /// Sent when a power is removed from a mob's power list: (datum/power/removed_power)
 #define COMSIG_MOB_POWER_REMOVED "mob_power_removed"
 /// Fired when a healing power collects modifiers for a snapshotted mob-healing calculation.
-/// Additive modifiers are summed onto 1 first, then every multiplicative factor is applied to that result.
+/// Additive modifiers are summed onto 1 first. Multiplicative bonuses are also summed, then applied to the additive result as one factor.
 /// Args: (atom/healing_target, list/additive_healing_modifiers, list/multiplicative_healing_modifiers)
 #define COMSIG_POWER_HEALING_MODIFIERS "power_healing_modifiers"
 
