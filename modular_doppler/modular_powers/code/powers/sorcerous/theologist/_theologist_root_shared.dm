@@ -14,7 +14,7 @@
 	security_threat = POWER_THREAT_MAJOR
 	action_path = /datum/action/cooldown/power/theologist/theologist_root/shared
 
-	value = 5
+	value = 4
 
 /datum/action/cooldown/power/theologist/theologist_root/shared
 	name = "A Burden Shared"

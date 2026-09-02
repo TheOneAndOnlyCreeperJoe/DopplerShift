@@ -11,7 +11,7 @@
 	\nYour healing powers are much more potent the closer you are to death: 1% more healing for every percentage of health lost. This bonus is multiplicative"
 	security_record_text = "Subject's healing powers transfer all damage on the target onto themselves, and allow them to remain conscious even in critical condition."
 	security_threat = POWER_THREAT_MINOR
-	value = 3
+	value = 2
 	power_flags = POWER_HUMAN_ONLY | POWER_PROCESSES | POWER_HEALING
 	required_powers = list(/datum/power/theologist_root/shared)
 
