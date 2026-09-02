@@ -25,7 +25,7 @@
 /datum/psyker_event/catastrophic/emp_wave/execute(mob/living/carbon/human/psyker)
 	// Rolls how often we'll pulse
 	pulses_remaining = rand(minimum_pulses, maximum_pulses)
-	// Appleis a lingering overlay
+	// Applies a lingering overlay
 	overloading_psyker = psyker
 	overload_overlay = mutable_appearance(
 		icon = 'icons/effects/effects.dmi',

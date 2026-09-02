@@ -47,13 +47,13 @@
 
 /// Creates, removes, or refreshes the stress warning to match the organ's current state.
 /obj/item/organ/resonant/psyker/proc/update_stress_warning()
-	if(!owner || !is_functional() || !has_compatible_root() || stress <= 0) // whenever we shouldn't display the warning. no owner, organ broke, no stress etc.
+	if(isnull(owner) || !is_functional() || !has_compatible_root() || stress <= 0) // whenever we shouldn't display the warning. no owner, organ broke, no stress etc.
 		if(owner && stress_warning)
 			owner.remove_status_effect(/datum/status_effect/power/stress_warning)
 		stress_warning = null
 		return
 
-	if(!stress_warning) // apply the stress warning if its not there yet.
+	if(isnull(stress_warning)) // apply the stress warning if its not there yet.
 		stress_warning = owner.apply_status_effect(/datum/status_effect/power/stress_warning)
 	stress_warning?.update_stress_alert(stress, stress_threshold, coping_method)
 
@@ -258,7 +258,7 @@
 
 /// Updates the alert's icon, name and desc to reflect stress + use the appropriate coping method per organ.
 /datum/status_effect/power/stress_warning/proc/update_stress_alert(current_stress, current_stress_threshold, coping_method)
-	if(!linked_alert || current_stress_threshold <= 0)
+	if(isnull(linked_alert) || (current_stress_threshold <= 0))
 		return
 
 	// calculates which special icon we should based on stress

@@ -4,7 +4,7 @@
  * It's that famous scene where the dude's head explodes. That's you. You're dead.
 */
 /datum/psyker_event/catastrophic/head_explodes
-	weight = PSYKER_EVENT_RARITY_VERYRARE // its instant fucking death
+	weight = PSYKER_EVENT_RARITY_VERYRARE // it's instant fucking death
 	lingering = TRUE
 	/// Number of one-second warning ticks before the Psyker's head explodes.
 	var/ringing_ticks = 10
@@ -128,7 +128,7 @@
 
 	// YEETS THE BRAIN
 	if(ejected_brain && !QDELETED(ejected_brain))
-		ejected_brain.throw_at(	get_edge_target_turf(explosion_turf, pick(GLOB.alldirs)), range = rand(2, 4), speed = 5,thrower = psyker)
+		ejected_brain.throw_at(	get_edge_target_turf(explosion_turf, pick(GLOB.alldirs)), range = rand(2, 4), speed = 5, thrower = psyker)
 
 	// ok were done
 	qdel(src)

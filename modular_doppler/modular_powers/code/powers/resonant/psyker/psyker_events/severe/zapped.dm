@@ -6,7 +6,7 @@
 
 /datum/psyker_event/severe/zapped/execute(mob/living/carbon/human/psyker)
 	var/obj/item/bodypart/affected_bodypart = psyker.get_bodypart(psyker.get_random_valid_zone())
-	if(!affected_bodypart)
+	if(isnull(affected_bodypart))
 		return FALSE
 
 	var/shock_flags = SHOCK_NOGLOVES | SHOCK_NOSTUN | SHOCK_SUPPRESS_MESSAGE

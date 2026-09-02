@@ -20,7 +20,7 @@
 	/// Stress recovered per second while stimulated.
 	var/stimulant_recovery_per_second = PSYKER_STRESS_TRIVIAL * 2.5
 	/// Stress recovered per second while stimulated with the All-Nighter quirk.
-	var/all_nighter_recovery_per_second = PSYKER_STRESS_TRIVIAL *3
+	var/all_nighter_recovery_per_second = PSYKER_STRESS_TRIVIAL * 3
 
 /datum/power/psyker_power/stimulant_boost/add(client/client_source)
 	. = ..()
@@ -37,7 +37,7 @@
 	SIGNAL_HANDLER
 
 	// Originally this was going to be designed to be caffeine but nooo, we don't have that as chem, noooo we have to use this silly trait.
-	if(!chemotropic_organ || !HAS_TRAIT(source, TRAIT_STIMULATED))
+	if(isnull(chemotropic_organ) || !HAS_TRAIT(source, TRAIT_STIMULATED))
 		return NONE
 
 	var/recovery_per_second = stimulant_recovery_per_second
