@@ -27,7 +27,7 @@
 	/// Oxygen damage dealt on the first unsupported critical tick.
 	var/unshared_critical_damage = 0.5
 	/// Additional oxygen damage dealt for each consecutive unsupported second.
-	var/unshared_critical_damage_growth = 0.1
+	var/unshared_critical_damage_growth = 0.25
 	/// Whether this power has already granted its once-per-round piety cap reward.
 	var/martyr_reward_claimed = FALSE
 
