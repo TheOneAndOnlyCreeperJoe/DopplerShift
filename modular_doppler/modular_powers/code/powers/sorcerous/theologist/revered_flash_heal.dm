@@ -25,7 +25,7 @@
 
 	/// The Revered action whose active effect this action finishes.
 	var/datum/action/cooldown/power/theologist/theologist_root/revered/revered_action
-	/// The current Burden Revered effect, refreshed when this action is validated.
+	/// The current Burden Revered effect.
 	var/datum/status_effect/power/burden_revered/active_effect
 
 /datum/action/cooldown/power/theologist/revered_flash_heal/Grant(mob/granted_to)
@@ -53,17 +53,14 @@
 /datum/action/cooldown/power/theologist/revered_flash_heal/use_action(mob/living/user, atom/target)
 	var/mob/living/heal_target = active_effect.owner
 
+	// How much of our healing we still have left to do.
 	var/healing_remaining = active_effect.healing_max - active_effect.healing_done
-	// Do not calculate recovery from unused healing budget when the target has less damage left.
-	// Revered targets living mobs generally, so use the generic damage accessors here rather
-	// than carbon-only bodypart helpers.
-	var/target_damage_remaining = heal_target.getBruteLoss() + heal_target.getFireLoss()
-	var/effective_healing_remaining = min(healing_remaining, target_damage_remaining)
-	// Convert the effective remaining healing budget into the time Revered would have needed to heal its current target.
-	var/remaining_healing_time = (effective_healing_remaining / active_effect.base_healing_amount) SECONDS
-	heal_target.heal_overall_damage(brute = healing_remaining, burn = healing_remaining, required_bodytype = BODYTYPE_ORGANIC)
-	// Mark the entire budget as spent before expiring the effect, so normal Revered cleanup and piety reporting happen as normal.
-	active_effect.healing_done = active_effect.healing_max
+	// Just let Revered handle the heal itself which is way neater.
+	var/actual_healing = active_effect.heal_damage(healing_remaining)
+	// Convert the actual healing into the time Revered would have needed to heal its current target.
+	var/remaining_healing_time = (actual_healing / active_effect.base_healing_amount) SECONDS
+	// Record only the healing that was actually applied before normal Revered cleanup and piety reporting.
+	active_effect.healing_done += actual_healing
 	active_effect.expire()
 
 	var/datum/power/theologist/revered_flash_heal/flash_power = origin_power
