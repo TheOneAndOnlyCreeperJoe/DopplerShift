@@ -1,5 +1,0 @@
-author: "ApplePlastic"
-delete-after: True
-changes:
-  - rscadd: "Added the SGM Hormone Regulator into the Augmented skill-tree"
-  - balance: "slightly reworks demoneye into a melee-improving combat chem"
