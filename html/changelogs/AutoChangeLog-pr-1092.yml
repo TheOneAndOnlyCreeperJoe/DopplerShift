@@ -1,0 +1,5 @@
+author: "dawsonkeyes"
+delete-after: True
+changes:
+  - balance: "Cantina Regulars & Bartenders have a default 20 telecrystals to spend again"
+  - balance: "The Curfew & Sundown has received an audit and has less free equipment available"
