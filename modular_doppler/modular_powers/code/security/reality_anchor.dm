@@ -45,7 +45,7 @@
 	if(!isliving(user))
 		return
 	var/mob/living/living_user = user
-	if(living_user.has_power_in_archetype(POWER_ARCHETYPE_SORCEROUS, magic_filter = POWER_MAGIC_FILTER_MAGICAL) || living_user.has_power_in_archetype(POWER_ARCHETYPE_RESONANT, magic_filter = POWER_MAGIC_FILTER_MAGICAL))
+	if(living_user.has_magical_power_in_archetype(POWER_ARCHETYPE_SORCEROUS) || living_user.has_magical_power_in_archetype(POWER_ARCHETYPE_RESONANT))
 		. += span_bold(span_red("Even looking at it makes you feel uncomfortable."))
 
 // Turns the thing on or off after the do_after.
@@ -256,16 +256,16 @@
 		to_chat(owner, span_userdanger("You sense your powers being suppressed, and you are wracked with an excruciating pain spreading throughout your entire body! MAKE IT STOP!"))
 		return
 	if(owner_archetype == POWER_ARCHETYPE_RESONANT)
-		to_chat(owner, span_boldwarning("You sense your powers being suppressed, and you begin to feel extremely unwell!"))
+		to_chat(owner, span_userdanger("You sense your powers being suppressed, and you begin to feel extremely unwell!"))
 	// no message for mortal since they barely notice anything.
 
 /// Determines and stores the owner's archetype for all of the anchor's effects.
 /datum/status_effect/power/reality_anchor_silenced/proc/set_anchor_archetype()
 	owner_archetype = POWER_ARCHETYPE_MORTAL
-	if(owner.has_power_in_archetype(POWER_ARCHETYPE_SORCEROUS, magic_filter = POWER_MAGIC_FILTER_MAGICAL))
+	if(owner.has_magical_power_in_archetype(POWER_ARCHETYPE_SORCEROUS))
 		owner_archetype = POWER_ARCHETYPE_SORCEROUS
 		return
-	if(owner.has_power_in_archetype(POWER_ARCHETYPE_RESONANT, magic_filter = POWER_MAGIC_FILTER_MAGICAL))
+	if(owner.has_magical_power_in_archetype(POWER_ARCHETYPE_RESONANT))
 		owner_archetype = POWER_ARCHETYPE_RESONANT
 
 /// Delegates the appropriate moodlet to the appropriate archetype.
@@ -322,7 +322,7 @@
 
 /atom/movable/screen/alert/status_effect/reality_anchor_silenced
 	name = "Silenced"
-	desc = "Resonant powers are supressed around the reality anchor!"
+	desc = "Resonant powers are suppressed around the reality anchor!"
 	icon = 'modular_doppler/modular_powers/icons/items/reality_anchor.dmi'
 	icon_state = "reality_anchor"
 
@@ -336,7 +336,7 @@
 	special_screen_obj = "mood_despair"
 
 /datum/mood_event/reality_anchor_silenced/resonant
-	description = "My chest hurts, my stomach cramps, my mind aches. My magic is supressed; and it makes me sick!"
+	description = "My chest hurts, my stomach cramps, my mind aches. My magic is suppressed; and it makes me sick!"
 	mood_change = -10
 	special_screen_obj = "mood_happiness_bad"
 
