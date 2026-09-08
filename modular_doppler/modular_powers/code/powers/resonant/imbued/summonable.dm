@@ -2,6 +2,7 @@
 	You can be summoned by speaking a specific keyword, in a certain language, with a ton of caveats.
 */
 #define SUMMONABLE_LANGUAGE_ANY "Any"
+
 /datum/power/imbued/summonable
 	name = "Summonable"
 	desc = "By speaking a specific name or word (and depending on your choice: in a specific language), you appear next to the speaker after a short delay. The summoning takes time, you are stunned throughout, is entirely involuntary and can only be stopped by being silenced, buckled, wearing magboots or by being dispelled.\
@@ -234,13 +235,12 @@
 		return null
 	return pick(candidates)
 
-/// Keeps Summonable off forbidden z-levels.
+/// Returns whether the component's owner can teleport to the target turf.
 /datum/component/summonable/proc/can_summon_to_turf(turf/target_turf)
-	if(!target_turf)
+	if(!target_turf || !ismovable(parent))
 		return FALSE
-	if(is_centcom_level(target_turf.z)) // no more sneaking into centcomm because a medibot said "an apple a day keeps me away"
-		return FALSE
-	return TRUE
+	var/atom/movable/summoned = parent
+	return check_teleport_valid(summoned, target_turf, TELEPORT_CHANNEL_MAGIC, original_destination = target_turf)
 
 /// Prevents summoning to locations the summoned can already see.
 /datum/component/summonable/proc/destination_is_visible_to_summoned(atom/movable/summoned, turf/target_turf)
@@ -317,10 +317,7 @@
 
 	var/obj/effect/temp_visual/spotlight/summonable/origin_spotlight = new(origin_turf, rune_color)
 
-	living_summoned.visible_message(
-		visible_message_text,
-		self_message_text
-	)
+	living_summoned.visible_message(visible_message_text, self_message_text)
 	ADD_TRAIT(living_summoned, TRAIT_IMMOBILIZED, "summonable_apport")
 	living_summoned.Shake(pixelshiftx = 2, pixelshifty = 1, duration = resist_lock_time, shake_interval = 0.04 SECONDS)
 	addtimer(CALLBACK(src, PROC_REF(finish_resisted_summon), living_summoned, origin_spotlight), resist_lock_time)
@@ -374,7 +371,10 @@
 	var/obj/effect/temp_visual/spotlight/summonable/spotlight = new(target_turf, rune_color)
 	fade_and_clear_runes(runes)
 
-	summoned.forceMove(target_turf)
+	if(!do_teleport(summoned, target_turf, no_effects = TRUE, channel = TELEPORT_CHANNEL_MAGIC, forced = TRUE))
+		cancel_summon(summoned)
+		QDEL_NULL(spotlight)
+		return
 	summoned.alpha = 0
 	summoned.pixel_y = 32
 	animate(summoned, alpha = old_alpha, pixel_y = old_pixel_y, time = float_time)
