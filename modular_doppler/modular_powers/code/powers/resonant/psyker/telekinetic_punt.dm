@@ -2,7 +2,7 @@
 /*
 	So, power that launches the best nearby object at people. This has a lot of nuance, especially with my insistence on being able to preview which item you will throw.
 	This means we on the fly need to compute the best object, before its thrown, and in a way that does not kill the server's processing.
-	The datum/telekentic_punt_preview below the action is the best I could do there. When moving your mouse over a tile, it gets the best nearby object to be thrown towards that tile. You can lock objects with middle click too.
+	The datum/telekinetic_punt_preview below the action is the best I could do there. When moving your mouse over a tile, it gets the best nearby object to be thrown towards that tile. You can lock objects with middle click too.
 */
 
 /datum/power/psyker_power/telekinetic_punt
@@ -16,7 +16,7 @@
 	required_powers = list(/datum/power/psyker_power/telekinesis)
 	required_allow_subtypes = FALSE
 	action_path = /datum/action/cooldown/power/psyker/telekinetic_punt
-	magic_flags = POWER_MAGIC_STANDARD // You ain't targeting their mind you're targetting their skull
+	magic_flags = POWER_MAGIC_STANDARD // You ain't targeting their mind you're targeting their skull
 
 /datum/action/cooldown/power/psyker/telekinetic_punt
 	name = "Telekinetic Punt"
@@ -89,7 +89,7 @@
 	// Finds the turf that you currently are hovering over.
 	var/turf/cursor_turf = preview_datum.get_cursor_turf(target)
 
-	// If we are NOT locked onto a specific object and the current object does not pass as valid, we try to find a new valid target to lock o nanyway.
+	// If we are NOT locked onto a specific object and the current object does not pass as valid, we try to find a new valid target to lock on anyway.
 	if(!preview_datum.lock_chambered_target && !is_valid_punt_candidate(user, preview_datum.cached_punt_target, cursor_turf))
 		preview_datum.refresh_cached_punt_target(cursor_turf)
 	// If we ARE locked onto a specific object...
@@ -320,7 +320,7 @@
 /*
 	This datum largely handles selecting an appropriate item to yeet. If its on a tile that it hasn't processed yet, it will attempt to process it, getting all valid targets within the action's range.
 	Once it gets a target, it will select it as cached_punt_target.
-	The targetting system has a few specific biases for gameplay:
+	The targeting system has a few specific biases for gameplay:
 	- Items are treated as dealing 10% less damage for every turf they are away from the moused-over turf, up to the maximum range of Telekinetic Punt.
 	- Diagonals count as 0.5 turfs further away so that it biases towards horizontal/vertical targets.
 	- If there is a valid target on the mouse-over turf, it will prefer that.
