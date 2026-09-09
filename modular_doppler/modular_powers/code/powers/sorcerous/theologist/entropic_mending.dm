@@ -5,7 +5,7 @@ Entropic Mending removes wounds (sometimes) and speeds up the target's metabolis
 /datum/power/theologist/entropic_mending
 	name = "Entropic Mending"
 	desc = "Entropy's a long road, a few steps further along it will do you more good than harm. Spend 5 Piety to touch another humanoid and attempt to restore its lingering wounds. \
-	Moderate wounds will be healed automatically; all other wounds have a random chance to heal depending on severity. Bonuses to healing with this power increase this chance with diminishing returns (100% healing bonus effectively doublles this chance). \
+	Moderate wounds will be healed automatically; all other wounds have a random chance to heal depending on severity. Bonuses to healing with this power increase this chance with diminishing returns (100% healing bonus effectively doubles this chance). \
 	Invoking this power will cause temporary, lingering entropic effects on the target; such as increased metabolism, hunger and blood replenishment, at triple pace."
 	security_record_text = "Subject can accelerate a target's bodily functions (e.g metabolism) to be thrice as fast, and mend lingering wounds."
 	action_path = /datum/action/cooldown/power/theologist/entropic_mending
