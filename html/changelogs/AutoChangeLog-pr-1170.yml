@@ -1,0 +1,12 @@
+author: "TheOneAndOnlyCreeperJoe"
+delete-after: True
+changes:
+  - rscadd: "Psyker Stress now communicates what stage of stress you are while below the stress threshold."
+  - rscadd: "Androids now have 2 unique stress events that explicitly target them. Suffer."
+  - rscadd: "Psykers now have a chance to have their head explode. No, I won't elaborate."
+  - rscadd: "Chemotropic gland now has an upgrade that lets you de-stress from caffeine consumption. Sponsored by Monster Energy."
+  - balance: "Psyker Stress Threshold now starts at 75 (prev 100), but that threshold increases by 5% per point put into Psyker. The more Psyker you are, the better you Psyker."
+  - code_imp: "Chemotropic gland can now be fed arbitrary numbers by other powers, allowing others to easily add custom chemicals that it can process."
+  - bugfix: "Androids are no longer affected by Psyker events that can't affect them (such as cardiac arrest)."
+  - bugfix: "Chemotropic no longer works with chemicals that aren't being naturally processed (such as androids with meth)"
+  - bugfix: "Chemotropic not being able to experience a catastrophic stress event while recovering stress."
