@@ -20,8 +20,8 @@ Entropic Mending removes wounds (sometimes) and speeds up the target's metabolis
 	desc = "Entropy's a long road, a few steps further along it will do you more good than harm. Spend 5 Piety to touch another humanoid and attempt to restore its lingering wounds. \
 	Moderate wounds will be healed automatically; all other wounds have a random chance to heal depending on severity. Bonuses to healing with this power increase this chance with diminishing returns. \
 	Invoking this power will cause temporary, lingering entropic effects on the target; such as increased metabolism, hunger and blood replenishment, at triple pace."
-	button_icon = 'icons/mob/actions/actions_cult.dmi'
-	button_icon_state = "manip"
+	button_icon = 'icons/obj/toys/hourglass.dmi'
+	button_icon_state = "hourglass_4"
 	cooldown_time = 150
 	target_range = 1
 	target_type = /mob/living/carbon/human
