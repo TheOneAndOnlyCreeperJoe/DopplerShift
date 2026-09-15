@@ -313,6 +313,10 @@ There’s a few generic helper functions you can call for various purposes, to d
 - has_power_in_path() returns TRUE if the mob has any power that belongs to the specified power path, for example if you want to know if someone has any thaumaturgic powers.
   - This accepts the POWER_PATH_X defines, so it’d look something like POWER_PATH_THAUMATURGE.
 
+- has_magical_power_in_path() and has_magical_power_in_archetype() only match powers whose power definition has magic flags. Their optional `magic_flags` argument accepts `POWER_MAGIC_X` flags and defaults to any magic flag.
+
+- has_nonmagical_power_in_path() and has_nonmagical_power_in_archetype() only match powers whose power definition has no magic flags.
+
 - get_power() returns a specific instance of a power on a mob if they have it. It takes a power’s typepath as its argument.
 
 - get_power_string() returns a printable string of ALL the powers the mob has into one joined string.
