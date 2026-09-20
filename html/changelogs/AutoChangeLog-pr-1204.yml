@@ -1,0 +1,4 @@
+author: "firebudgy"
+delete-after: True
+changes:
+  - balance: "Jaws of Recovery can now open security airlocks, as well as being added to the medical equipment strap's item list."
