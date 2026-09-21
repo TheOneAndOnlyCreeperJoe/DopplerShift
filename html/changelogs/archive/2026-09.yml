@@ -92,3 +92,11 @@
   - rscdel: Port Safety has discontinued unwanted loaners from surplus stockpiles.
   - rscadd: 'Cybersun present: the hoshi and hyeseong modular laser platforms, in
       conjunction with Port Safety Materiel Requisitions.'
+2026-09-21:
+  Pink-MB:
+  - rscadd: Added gender selection to Ethereals
+  firebudgy:
+  - balance: Jaws of Recovery can now open security airlocks, as well as being added
+      to the medical equipment strap's item list.
+  kittysmooch:
+  - rscadd: New garments are available at local retail.
