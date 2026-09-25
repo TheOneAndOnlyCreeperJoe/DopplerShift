@@ -163,8 +163,8 @@ PROCESSING_SUBSYSTEM_DEF(powers)
 			if(!user.add_archetype_power(power_type, client_source = applied_client))
 				continue
 			assigned_power_names += power_type.name
-			SSblackbox.record_feedback("tally", "powers_taken", 1, "[power_type.name]")
 
+	// Adds the whole loadout, the name of the person and their role to the loadout.
 	SSblackbox.record_feedback("associative", "power_spawn_loadouts", 1, list(
 		"spawn_type" = spawn_type,
 		"mob_name" = user.real_name || user.name || "Unknown",
