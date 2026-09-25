@@ -122,14 +122,22 @@ PROCESSING_SUBSYSTEM_DEF(powers)
 			continue
 		powers[initial(power_type.name)] = power_type
 
-/// Assigns all powers in the player's preferences onto the mob.
-/datum/controller/subsystem/processing/powers/proc/assign_powers(mob/living/user, client/applied_client)
+/**
+ * Assigns all powers in the player's preferences onto the mob and records the powers successfully granted.
+ *
+ * Arguments:
+ * * user - Mob receiving the powers.
+ * * applied_client - Client whose preferences are being applied.
+ * * spawn_type - Broad context in which the mob is receiving its spawn powers.
+ */
+/datum/controller/subsystem/processing/powers/proc/assign_powers(mob/living/user, client/applied_client, spawn_type = POWER_SPAWN_OTHER)
 	// No powers are given if the admins have turned on power spawning.
 	if(!spawn_powers_enabled)
 		return
 
 	var/bad_power = FALSE
 	var/list/powers_by_priority = list()
+	var/list/assigned_power_names = list()
 	for(var/power_name in applied_client.prefs.all_powers)
 		var/datum/power/power_type = powers[power_name]
 		if(!ispath(power_type))
@@ -154,7 +162,15 @@ PROCESSING_SUBSYSTEM_DEF(powers)
 		for(var/datum/power/power_type as anything in priority_powers)
 			if(!user.add_archetype_power(power_type, client_source = applied_client))
 				continue
+			assigned_power_names += power_type.name
 			SSblackbox.record_feedback("tally", "powers_taken", 1, "[power_type.name]")
+
+	SSblackbox.record_feedback("associative", "power_spawn_loadouts", 1, list(
+		"spawn_type" = spawn_type,
+		"mob_name" = user.real_name || user.name || "Unknown",
+		"role" = user.mind?.assigned_role?.title || "Unassigned",
+		"powers" = assigned_power_names,
+	))
 
 /// Takes a list of power names,
 /// and returns a new list of powers that would be valid.
