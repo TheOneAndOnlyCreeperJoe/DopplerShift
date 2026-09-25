@@ -164,11 +164,18 @@ PROCESSING_SUBSYSTEM_DEF(powers)
 				continue
 			assigned_power_names += power_type.name
 
+	// Gets the mob's species for the blackbox
+	var/species_name = "Non-human"
+	if(ishuman(user))
+		var/mob/living/carbon/human/human_user = user
+		species_name = human_user.dna?.species?.name || "Unknown"
+
 	// Adds the whole loadout, the name of the person and their role to the loadout.
 	SSblackbox.record_feedback("associative", "power_spawn_loadouts", 1, list(
 		"spawn_type" = spawn_type,
 		"mob_name" = user.real_name || user.name || "Unknown",
 		"role" = user.mind?.assigned_role?.title || "Unassigned",
+		"species" = species_name,
 		"powers" = assigned_power_names,
 	))
 
