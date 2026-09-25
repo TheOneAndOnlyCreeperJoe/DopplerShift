@@ -19,8 +19,7 @@
 /datum/quirk/genemodded/remove()
 	if (added_mutation)
 		var/mob/living/carbon/human/human_holder = quirk_holder
-		if (!QDELETED(human_holder))
-			human_holder.dna.remove_mutation(added_mutation, MUTATION_SOURCE_QUIRK)
+		human_holder.dna.remove_mutation(added_mutation, MUTATION_SOURCE_QUIRK)
 		added_mutation = null
 
 /datum/quirk_constant_data/genemodded
