@@ -128,9 +128,9 @@ PROCESSING_SUBSYSTEM_DEF(powers)
  * Arguments:
  * * user - Mob receiving the powers.
  * * applied_client - Client whose preferences are being applied.
- * * spawn_type - Broad context in which the mob is receiving its spawn powers.
+ * * source - Broad context in which the mob is receiving its powers.
  */
-/datum/controller/subsystem/processing/powers/proc/assign_powers(mob/living/user, client/applied_client, spawn_type = POWER_SPAWN_OTHER)
+/datum/controller/subsystem/processing/powers/proc/assign_powers(mob/living/user, client/applied_client, source = POWER_SOURCE_OTHER)
 	// No powers are given if the admins have turned on power spawning.
 	if(!spawn_powers_enabled)
 		return
@@ -172,7 +172,7 @@ PROCESSING_SUBSYSTEM_DEF(powers)
 
 	// Adds the whole loadout, the name of the person and their role to the loadout.
 	SSblackbox.record_feedback("associative", "power_spawn_loadouts", 1, list(
-		"spawn_type" = spawn_type,
+		"source" = source,
 		"mob_name" = user.real_name || user.name || "Unknown",
 		"role" = user.mind?.assigned_role?.title || "Unassigned",
 		"species" = species_name,
