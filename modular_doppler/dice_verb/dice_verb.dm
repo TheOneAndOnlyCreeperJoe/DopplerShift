@@ -29,18 +29,10 @@
 	for(var/die_number in 1 to dice_count)
 		roll_total += rand(1, die_size)
 
-	dice_looc_action("rolled [dice_count]d[die_size] = [roll_total]!", "[dice_count]d[die_size]")
-
-/// Quickly rolls a single twenty-sided die without opening a prompt.
-/client/verb/roll_d20()
-	set name = "Roll Dice (1d20)"
-	set desc = "Roll a d20 for nearby players to see."
-	set category = "OOC"
-
-	roll_dice("1d20")
+	dice_looc_action("rolled [dice_count]d[die_size] = [roll_total]!")
 
 /// Sends the result as a LOOC message with the same checks and rules as LOOC. The exception is that we don't support wallpierce.
-/client/proc/dice_looc_action(message, spam_key)
+/client/proc/dice_looc_action(message)
 
 	// Same LOOC restrictions with the exception of non-applicable rules such as the advertising one.
 	if(GLOB.say_disabled)
@@ -54,8 +46,8 @@
 		if(!GLOB.looc_allowed)
 			to_chat(src, span_danger("LOOC is globally muted."))
 			return
-		// Use the dice expression so random results cannot bypass duplicate-message detection.
-		if(handle_spam_prevention(spam_key, MUTE_OOC))
+		// Note that this only flags quant unless you are spamming a lotta 1d2s
+		if(handle_spam_prevention(message, MUTE_OOC))
 			return
 		if(prefs.muted & MUTE_LOOC)
 			to_chat(src, span_danger("You cannot use LOOC (muted)."))
