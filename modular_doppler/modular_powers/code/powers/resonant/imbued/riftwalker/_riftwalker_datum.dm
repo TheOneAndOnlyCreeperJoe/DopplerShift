@@ -2,12 +2,15 @@
 GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 
 #define RIFTWALKER_MIN_PAIRS 10
-#define RIFTWALKER_MAX_PAIRS 12
+#define RIFTWALKER_MAX_PAIRS 15
+#define RIFTWALKER_MAX_GENERATION_ATTEMPTS 200
+#define RIFTWALKER_LOCATION_ATTEMPTS 50
 
+/// Owns all active rifts and handles their shared generation behavior.
 /datum/riftwalker_network_tracker
-	/// List of all active rifts
+	/// List of all active rifts.
 	var/list/obj/effect/riftwalker_rift/rifts = list()
-	/// Debug: counts attempts to find valid rift turfs during generation
+	/// Debug: counts attempts to find valid rift turfs during generation.
 	var/debug_attempts = 0
 
 /datum/riftwalker_network_tracker/Destroy(force)
@@ -17,116 +20,75 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 	QDEL_LIST(rifts)
 	return ..()
 
-/// Generates the rifts.
+/// Generates the initial set of rift pairs.
 /datum/riftwalker_network_tracker/proc/generate_rifts()
 	if(length(rifts))
 		return
+
 	var/start_time = world.timeofday
+	var/pair_count = rand(RIFTWALKER_MIN_PAIRS, RIFTWALKER_MAX_PAIRS)
+	var/generated_pairs = 0
+	var/generation_attempts = 0
 	debug_attempts = 0
 
-	var/pair_count = rand(RIFTWALKER_MIN_PAIRS, RIFTWALKER_MAX_PAIRS)
-	var/turf/beacon_turf = pick_valid_beacon_turf()
-	var/next_pair_id = 1
+	while(generated_pairs < pair_count && generation_attempts < RIFTWALKER_MAX_GENERATION_ATTEMPTS)
+		generation_attempts++
+		if(spawn_pair())
+			generated_pairs++
 
-	// Guarantee at least one pair originates from an active teleport beacon, if possible. Mostly for fluff to suggest the connection between teleportation and the rifts.
-	if(beacon_turf)
-		var/obj/effect/riftwalker_rift/beacon_rift = new(beacon_turf)
-		beacon_rift.pair_id = next_pair_id
-		var/turf/partner_turf
-		if(prob(25)) // 25% chance it is adjacent to a teleporter.
-			var/turf/teleporter_adjacent = pick_adjacent_teleporter_turf()
-			if(teleporter_adjacent)
-				partner_turf = teleporter_adjacent
-		else // normal turf location logic
-			partner_turf = find_random_rift_turf()
-		// spawn logic.
-		if(partner_turf)
-			var/obj/effect/riftwalker_rift/partner_rift = new(partner_turf)
-			partner_rift.pair_id = next_pair_id
-			next_pair_id++
-		else
-			QDEL_NULL(beacon_rift)
+	log_game("Riftwalker generate_rifts: [world.timeofday - start_time] ds, attempts=[debug_attempts], rifts=[length(rifts)], requested_pairs=[pair_count], generated_pairs=[generated_pairs], generation_attempts=[generation_attempts]")
 
-
-	var/max_iterations = 0 // Just to prevent some form of infinite loop
-	// Tries creating rift pairs repeatedly up to the pair_count.
-	while(next_pair_id <= pair_count && max_iterations < 200)
-		if(!spawn_pair())
-			max_iterations++
-			continue
-		next_pair_id++
-
-	log_game("Riftwalker generate_rifts: [world.timeofday - start_time] ds, attempts=[debug_attempts], rifts=[length(rifts)], pairs=[pair_count], iterations=[max_iterations]")
-	return
-
-/// Generates a new pair of rifts.
-/datum/riftwalker_network_tracker/proc/spawn_pair()
-	var/turf/first_turf = find_random_rift_turf()
+/// Resolves a rift type's destinations and creates the complete pair, rolling a type when none is supplied.
+/datum/riftwalker_network_tracker/proc/spawn_pair(forced_rift_type_path)
+	var/selected_rift_type_path = forced_rift_type_path || pick_weight(GLOB.riftwalker_rift_type_weights)
+	var/datum/riftwalker_rift_type/rift_type = new selected_rift_type_path
+	var/turf/first_turf = rift_type.find_first_turf(src)
 	if(!first_turf)
+		qdel(rift_type)
 		return FALSE
-	var/turf/second_turf = find_random_rift_turf()
-	if(!second_turf)
+	var/turf/second_turf = rift_type.find_second_turf(src)
+	if(!second_turf || second_turf == first_turf || (second_turf.z == first_turf.z && get_dist(first_turf, second_turf) <= 1))
+		qdel(rift_type)
 		return FALSE
 
+	var/next_pair_id = get_next_pair_id()
+	var/rift_path = rift_type.rift_path
+	qdel(rift_type)
+	var/obj/effect/riftwalker_rift/first_rift = new rift_path(first_turf)
+	first_rift.pair_id = next_pair_id
+	first_rift.rift_type_path = selected_rift_type_path
+	var/obj/effect/riftwalker_rift/second_rift = new rift_path(second_turf)
+	second_rift.pair_id = next_pair_id
+	second_rift.rift_type_path = selected_rift_type_path
+	return TRUE
+
+/// Returns an unused pair identifier.
+/datum/riftwalker_network_tracker/proc/get_next_pair_id()
 	var/next_pair_id = 1
 	for(var/obj/effect/riftwalker_rift/existing_rift as anything in rifts)
 		next_pair_id = max(next_pair_id, existing_rift.pair_id + 1)
+	return next_pair_id
 
-	var/obj/effect/riftwalker_rift/first_rift = new(first_turf)
-	first_rift.pair_id = next_pair_id
-	var/obj/effect/riftwalker_rift/second_rift = new(second_turf)
-	second_rift.pair_id = next_pair_id
-	return TRUE
-
-/// Main logic that gets the actual turf
+/// Finds a random valid station turf for an ordinary rift endpoint.
 /datum/riftwalker_network_tracker/proc/find_random_rift_turf()
-	var/tries = 0
-	while(tries < 50)
+	for(var/attempt in 1 to RIFTWALKER_LOCATION_ATTEMPTS)
 		debug_attempts++
 		var/turf/chosen_location = get_safe_random_station_turf_equal_weight()
-		if(is_valid_rift_location(chosen_location))
+		if(is_valid_station_rift_location(chosen_location))
 			return chosen_location
-		tries++
 	return null
 
-/// Checks if a space is a valid space for a rift. Basically blocks space and prevents them from being ontop of eachother.
-/datum/riftwalker_network_tracker/proc/is_valid_rift_location(turf/target_turf)
-	if(!isturf(target_turf) || !is_station_level(target_turf.z) || isopenspaceturf(target_turf) || isgroundlessturf(target_turf))
-		return FALSE
-	for(var/obj/thing in target_turf) // don't spawn on dense objects
-		if(thing.density)
-			return FALSE
+/// Checks whether a station turf can safely hold a rift.
+/datum/riftwalker_network_tracker/proc/is_valid_station_rift_location(turf/target_turf)
+	return is_station_level(target_turf?.z) && is_clear_rift_location(target_turf)
 
+/// Checks the shared physical placement restrictions for every rift endpoint.
+/datum/riftwalker_network_tracker/proc/is_clear_rift_location(turf/target_turf)
+	if(!isturf(target_turf) || isopenspaceturf(target_turf) || isgroundlessturf(target_turf) || target_turf.is_blocked_turf())
+		return FALSE
 	for(var/obj/effect/riftwalker_rift/existing_rift in range(1, target_turf))
 		return FALSE
-
 	return TRUE
-
-/// Specifically gets a turf next to a teleporter.
-/datum/riftwalker_network_tracker/proc/pick_adjacent_teleporter_turf()
-	var/list/turf/candidates = list()
-	for(var/obj/machinery/teleport/hub/tele as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/teleport/hub)) // I'm trying this instead of world and seeing how it goes.
-		if(!is_station_level(tele.z))
-			continue
-		var/turf/tele_turf = get_turf(tele)
-		if(!tele_turf)
-			continue
-		for(var/turf/adjacent_turf as anything in range(1, tele_turf))
-			if(adjacent_turf == tele_turf) // not ON the teleporter
-				continue
-			if(is_valid_rift_location(adjacent_turf))
-				candidates += adjacent_turf
-	if(!length(candidates))
-		return null
-	return pick(candidates)
-
-/// Specifically gets a turf next to a beacon
-/datum/riftwalker_network_tracker/proc/pick_valid_beacon_turf()
-	for(var/obj/item/beacon/beacon as anything in GLOB.teleportbeacons)
-		var/turf/beacon_turf = get_turf(beacon)
-		if(is_station_level(beacon_turf?.z) && is_valid_rift_location(beacon_turf))
-			return beacon_turf
-	return null
 
 /obj/effect/riftwalker_rift
 	name = "bluespace rift"
@@ -137,10 +99,10 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 	invisibility = INVISIBILITY_OBSERVER
 	/// Which pair this rift belongs to
 	var/pair_id = 0
+	/// Rift generation type used to preserve this pair's behavior when it is replaced.
+	var/rift_type_path = /datum/riftwalker_rift_type
 	/// Shared color for the rift's filters.
 	var/rift_color = "#6699ff"
-	/// Special color used by 'red rifts' filters.
-	var/rift_color_red = "#fc5f5f"
 
 /obj/effect/riftwalker_rift/Initialize(mapload)
 	. = ..()
@@ -238,13 +200,14 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 /obj/effect/riftwalker_rift/proc/on_dispel(datum/source, atom/dispeller)
 	SIGNAL_HANDLER
 
+	var/replacement_rift_type_path = rift_type_path
 	var/obj/effect/riftwalker_rift/linked_rift = get_paired_rift()
 	if(!QDELETED(linked_rift))
 		QDEL_NULL(linked_rift)
 	if(!QDELETED(src))
 		QDEL_NULL(src)
 
-	GLOB.riftwalker_network.spawn_pair() // new pair
+	GLOB.riftwalker_network.spawn_pair(replacement_rift_type_path)
 	return DISPEL_RESULT_DISPELLED
 
 /// Gets the sibling rift of a rift.
@@ -264,3 +227,5 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 
 #undef RIFTWALKER_MIN_PAIRS
 #undef RIFTWALKER_MAX_PAIRS
+#undef RIFTWALKER_MAX_GENERATION_ATTEMPTS
+#undef RIFTWALKER_LOCATION_ATTEMPTS
