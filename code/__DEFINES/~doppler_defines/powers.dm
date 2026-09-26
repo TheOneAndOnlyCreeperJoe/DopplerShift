@@ -391,6 +391,8 @@
 /// Args: (list/recovery_bonus_percents)
 #define COMSIG_IMBUED_ENCHANTED_RECOVERY_MODIFIERS "imbued_enchanted_recovery_modifiers"
 
+// Trait that lets you see the riftwalker mechanic.
+#define TRAIT_IMBUED_RIFTWALKER_SIGHT_ONLY "riftwalker"
 // Trait that lets you use the riftwalker mechanic.
 #define TRAIT_IMBUED_RIFTWALKER "riftwalker"
 

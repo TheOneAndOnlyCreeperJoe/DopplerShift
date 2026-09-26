@@ -131,8 +131,8 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 /obj/effect/riftwalker_rift
 	name = "bluespace rift"
 	desc = "Bluespace energies connecting two places together; many Bluespace researchers would kill to understand why these rifts form. Some argue that these are left behind by heavy sums of teleportation; but these claims are unfounded."
-	icon = 'icons/effects/effects.dmi'
-	icon_state = "bluestream"
+	icon = 'modular_doppler/modular_powers/icons/powers/effects.dmi'
+	icon_state = "riftwalker_blue"
 	anchored = TRUE
 	invisibility = INVISIBILITY_OBSERVER
 	/// Which pair this rift belongs to

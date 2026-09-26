@@ -11,8 +11,8 @@
 	value = 5 // even if it gets you into fun places, it is rng dependent and you sometimes just end up with really bad rifts.
 	required_powers = list(/datum/power/imbued_root/anomalous)
 
-	menu_icon = 'icons/effects/effects.dmi'
-	menu_icon_state = "bluestream"
+	menu_icon = 'modular_doppler/modular_powers/icons/powers/effects.dmi'
+	menu_icon_state = "riftwalker_blue"
 
 // need the mob to be instantiated to generate rifts safely.
 /datum/power/imbued/riftwalker/post_add(client/client_source)
