@@ -5,7 +5,7 @@
 /datum/surgery/psyker_organ_repair
 	name = "Mend Psychic Organ"
 	desc = "Attempts to restore functionality to a damaged or destroyed Psyker's organ. Requires 5u of unstable mutagen."
-	surgery_flags = SURGERY_REQUIRE_RESTING
+	surgery_flags = SURGERY_REQUIRE_RESTING | SURGERY_REQUIRE_LIMB | SURGERY_REQUIRES_REAL_LIMB | SURGERY_MORBID_CURIOSITY
 	organ_to_manipulate = ORGAN_SLOT_PSYKER
 	requires_bodypart_type = NONE
 
