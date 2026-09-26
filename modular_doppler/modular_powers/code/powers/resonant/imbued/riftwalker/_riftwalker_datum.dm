@@ -137,19 +137,35 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 	invisibility = INVISIBILITY_OBSERVER
 	/// Which pair this rift belongs to
 	var/pair_id = 0
+	/// Shared color for the rift's filters.
+	var/rift_color = "#6699ff"
+	/// Special color used by 'red rifts' filters.
+	var/rift_color_red = "#fc5f5f"
 
 /obj/effect/riftwalker_rift/Initialize(mapload)
 	. = ..()
 	GLOB.riftwalker_network.rifts += src
 	RegisterSignal(src, COMSIG_ATOM_DISPEL, PROC_REF(on_dispel))
-	apply_wibbly_filters(src)
+	apply_rift_filters(src)
+	src.alpha = 190
 	if(!loc)
 		return
 	var/image/rift_image = image(icon = icon, loc = src, icon_state = icon_state, layer = OBJ_LAYER)
 	rift_image.layer = OBJ_LAYER
 	rift_image.override = TRUE
-	apply_wibbly_filters(rift_image)
+	apply_rift_filters(rift_image)
 	add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/riftwalker, "riftwalker_rift", rift_image)
+
+/// Applies the rift's shared outline, blur, and animated rays to an atom or image.
+/obj/effect/riftwalker_rift/proc/apply_rift_filters(datum/filter_target)
+	filter_target.add_filters(list(
+		list("name" = "rift_outline", "priority" = 1, "params" = outline_filter(size = 0.15, color = rift_color)),
+		list("name" = "rift_blur", "priority" = 2, "params" = gauss_blur_filter(size = 0.5)),
+		list("name" = "rift_rays", "priority" = 3, "params" = rays_filter(size = 20, color = rift_color, offset = 0, density = 30, threshold = 0.5, factor = 0, x = 0, y = -2, flags = FILTER_OVERLAY | FILTER_UNDERLAY)),
+	))
+	var/animated_rays = filter_target.get_filter("rift_rays")
+	animate(animated_rays, offset = 10, time = 6 SECONDS, loop = -1)
+	animate(offset = 0, time = 0)
 
 /obj/effect/riftwalker_rift/Destroy()
 	GLOB.riftwalker_network.rifts -= src
@@ -188,8 +204,10 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 	var/turf/source_turf = get_turf(src)
 	var/turf/destination_turf = get_turf(linked_rift) || source_turf // you tp to the same space if there's no linked rift.
 
+	/* removed fx
 	new /obj/effect/temp_visual/bluespace_fissure(source_turf)
 	new /obj/effect/temp_visual/bluespace_fissure(destination_turf)
+	*/
 
 	user.visible_message(span_warning("[user] [slip_in_message]."), ignored_mobs = user)
 
