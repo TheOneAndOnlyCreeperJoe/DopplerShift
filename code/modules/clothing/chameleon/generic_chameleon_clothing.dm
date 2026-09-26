@@ -190,9 +190,9 @@ do { \
 /obj/item/clothing/mask/chameleon/attack_self(mob/user)
 	var/was_on = (TRAIT_VOICE_MATCHES_ID in clothing_traits)
 	if(was_on)
-		attach_clothing_traits(TRAIT_VOICE_MATCHES_ID)
+		detach_clothing_traits(TRAIT_VOICE_MATCHES_ID) // DOPPLER EDIT - Fixes the voice changer not working due to the functions being inverted, probably fixed in parity? - WAS: attach_clothing_traits(TRAIT_VOICE_MATCHES_ID)
 	else
-		detach_clothing_traits(TRAIT_VOICE_MATCHES_ID)
+		attach_clothing_traits(TRAIT_VOICE_MATCHES_ID) // DOPPLER EDIT - Fixes the voice changer not working due to the functions being inverted, probably fixed in parity? - WAS: detach_clothing_traits(TRAIT_VOICE_MATCHES_ID)
 	to_chat(user, span_notice("The voice changer is now [was_on ? "off" : "on"]!"))
 
 /obj/item/clothing/mask/chameleon/broken
