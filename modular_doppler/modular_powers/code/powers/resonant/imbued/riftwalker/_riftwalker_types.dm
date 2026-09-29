@@ -5,9 +5,13 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	/datum/riftwalker_rift_type/red = 15,
 ))
 
+// Chance for teleporter rifts to spawn at a teleporter as the first rift.
 #define RIFTWALKER_TELEPORTER_RIFT_CHANCE 25
-#define RIFTWALKER_TELEPORTER_BEACON_LINK_CHANCE 50
-#define RIFTWALKER_RED_GATEWAY_RIFT_CHANCE 50
+// Chance for teleporer rifts that spawn by a teleporter to link to a beacon.
+#define RIFTWALKER_TELEPORTER_BEACON_LINK_CHANCE 66
+// Chance for a red rift to spawn in the gateway area.
+#define RIFTWALKER_RED_GATEWAY_RIFT_CHANCE 33
+// Chance for a red rift to lead to a space ruin, otherwise leading to a mining ruin.
 #define RIFTWALKER_SPACE_RUIN_CHANCE 66
 
 /// Defines a rift pair's location rules and the rift object it creates.
@@ -75,7 +79,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 /*
 *
 * Red Rift: Spooky and dangerous! The first rift either spawns somewhere random or at the gateway, the second always leads to a breathable ruin.
-* These look visually distinct to differentiate them.
+* These look visually distinct to differentiate them, and you are entering quite obviously at your own risk.
 *
 */
 /datum/riftwalker_rift_type/red
@@ -133,12 +137,14 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 
 /obj/effect/riftwalker_rift/red
 	name = "red bluespace rift"
+	desc = "Redspace is a theory long debunked as folly: that it is merely several component parts of Bluespace with an unique coloration and nothing more. It is not a scientific spectrum in its own right. \
+	Yet with the Reality Anchors broken, has that changed in any capacity? Has the absence of the binding laws of reality given way to that which should not exist?"
 	icon_state = "riftwalker_red"
 	rift_color = "#fc5f5f"
 
 /obj/effect/riftwalker_rift/red/examine(mob/user)
 	. = ..()
-	. += span_danger("... This one looks ominous.")
+	. += span_bolddanger("... You have a bad feeling about this.")
 
 #undef RIFTWALKER_TELEPORTER_RIFT_CHANCE
 #undef RIFTWALKER_TELEPORTER_BEACON_LINK_CHANCE

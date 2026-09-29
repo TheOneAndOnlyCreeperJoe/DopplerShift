@@ -1,10 +1,14 @@
 /// Global tracker for Riftwalker rifts. Largely stylized after how Heretic influences work.
 GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 
+// Minimum amount of pairs (two linked rifts) that can spawn
 #define RIFTWALKER_MIN_PAIRS 10
+// Maximum amount of pairs (two linked rifts) that can spawn
 #define RIFTWALKER_MAX_PAIRS 15
+// How often the game will attempt to generate rifts before giving up.
 #define RIFTWALKER_MAX_GENERATION_ATTEMPTS 200
-#define RIFTWALKER_LOCATION_ATTEMPTS 50
+// How often the game will attempt to generate a rift at a specific location before giving up.
+#define RIFTWALKER_LOCATION_ATTEMPTS 25
 
 /// Owns all active rifts and handles their shared generation behavior.
 /datum/riftwalker_network_tracker
@@ -41,35 +45,38 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 /// Resolves a rift type's destinations and creates the complete pair, rolling a type when none is supplied.
 /datum/riftwalker_network_tracker/proc/spawn_pair(forced_rift_type_path)
 	var/selected_rift_type_path = forced_rift_type_path || pick_weight(GLOB.riftwalker_rift_type_weights)
+	// we make a temporary instance of the chosen type so we can call its procs
 	var/datum/riftwalker_rift_type/rift_type = new selected_rift_type_path
+
 	var/turf/first_turf = rift_type.find_first_turf(src)
 	if(!first_turf)
 		qdel(rift_type)
 		return FALSE
 	var/turf/second_turf = rift_type.find_second_turf(src)
-	if(!second_turf || second_turf == first_turf || (second_turf.z == first_turf.z && get_dist(first_turf, second_turf) <= 1))
+	// If we fail to find a second turf, or if they are too close together)
+	if(!second_turf || (second_turf.z == first_turf.z && get_dist(first_turf, second_turf) <= 1))
 		qdel(rift_type)
 		return FALSE
 
-	var/next_pair_id = get_next_pair_id()
+	// If we succesfully found our turfs, then we spawn our actual rifts.
 	var/rift_path = rift_type.rift_path
-	qdel(rift_type)
 	var/obj/effect/riftwalker_rift/first_rift = new rift_path(first_turf)
-	first_rift.pair_id = next_pair_id
-	first_rift.rift_type_path = selected_rift_type_path
 	var/obj/effect/riftwalker_rift/second_rift = new rift_path(second_turf)
-	second_rift.pair_id = next_pair_id
+
+	// Stores the type of rift we are so that if we are removed we create the same kind of rift elsewhere
+	first_rift.rift_type_path = selected_rift_type_path
 	second_rift.rift_type_path = selected_rift_type_path
+
+	// Link up bro
+	first_rift.linked_rift = second_rift
+	second_rift.linked_rift = first_rift
+
+	// gets rid of the temporary instance.
+	qdel(rift_type)
+
 	return TRUE
 
-/// Returns an unused pair identifier.
-/datum/riftwalker_network_tracker/proc/get_next_pair_id()
-	var/next_pair_id = 1
-	for(var/obj/effect/riftwalker_rift/existing_rift as anything in rifts)
-		next_pair_id = max(next_pair_id, existing_rift.pair_id + 1)
-	return next_pair_id
-
-/// Finds a random valid station turf for an ordinary rift endpoint.
+/// Finds a random valid station turf for an ordinary rift.
 /datum/riftwalker_network_tracker/proc/find_random_rift_turf()
 	for(var/attempt in 1 to RIFTWALKER_LOCATION_ATTEMPTS)
 		debug_attempts++
@@ -82,7 +89,7 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 /datum/riftwalker_network_tracker/proc/is_valid_station_rift_location(turf/target_turf)
 	return is_station_level(target_turf?.z) && is_clear_rift_location(target_turf)
 
-/// Checks the shared physical placement restrictions for every rift endpoint.
+/// Checks the shared physical placement restrictions for every rift.
 /datum/riftwalker_network_tracker/proc/is_clear_rift_location(turf/target_turf)
 	if(!isturf(target_turf) || isopenspaceturf(target_turf) || isgroundlessturf(target_turf) || target_turf.is_blocked_turf())
 		return FALSE
@@ -90,15 +97,17 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 		return FALSE
 	return TRUE
 
+/// The physical rift object.
 /obj/effect/riftwalker_rift
 	name = "bluespace rift"
-	desc = "Bluespace energies connecting two places together; many Bluespace researchers would kill to understand why these rifts form. Some argue that these are left behind by heavy sums of teleportation; but these claims are unfounded."
+	desc = "Bluespace energies connecting two places together; many Bluespace researchers would kill to understand why these rifts form. Some argue that these are left behind by acts of teleportation;\
+	but these theories lack any credible research to support these claims."
 	icon = 'modular_doppler/modular_powers/icons/powers/effects.dmi'
 	icon_state = "riftwalker_blue"
 	anchored = TRUE
 	invisibility = INVISIBILITY_OBSERVER
-	/// Which pair this rift belongs to
-	var/pair_id = 0
+	/// The rift at the other end of this connection.
+	var/obj/effect/riftwalker_rift/linked_rift
 	/// Rift generation type used to preserve this pair's behavior when it is replaced.
 	var/rift_type_path = /datum/riftwalker_rift_type
 	/// Shared color for the rift's filters.
@@ -131,6 +140,9 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 
 /obj/effect/riftwalker_rift/Destroy()
 	GLOB.riftwalker_network.rifts -= src
+	if(!QDELETED(linked_rift) && linked_rift.linked_rift == src)
+		linked_rift.linked_rift = null
+	linked_rift = null
 	UnregisterSignal(src, COMSIG_ATOM_DISPEL)
 	return ..()
 
@@ -151,8 +163,6 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 		user.balloon_alert(user, "silenced!")
 		return TRUE
 
-	var/obj/effect/riftwalker_rift/linked_rift = get_paired_rift()
-
 	var/slip_in_message = pick("slides sideways in an odd way, and disappears", "jumps into an unseen dimension",\
 		"sticks one leg straight out, wiggles [user.p_their()] foot, and is suddenly gone", "stops, then blinks out of reality", \
 		"is pulled into an invisible vortex, vanishing from sight")
@@ -164,7 +174,7 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 		return TRUE
 
 	var/turf/source_turf = get_turf(src)
-	var/turf/destination_turf = get_turf(linked_rift) || source_turf // you tp to the same space if there's no linked rift.
+	var/turf/destination_turf = get_turf(linked_rift) || source_turf // You teleport to the same space if there is no linked rift.
 
 	/* removed fx
 	new /obj/effect/temp_visual/bluespace_fissure(source_turf)
@@ -191,8 +201,7 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 	return TRUE
 
 /obj/effect/riftwalker_rift/attack_ghost(mob/user)
-	var/obj/effect/riftwalker_rift/linked_rift = get_paired_rift()
-	if(!linked_rift)
+	if(QDELETED(linked_rift))
 		return ..()
 	user.abstract_move(get_turf(linked_rift))
 
@@ -201,7 +210,6 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 	SIGNAL_HANDLER
 
 	var/replacement_rift_type_path = rift_type_path
-	var/obj/effect/riftwalker_rift/linked_rift = get_paired_rift()
 	if(!QDELETED(linked_rift))
 		QDEL_NULL(linked_rift)
 	if(!QDELETED(src))
@@ -209,15 +217,6 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 
 	GLOB.riftwalker_network.spawn_pair(replacement_rift_type_path)
 	return DISPEL_RESULT_DISPELLED
-
-/// Gets the sibling rift of a rift.
-/obj/effect/riftwalker_rift/proc/get_paired_rift()
-	if(!pair_id)
-		return null
-	for(var/obj/effect/riftwalker_rift/other_rift as anything in GLOB.riftwalker_network.rifts)
-		if(other_rift != src && other_rift.pair_id == pair_id)
-			return other_rift
-	return null
 
 // Determines if a mob can see it.
 /datum/atom_hud/alternate_appearance/basic/riftwalker/mobShouldSee(mob/viewer)

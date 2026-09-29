@@ -3,8 +3,9 @@
 */
 /datum/power/imbued/riftwalker
 	name = "Riftwalker"
-	desc = "You see bluespace gateways unseen to those around you. Each station has several unique pairs of rifts that are connected that you can interact with, teleporting you between them. Only you can see and interact with them.\
-	\n Interacting with it while dragging someone or something will drag them along. You cannot use these rifts while silenced."
+	desc = "You see bluespace gateways unseen to those around you. Each station has several (at least 10) unique pairs of rifts that are connected that you can interact with, teleporting you between them. Only you can see and interact with them.\
+	\n Certain rifts have certain characteristics: some will be more common around teleportation devices and may link to other ones, whilst some rarer rifts may take you to less-common locations.\
+	\n Interacting with it while dragging someone or something will drag them along."
 	security_record_text = "Subject can see and use special bluespace rifts, teleporting them between two specific points."
 	security_threat = POWER_THREAT_MAJOR
 	mob_trait = TRAIT_IMBUED_RIFTWALKER
