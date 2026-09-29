@@ -137,6 +137,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 
 /obj/effect/riftwalker_rift/red
 	name = "red bluespace rift"
+	bluespace_core_chance = RIFTWALKER_RED_RIFT_BLUESPACE_CORE_CHANCE
 	desc = "Redspace is a theory long debunked as folly: that it is merely several component parts of Bluespace with an unique coloration and nothing more. It is not a scientific spectrum in its own right. \
 	Yet with the Reality Anchors broken, has that changed in any capacity? Has the absence of the binding laws of reality given way to that which should not exist?"
 	icon_state = "riftwalker_red"

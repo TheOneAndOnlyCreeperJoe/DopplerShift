@@ -63,7 +63,7 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 	var/obj/effect/riftwalker_rift/first_rift = new rift_path(first_turf)
 	var/obj/effect/riftwalker_rift/second_rift = new rift_path(second_turf)
 
-	// Stores the type of rift we are so that if we are removed we create the same kind of rift elsewhere
+	// Store the generation type so a neutralized pair can be displaced without changing its rules.
 	first_rift.rift_type_path = selected_rift_type_path
 	second_rift.rift_type_path = selected_rift_type_path
 
@@ -97,6 +97,12 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 		return FALSE
 	return TRUE
 
+/// Refreshes the rift alternate appearances shown to a mob after its sight traits change.
+/datum/riftwalker_network_tracker/proc/update_rift_visibility(mob/viewer)
+	for(var/datum/atom_hud/alternate_appearance/rift_hud as anything in GLOB.active_alternate_appearances)
+		if(istype(rift_hud, /datum/atom_hud/alternate_appearance/basic/riftwalker))
+			rift_hud.check_hud(viewer)
+
 /// The physical rift object.
 /obj/effect/riftwalker_rift
 	name = "bluespace rift"
@@ -108,15 +114,21 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 	invisibility = INVISIBILITY_OBSERVER
 	/// The rift at the other end of this connection.
 	var/obj/effect/riftwalker_rift/linked_rift
-	/// Rift generation type used to preserve this pair's behavior when it is replaced.
+	/// Embedded bluespace anomaly core that lets a scanned rift be disabled remotely.
+	var/obj/item/assembly/signaler/anomaly/bluespace/riftwalker/anomaly_core
+	/// Rift generation type used to preserve this pair's rules when it is displaced.
 	var/rift_type_path = /datum/riftwalker_rift_type
+	/// Chance for this rift pair to yield a bluespace anomaly core when displaced.
+	var/bluespace_core_chance = RIFTWALKER_STANDARD_RIFT_BLUESPACE_CORE_CHANCE
 	/// Shared color for the rift's filters.
 	var/rift_color = "#6699ff"
 
 /obj/effect/riftwalker_rift/Initialize(mapload)
 	. = ..()
 	GLOB.riftwalker_network.rifts += src
-	RegisterSignal(src, COMSIG_ATOM_DISPEL, PROC_REF(on_dispel))
+	anomaly_core = new(src)
+	anomaly_core.code = rand(1, 100)
+	anomaly_core.set_frequency(sanitize_frequency(rand(MIN_FREE_FREQ, MAX_FREE_FREQ), free = TRUE))
 	apply_rift_filters(src)
 	src.alpha = 190
 	if(!loc)
@@ -143,24 +155,26 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 	if(!QDELETED(linked_rift) && linked_rift.linked_rift == src)
 		linked_rift.linked_rift = null
 	linked_rift = null
-	UnregisterSignal(src, COMSIG_ATOM_DISPEL)
+	QDEL_NULL(anomaly_core)
 	return ..()
 
 /obj/effect/riftwalker_rift/examine(mob/user)
 	. = ..()
 	. += span_notice("Only riftwalkers can traverse these rifts.")
+	. += span_notice("Can be displaced by using a gas analyzer and signaling the appropriate code, or interacting with it using an anomaly neutralizer.")
 
-/// Checks if a mob can see the rifts
-/obj/effect/riftwalker_rift/proc/verify_user_can_see(mob/user)
+/// Checks if a mob can see rifts, either through Riftwalker abilities or the goggles.
+/obj/effect/riftwalker_rift/proc/can_user_see_rifts(mob/user)
+	return HAS_TRAIT(user, TRAIT_IMBUED_RIFTWALKER) || HAS_TRAIT(user, TRAIT_IMBUED_RIFTWALKER_SIGHT_ONLY)
+
+/// Checks if a mob can use a rift to travel.
+/obj/effect/riftwalker_rift/proc/can_user_use_rifts(mob/user)
 	return HAS_TRAIT(user, TRAIT_IMBUED_RIFTWALKER)
 
 // Teleport logic.
 /obj/effect/riftwalker_rift/attack_hand(mob/living/user, list/modifiers)
 	. = ..()
-	if(!verify_user_can_see(user))
-		return TRUE
-	if(HAS_TRAIT(user, TRAIT_RESONANCE_SILENCED))
-		user.balloon_alert(user, "silenced!")
+	if(!can_user_use_rifts(user))
 		return TRUE
 
 	var/slip_in_message = pick("slides sideways in an odd way, and disappears", "jumps into an unseen dimension",\
@@ -188,9 +202,9 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 		pulled = user.pulling
 		if(ismob(pulled))
 			to_chat(pulled, span_notice("You suddenly find yourself in a different location!"))
-		do_teleport(pulled, destination_turf, no_effects = TRUE)
+		do_teleport(pulled, destination_turf, no_effects = TRUE, channel = TELEPORT_CHANNEL_BLUESPACE)
 
-	if(do_teleport(user, destination_turf, no_effects = TRUE))
+	if(do_teleport(user, destination_turf, no_effects = TRUE, channel = TELEPORT_CHANNEL_BLUESPACE))
 		playsound(destination_turf, SFX_PORTAL_ENTER, 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 		user.visible_message(span_warning("[user] [slip_out_message]."), span_notice("...and find your way to the other side."))
 		if(pulled)
@@ -205,24 +219,73 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 		return ..()
 	user.abstract_move(get_turf(linked_rift))
 
-/// On dispel, closes that pair of rifts, and create a new pair somewhere else.
-/obj/effect/riftwalker_rift/proc/on_dispel(datum/source, atom/dispeller)
-	SIGNAL_HANDLER
-
+/// Displaces both ends of this rift connection and replaces them elsewhere.
+/obj/effect/riftwalker_rift/proc/disable_rift()
 	var/replacement_rift_type_path = rift_type_path
+	var/turf/first_rift_turf = get_turf(src)
+	var/turf/second_rift_turf = get_turf(linked_rift)
+	if(first_rift_turf)
+		new /obj/effect/particle_effect/fluid/smoke/bad(first_rift_turf)
+	if(second_rift_turf)
+		new /obj/effect/particle_effect/fluid/smoke/bad(second_rift_turf)
+	if(prob(bluespace_core_chance) && !isnull(anomaly_core))
+		var/anomaly_core_type = /obj/item/assembly/signaler/anomaly/bluespace
+		if(SSresearch.is_core_available(anomaly_core_type))
+			SSresearch.increment_existing_anomaly_cores(anomaly_core_type)
+			anomaly_core.forceMove(drop_location())
+			anomaly_core = null
+		else
+			visible_message(span_warning("[anomaly_core] loses its lustre as it falls to the ground, there is too little ambient energy to support another core of this type."))
+			new /obj/item/inert_anomaly(drop_location())
 	if(!QDELETED(linked_rift))
 		QDEL_NULL(linked_rift)
-	if(!QDELETED(src))
-		QDEL_NULL(src)
-
+	qdel(src)
 	GLOB.riftwalker_network.spawn_pair(replacement_rift_type_path)
-	return DISPEL_RESULT_DISPELLED
+
+/// Reveals the frequency and code needed to disable this rift.
+/obj/effect/riftwalker_rift/analyzer_act(mob/living/user, obj/item/analyzer/tool)
+	if(!can_user_see_rifts(user) || QDELETED(anomaly_core))
+		return ITEM_INTERACT_BLOCKING
+	to_chat(user, span_notice("Analyzing... [src]'s bluespace field is fluctuating along frequency [format_frequency(anomaly_core.frequency)], code [anomaly_core.code]."))
+	return ITEM_INTERACT_SUCCESS
+
+/// Lets an anomaly neutralizer close a rift without requiring Riftwalker travel access.
+/obj/effect/riftwalker_rift/attackby(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
+	if(!istype(attacking_item, /obj/item/anomaly_neutralizer))
+		return ..()
+	if(!can_user_see_rifts(user))
+		return ITEM_INTERACT_BLOCKING
+	to_chat(user, span_notice("You neutralize [src] with [attacking_item], frying its circuitry in the process."))
+	disable_rift()
+	var/obj/item/anomaly_neutralizer/neutralizer = attacking_item
+	neutralizer.on_use(src, user)
+	return ITEM_INTERACT_SUCCESS
+
+/// A bluespace-core variant held inside a rift disables that rift when its matching signal is received.
+/obj/item/assembly/signaler/anomaly/bluespace/riftwalker
+
+/obj/item/assembly/signaler/anomaly/bluespace/riftwalker/receive_signal(datum/signal/signal)
+	if(!signal || signal.data["code"] != code)
+		return FALSE
+	var/obj/effect/riftwalker_rift/rift = loc
+	if(istype(rift))
+		rift.disable_rift()
+	return TRUE
+
+/// Makes it so that long distance analyzers can scan the the rift as if it were an anomaly.
+/obj/effect/riftwalker_rift/ranged_item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(!istype(tool, /obj/item/analyzer))
+		return NONE
+	var/obj/item/analyzer/analyzer = tool
+	if(!can_see(user, src, analyzer.ranged_scan_distance))
+		return NONE
+	return analyzer_act(user, analyzer)
 
 // Determines if a mob can see it.
 /datum/atom_hud/alternate_appearance/basic/riftwalker/mobShouldSee(mob/viewer)
 	if(!isliving(viewer))
 		return FALSE
-	return HAS_TRAIT(viewer, TRAIT_IMBUED_RIFTWALKER)
+	return HAS_TRAIT(viewer, TRAIT_IMBUED_RIFTWALKER) || HAS_TRAIT(viewer, TRAIT_IMBUED_RIFTWALKER_SIGHT_ONLY)
 
 #undef RIFTWALKER_MIN_PAIRS
 #undef RIFTWALKER_MAX_PAIRS
