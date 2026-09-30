@@ -81,8 +81,10 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_MEDICAL
 
-/// Adds the goggles to the techweb
-// todo: add Resonant/powers category later with science updoot that unlocks this
-/datum/techweb_node/fundamental_sci/New()
-	design_ids += list("riftwalker_goggles")
-	return ..()
+/// Temp node that I'll expand later with the science updoot, but gets it into the techweb for people to print.
+/datum/techweb_node/rift_research
+	id = "rift_research"
+	display_name = "Rift Research"
+	description = "Study of the large-scale advent of bluespace distortions known as 'rifts'."
+	starting_node = TRUE
+	design_ids = list("riftwalker_goggles")
