@@ -139,7 +139,7 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 	apply_rift_filters(rift_image)
 	add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/riftwalker, "riftwalker_rift", rift_image)
 
-/// Applies the rift's shared outline, blur, and animated rays to an atom or image.
+/// Applies the rift's outline, blur, and animated rays
 /obj/effect/riftwalker_rift/proc/apply_rift_filters(datum/filter_target)
 	filter_target.add_filters(list(
 		list("name" = "rift_outline", "priority" = 1, "params" = outline_filter(size = 0.15, color = rift_color)),
@@ -253,7 +253,7 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 	to_chat(user, span_notice("Analyzing... [src]'s bluespace field is fluctuating along frequency [format_frequency(anomaly_core.frequency)], code [anomaly_core.code]."))
 	return ITEM_INTERACT_SUCCESS
 
-/// Lets an anomaly neutralizer close a rift without requiring Riftwalker travel access.
+/// Lets an anomaly neutralizer close a rift
 /obj/effect/riftwalker_rift/attackby(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(!istype(attacking_item, /obj/item/anomaly_neutralizer))
 		return ..()
