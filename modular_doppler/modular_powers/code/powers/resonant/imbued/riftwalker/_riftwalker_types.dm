@@ -148,7 +148,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	var/list/fallback_ruin_levels = SSmapping.levels_by_trait(pick_space_ruin ? ZTRAIT_MINING : ZTRAIT_SPACE_RUINS)
 	return pick_ruin_turf_from_levels(network, fallback_ruin_levels)
 
-/// Selects a clear, breathable ruin floor from the supplied z-levels.
+/// Selects a clear, breathable ruin floor from the available z-levels.
 /datum/riftwalker_rift_type/red/proc/pick_ruin_turf_from_levels(datum/riftwalker_network_tracker/network, list/ruin_levels)
 	var/list/turf/candidates = list()
 	for(var/ruin_level in ruin_levels)
@@ -163,11 +163,12 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 				candidates += ruin_turf
 	return length(candidates) ? pick(candidates) : null
 
-// Red rifts take substantially longer to cross than bluespace.
+// Red rifts work differently, as they have have a windup, transit and arrival phase.
 #define RIFTWALKER_RED_RIFT_WINDUP_DURATION (2 SECONDS)
 #define RIFTWALKER_RED_RIFT_TRANSIT_DURATION (10 SECONDS)
 #define RIFTWALKER_RED_RIFT_ARRIVAL_DURATION (3 SECONDS)
 #define RIFTWALKER_RED_RIFT_TOTAL_DURATION (RIFTWALKER_RED_RIFT_WINDUP_DURATION + RIFTWALKER_RED_RIFT_TRANSIT_DURATION)
+/// Screen effects
 #define RIFTWALKER_RED_RIFT_KINESIS_FULLSCREEN "riftwalker_red_rift_kinesis"
 #define RIFTWALKER_RED_RIFT_COLOR_FILTER "riftwalker_red_rift_color"
 #define RIFTWALKER_RED_RIFT_DISPLACEMENT_FILTER "riftwalker_red_rift_displacement"
@@ -185,7 +186,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	. = ..()
 	. += span_bolddanger("... You have a bad feeling about this.")
 
-/// Red rifts are deliberately slow: users are held inside their destination rift while the passage completes.
+/// Red rifts are deliberately slow: users are held inside their destination rift while the sequence completes.
 /obj/effect/riftwalker_rift/red/attack_hand(mob/living/user, list/modifiers)
 	if(!can_user_use_rifts(user))
 		return TRUE
@@ -197,11 +198,16 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	if(!istype(destination_rift))
 		return TRUE
 
+	// Message upon entering: shows a different one with rift instability.
+	var/datum/status_effect/rift_instability/rift_instability = user.has_status_effect(/datum/status_effect/rift_instability)
+	var/user_message = "Pain strikes your arm as it is stretched and pulled into [name]!"
+	if(rift_instability)
+		user_message = "You feel your body being torn asunder as you enter the rift; this was a mistake!"
 	var/datum/riftwalker_red_rift_transit/transit = new(user, src, destination_rift)
 	transit.begin_windup(user)
 	user.visible_message(
 		span_warning("[user] turns red as [user.p_they()] [user.p_are()] stretched and scattered into nothingness!"),
-		span_userdanger("Pain strikes your arm as it is stretched and pulled into [name]!")
+		span_userdanger(user_message)
 	)
 	// Failure states, including if the rift is deleted, in which case you lose your arm.
 	if(!do_after(user, RIFTWALKER_RED_RIFT_WINDUP_DURATION, target = src, timed_action_flags = IGNORE_USER_LOC_CHANGE | IGNORE_HELD_ITEM | IGNORE_INCAPACITATED | IGNORE_SLOWDOWNS))
@@ -217,7 +223,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	transit.begin_transit(user)
 	return TRUE
 
-/// Stores a single user's red-rift passage independently of the rifts themselves.
+/// Stores a single user's rift journey while using red rifts.
 /datum/riftwalker_red_rift_transit
 	/// Rift the mob enters from
 	var/obj/effect/riftwalker_rift/red/origin_rift
@@ -240,7 +246,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	destination_turf = get_turf(new_destination_rift)
 	initial_user_alpha = new_user.alpha
 
-/// Begins the visible pull into a red rift while the interaction do_after runs.
+/// Applies filters and stuns the user to prevent canceling the process.
 /datum/riftwalker_red_rift_transit/proc/begin_windup(mob/living/user)
 	if(QDELETED(user))
 		return
@@ -254,7 +260,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	user.Stun(RIFTWALKER_RED_RIFT_TOTAL_DURATION, ignore_canstun = TRUE)
 	playsound(origin_turf, 'modular_doppler/modular_powers/sounds/riftwalker/red_rift_walk.ogg', 50, FALSE, SHORT_RANGE_SOUND_EXTRARANGE)
 
-/// Begins the displacement animation after the initial zero-size filter has reached the client.
+/// Begins the displacement animation
 /datum/riftwalker_red_rift_transit/proc/animate_displacement(mob/living/user)
 	if(QDELETED(user))
 		return
@@ -264,13 +270,13 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	animate(displacement_filter, flags = ANIMATION_END_NOW)
 	animate(displacement_filter, size = -15, time = RIFTWALKER_RED_RIFT_WINDUP_DURATION - (0.1 SECONDS))
 
-/// Fades the user over the final quarter of the committed windup rather than abruptly hiding them.
+/// Fades the user over the final quarter of the windup
 /datum/riftwalker_red_rift_transit/proc/fade_user_out(mob/living/user)
 	if(QDELETED(user))
 		return
 	animate(user, alpha = 0, time = RIFTWALKER_RED_RIFT_WINDUP_DURATION * 0.25)
 
-/// Moves the user out of physical space and starts the private passage effects.
+/// Moves the user out of the world and applies UI FX as part of rift travel.
 /datum/riftwalker_red_rift_transit/proc/begin_transit(mob/living/user)
 	if(QDELETED(user) || QDELETED(destination_rift))
 		cancel(user)
@@ -283,7 +289,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	addtimer(CALLBACK(src, PROC_REF(begin_arrival), user), RIFTWALKER_RED_RIFT_TRANSIT_DURATION - RIFTWALKER_RED_RIFT_ARRIVAL_DURATION)
 	addtimer(CALLBACK(src, PROC_REF(finish_transit), user), RIFTWALKER_RED_RIFT_TRANSIT_DURATION)
 
-/// Applies a dark-red client-plane tint, then starts its fade once the initial colour has reached the client.
+/// Applies a dark-red tint, then starts its fade once the initial colour has reached the client.
 /datum/riftwalker_red_rift_transit/proc/apply_red_rift_tint(mob/living/user)
 	if(QDELETED(user) || !user.hud_used)
 		return
@@ -292,7 +298,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 		game_plane.add_filter(filter_name, 10, color_matrix_filter(COLOR_DARK_RED))
 	addtimer(CALLBACK(src, PROC_REF(animate_red_rift_tint), user), 0.1 SECONDS)
 
-/// Fades the client-plane tint from dark red back to the identity colour matrix over the transit.
+/// Fades the tint from dark red back to nothing over the duration.
 /datum/riftwalker_red_rift_transit/proc/animate_red_rift_tint(mob/living/user)
 	if(QDELETED(user) || !user.hud_used)
 		return
@@ -302,7 +308,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 		if(red_rift_tint)
 			animate(red_rift_tint, color = COLOR_MATRIX_IDENTITY, time = RIFTWALKER_RED_RIFT_TRANSIT_DURATION - (0.1 SECONDS), easing = SINE_EASING | EASE_OUT)
 
-/// Removes the per-transit tint from all of the user's game planes.
+/// Removes the above-mentioned red-tint entirely
 /datum/riftwalker_red_rift_transit/proc/remove_red_rift_tint(mob/living/user)
 	if(QDELETED(user) || !user.hud_used)
 		return
@@ -310,7 +316,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	for(var/atom/movable/screen/plane_master/game_plane as anything in user.hud_used.get_true_plane_masters(RENDER_PLANE_GAME))
 		game_plane.remove_filter(filter_name)
 
-/// Plays the inverse departure effect during the last two seconds before the user returns to physical space.
+/// Plays the arrival effect during the several seconds before the user returns to physical space.
 /datum/riftwalker_red_rift_transit/proc/begin_arrival(mob/living/user)
 	if(QDELETED(user) || QDELETED(destination_rift) || user.loc != destination_rift)
 		return
@@ -329,20 +335,61 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 		var/turf/arrival_turf = !QDELETED(destination_rift) ? get_turf(destination_rift) : origin_turf
 		if(arrival_turf)
 			user.forceMove(arrival_turf)
-			user.add_mood_event("red_rift_travel", /datum/mood_event/red_rift_travel)
+			// Applies a negative status effect if you go back too quick
+			var/already_unstable = !!user.has_status_effect(/datum/status_effect/rift_instability)
+			user.apply_status_effect(/datum/status_effect/rift_instability)
+			// Or does worse.
+			if(already_unstable)
+				apply_rift_instability(user)
 			user.visible_message(
 				span_warning("[user] forms into being!"),
 				span_warning("You finally feel whole again.")
 			)
-			to_chat(user, span_warning("You finally feel whole again."))
 	qdel(src)
 
-/// Cancels a passage only if its endpoint ceases to exist during the committed windup.
+/// Harms the user after entering another red rift shortly after entering another
+/datum/riftwalker_red_rift_transit/proc/apply_rift_instability(mob/living/user)
+	if(!iscarbon(user))
+		return
+	var/mob/living/carbon/carbon_user = user
+	// Vomit up blood
+	if(carbon_user.get_bodypart(BODY_ZONE_HEAD))
+		carbon_user.vomit(MOB_VOMIT_BLOOD | MOB_VOMIT_MESSAGE | MOB_VOMIT_HARM | MOB_VOMIT_FORCE, lost_nutrition = 0)
+		carbon_user.blood_volume = max(carbon_user.blood_volume - 20, 0)
+	// Deal up to 100 brute damage to the body.
+	user.adjustBruteLoss(rand(0, 100))
+	// Deal up to 200 damage randomly spread across organs
+	var/list/obj/item/organ/chest_organs = list()
+	for(var/obj/item/organ/organ as anything in carbon_user.organs)
+		if(organ.zone == BODY_ZONE_CHEST)
+			chest_organs += organ
+	var/total_organ_damage = rand(0, 200)
+	if(length(chest_organs) && total_organ_damage)
+		var/remaining_damage = total_organ_damage
+		var/remaining_organs = length(chest_organs)
+		for(var/obj/item/organ/damaged_organ as anything in shuffle(chest_organs))
+			// if there's only 1 organ left it takes the remaining pooled damage
+			var/organ_damage = remaining_organs > 1 ? rand(0, remaining_damage) : remaining_damage
+			damaged_organ.apply_organ_damage(organ_damage)
+			// If the organ is completely destroyed, it is teleported outside of the body as to indicate "oh fuck"
+			if(damaged_organ.organ_flags & ORGAN_FAILING)
+				damaged_organ.Remove(carbon_user)
+				damaged_organ.forceMove(get_turf(carbon_user))
+				to_chat(carbon_user, span_userdanger("[damaged_organ] appears beside you as you exit the rift!"))
+			remaining_damage -= organ_damage
+			remaining_organs--
+	// 10% chance per limb to lose it, including head and body.
+	for(var/obj/item/bodypart/bodypart as anything in carbon_user.bodyparts.Copy())
+		if(prob(10))
+			if(bodypart.dismember(silent = TRUE))
+				to_chat(carbon_user, span_userdanger("[bodypart] is detached as you exit the rift!"))
+
+/// Proc that handels the cancel signal.
 /datum/riftwalker_red_rift_transit/proc/cancel(mob/living/user)
 	clear_transit_effects(user)
 	qdel(src)
 
-/// Tears off an arm left behind when the entrance rift collapses during the committed windup.
+/// Tears off an arm left behind when the entrance rift collapses during the wind-up
 /datum/riftwalker_red_rift_transit/proc/rip_user_arm(mob/living/user)
 	if(!iscarbon(user))
 		return
@@ -363,7 +410,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	)
 	ripped_arm.dismember(BRUTE, TRUE)
 
-/// Removes visual state owned by this passage without touching any unrelated filters or overlays.
+/// Removes any lingering visual effects
 /datum/riftwalker_red_rift_transit/proc/clear_transit_effects(mob/living/user)
 	if(QDELETED(user))
 		return
@@ -374,7 +421,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	remove_red_rift_tint(user)
 	user.clear_fullscreen(RIFTWALKER_RED_RIFT_KINESIS_FULLSCREEN, FALSE)
 
-/// Red-tinted kinesis overlay shown for the entire red-rift passage.
+/// Red-tinted kinesis overlay.
 /atom/movable/screen/fullscreen/red_rift_kinesis
 	icon_state = "kinesis"
 	color = COLOR_DARK_RED
@@ -383,9 +430,30 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 /datum/mood_event/red_rift_travel
 	description = "That rift was horrible to travel with. I feel as if I had just been quartered!"
 	mood_change = -10
-	timeout = 2 MINUTES
 
-/// The inverse of portal_animation: it fades in and rises from the destination rift.
+/// A temporary warning that another red-rift journey will injure the user's body.
+/datum/status_effect/rift_instability
+	id = "rift_instability"
+	duration = 1 MINUTES
+	tick_interval = STATUS_EFFECT_NO_TICK
+	status_type = STATUS_EFFECT_REFRESH
+	alert_type = /atom/movable/screen/alert/status_effect/rift_instability
+
+/datum/status_effect/rift_instability/on_apply()
+	owner.add_mood_event("red_rift_travel", /datum/mood_event/red_rift_travel)
+	return TRUE
+
+/datum/status_effect/rift_instability/on_remove()
+	owner.clear_mood_event("red_rift_travel")
+
+/atom/movable/screen/alert/status_effect/rift_instability
+	name = "Rift Instability"
+	desc = "Your recent experience with a Red Rift has left your body very vulnerable. Entering it again so soon may be a terrible idea."
+	icon = 'modular_doppler/modular_powers/icons/powers/effects.dmi'
+	icon_state = "riftwalker_red"
+	alerttooltipstyle = "cult"
+
+/// Handles the fade-in colors of red rift arrivals.
 /obj/effect/temp_visual/red_rift_arrival
 	duration = RIFTWALKER_RED_RIFT_ARRIVAL_DURATION
 
@@ -396,18 +464,18 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	appearance = teleporting.appearance
 	dir = teleporting.dir
 	layer = portal.layer + 0.01
-	// Alpha zero can cause BYOND to cull the temporary sprite before its delayed fade starts.
+	// Alpha zero isn't liked by BYOND, animation only works at 1 alpha?
 	alpha = 1
 	addtimer(CALLBACK(src, PROC_REF(fade_in), arrival_alpha), 0.1 SECONDS)
 	addtimer(CALLBACK(src, PROC_REF(restore_displacement)), 0.1 SECONDS)
 
-/// Starts the arrival alpha animation after the client has received the near-invisible sprite.
+/// Starts the arrival alpha animation.
 /obj/effect/temp_visual/red_rift_arrival/proc/fade_in(arrival_alpha)
 	if(QDELETED(src))
 		return
 	animate(src, pixel_x = 0, pixel_y = 0, alpha = arrival_alpha, time = duration * 0.25, flags = ANIMATION_PARALLEL)
 
-/// Returns the copied arrival sprite's displacement filter to normal while it phases back in.
+/// Applies the displacement filter and returns the mob to normal over the course of the animation.
 /obj/effect/temp_visual/red_rift_arrival/proc/restore_displacement()
 	var/displacement_filter = get_filter(RIFTWALKER_RED_RIFT_DISPLACEMENT_FILTER)
 	if(!displacement_filter)
