@@ -2,7 +2,7 @@
 GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 
 // Minimum amount of pairs (two linked rifts) that can spawn
-#define RIFTWALKER_MIN_PAIRS 10
+#define RIFTWALKER_MIN_PAIRS 12
 // Maximum amount of pairs (two linked rifts) that can spawn
 #define RIFTWALKER_MAX_PAIRS 14
 // How often the game will attempt to generate rifts before giving up.

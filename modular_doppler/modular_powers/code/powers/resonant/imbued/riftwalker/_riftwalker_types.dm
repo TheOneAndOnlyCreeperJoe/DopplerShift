@@ -123,8 +123,9 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 
 /*
 *
- * Red Rift: Spooky and dangerous! The first rift spawns somewhere random, while the second always leads to a breathable ruin.
+* Red Rift: Spooky and dangerous! The first rift spawns somewhere random, while the second always leads to a breathable ruin.
 * These look visually distinct to differentiate them, and you are entering quite obviously at your own risk.
+* Unlike blue rifts you can't drag things with you (be weird with the flavor) - just you, amigo.
 *
 */
 /datum/riftwalker_rift_type/red
@@ -198,7 +199,10 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 
 	var/datum/riftwalker_red_rift_transit/transit = new(user, src, destination_rift)
 	transit.begin_windup(user)
-	to_chat(user, span_userdanger("Pain strikes you arm, as it is stretched and pulled into [name]!"))
+	user.visible_message(
+		span_warning("[user] turns red as [user.p_they()] [user.p_are()] stretched and scattered into nothingness!"),
+		span_userdanger("Pain strikes your arm as it is stretched and pulled into [name]!")
+	)
 	if(!do_after(user, RIFTWALKER_RED_RIFT_WINDUP_DURATION, target = src, timed_action_flags = IGNORE_USER_LOC_CHANGE | IGNORE_HELD_ITEM | IGNORE_INCAPACITATED | IGNORE_SLOWDOWNS))
 		if(QDELETED(src))
 			transit.rip_user_arm(user)
@@ -325,6 +329,10 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 		if(arrival_turf)
 			user.forceMove(arrival_turf)
 			user.add_mood_event("red_rift_travel", /datum/mood_event/red_rift_travel)
+			user.visible_message(
+				span_warning("[user] forms into being!"),
+				span_warning("You finally feel whole again.")
+			)
 			to_chat(user, span_warning("You finally feel whole again."))
 	qdel(src)
 
@@ -387,9 +395,16 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	appearance = teleporting.appearance
 	dir = teleporting.dir
 	layer = portal.layer + 0.01
-	alpha = 0
-	animate(src, pixel_x = 0, pixel_y = 0, alpha = arrival_alpha, time = duration * 0.25)
+	// Alpha zero can cause BYOND to cull the temporary sprite before its delayed fade starts.
+	alpha = 1
+	addtimer(CALLBACK(src, PROC_REF(fade_in), arrival_alpha), 0.1 SECONDS)
 	addtimer(CALLBACK(src, PROC_REF(restore_displacement)), 0.1 SECONDS)
+
+/// Starts the arrival alpha animation after the client has received the near-invisible sprite.
+/obj/effect/temp_visual/red_rift_arrival/proc/fade_in(arrival_alpha)
+	if(QDELETED(src))
+		return
+	animate(src, pixel_x = 0, pixel_y = 0, alpha = arrival_alpha, time = duration * 0.25, flags = ANIMATION_PARALLEL)
 
 /// Returns the copied arrival sprite's displacement filter to normal while it phases back in.
 /obj/effect/temp_visual/red_rift_arrival/proc/restore_displacement()
