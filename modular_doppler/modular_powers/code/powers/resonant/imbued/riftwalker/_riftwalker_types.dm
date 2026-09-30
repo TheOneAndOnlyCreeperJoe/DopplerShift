@@ -5,12 +5,8 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	/datum/riftwalker_rift_type/red = 15,
 ))
 
-// Chance for teleporter rifts to spawn at a teleporter as the first rift.
-#define RIFTWALKER_TELEPORTER_RIFT_CHANCE 25
-// Chance for teleporer rifts that spawn by a teleporter to link to a beacon.
+// Chance for teleporter rifts that spawn by a teleporter to link to a beacon.
 #define RIFTWALKER_TELEPORTER_BEACON_LINK_CHANCE 66
-// Chance for a red rift to spawn in the gateway area.
-#define RIFTWALKER_RED_GATEWAY_RIFT_CHANCE 33
 // Chance for a red rift to lead to a space ruin, otherwise leading to a mining ruin.
 #define RIFTWALKER_SPACE_RUIN_CHANCE 66
 
@@ -31,20 +27,30 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 
 /*
 *
-* Teleporter Rift: The first rift is associated with a beacon or teleport hub; the second rift is either random, or if the first is a teleport-hub rifts, it may link to a beacon.
+ * Teleporter Rift: The first rift is associated with a beacon, teleport hub, or gateway; the second rift is either random, or if the first is a teleport-hub rift, it may link to a beacon.
 *
 */
 /datum/riftwalker_rift_type/teleporter
-	/// Whether the first rift actually selected a teleport hub rather than a beacon.
+	/// Whether the first rift selected a teleport hub, enabling its potential beacon link.
 	var/first_rift_uses_teleporter = FALSE
 
+/// Randomly rolls between becaons, teleporters or gateways. Places the spawning rift there.
 /datum/riftwalker_rift_type/teleporter/find_first_turf(datum/riftwalker_network_tracker/network)
-	first_rift_uses_teleporter = prob(RIFTWALKER_TELEPORTER_RIFT_CHANCE)
-	var/turf/first_turf = first_rift_uses_teleporter ? pick_adjacent_teleporter_turf(network) : pick_valid_beacon_turf(network)
-	if(first_turf)
+	first_rift_uses_teleporter = FALSE
+	var/list/first_rift_options = shuffle(list("beacon", "teleporter", "gateway"))
+	for(var/first_rift_option as anything in first_rift_options)
+		var/turf/first_turf
+		switch(first_rift_option)
+			if("beacon")
+				first_turf = pick_valid_beacon_turf(network)
+			if("teleporter")
+				first_turf = pick_adjacent_teleporter_turf(network)
+			if("gateway")
+				first_turf = pick_gateway_area_turf(network)
+		if(!first_turf)
+			continue
+		first_rift_uses_teleporter = first_rift_option == "teleporter"
 		return first_turf
-	first_rift_uses_teleporter = !first_rift_uses_teleporter
-	return first_rift_uses_teleporter ? pick_adjacent_teleporter_turf(network) : pick_valid_beacon_turf(network)
 
 /datum/riftwalker_rift_type/teleporter/find_second_turf(datum/riftwalker_network_tracker/network)
 	if(first_rift_uses_teleporter && prob(RIFTWALKER_TELEPORTER_BEACON_LINK_CHANCE))
@@ -76,9 +82,20 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 			candidates += beacon_turf
 	return length(candidates) ? pick(candidates) : null
 
+/// Finds a valid turf in the station gateway's area, if the map has one.
+/datum/riftwalker_rift_type/teleporter/proc/pick_gateway_area_turf(datum/riftwalker_network_tracker/network)
+	var/area/gateway_area = get_area(GLOB.the_gateway)
+	if(!gateway_area)
+		return null
+	var/list/turf/candidates = list()
+	for(var/turf/gateway_turf as anything in gateway_area)
+		if(network.is_valid_station_rift_location(gateway_turf))
+			candidates += gateway_turf
+	return length(candidates) ? pick(candidates) : null
+
 /*
 *
-* Red Rift: Spooky and dangerous! The first rift either spawns somewhere random or at the gateway, the second always leads to a breathable ruin.
+ * Red Rift: Spooky and dangerous! The first rift spawns somewhere random, while the second always leads to a breathable ruin.
 * These look visually distinct to differentiate them, and you are entering quite obviously at your own risk.
 *
 */
@@ -89,26 +106,8 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 		/area/ruin/space/has_grav/powered/undisclosed_location, // cozy-zone for cantags lets give them their peace.
 	))
 
-/datum/riftwalker_rift_type/red/find_first_turf(datum/riftwalker_network_tracker/network)
-	if(prob(RIFTWALKER_RED_GATEWAY_RIFT_CHANCE))
-		var/turf/gateway_turf = pick_gateway_area_turf(network)
-		if(gateway_turf)
-			return gateway_turf
-	return network.find_random_rift_turf()
-
 /datum/riftwalker_rift_type/red/find_second_turf(datum/riftwalker_network_tracker/network)
 	return pick_valid_ruin_turf(network)
-
-/// Finds a valid turf in the station gateway's area, if the map has one.
-/datum/riftwalker_rift_type/red/proc/pick_gateway_area_turf(datum/riftwalker_network_tracker/network)
-	var/area/gateway_area = get_area(GLOB.the_gateway)
-	if(!gateway_area)
-		return null
-	var/list/turf/candidates = list()
-	for(var/turf/gateway_turf as anything in gateway_area)
-		if(network.is_valid_station_rift_location(gateway_turf))
-			candidates += gateway_turf
-	return length(candidates) ? pick(candidates) : null
 
 /// Finds a clear, breathable floor within a space ruin or a ruin on the mining z-level.
 /datum/riftwalker_rift_type/red/proc/pick_valid_ruin_turf(datum/riftwalker_network_tracker/network)
@@ -144,7 +143,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 #define RIFTWALKER_RED_RIFT_COLOR_FILTER "riftwalker_red_rift_color"
 #define RIFTWALKER_RED_RIFT_DISPLACEMENT_FILTER "riftwalker_red_rift_displacement"
 
-/// ITS SPOOKY, IT (MIGHT) BE REDSPACE, IT MAY JUST BE RESONANT FUCKERY - WHO KNOWS, I AIN'T EXPLAING SHIT
+/// ITS SPOOKY, IT (MIGHT) BE REDSPACE, IT MAY JUST BE RESONANT FUCKERY - WHO KNOWS, I AIN'T EXPLAINING SHIT
 /obj/effect/riftwalker_rift/red
 	name = "red bluespace rift"
 	bluespace_core_chance = RIFTWALKER_RED_RIFT_BLUESPACE_CORE_CHANCE
@@ -372,9 +371,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	animate(displacement_filter, flags = ANIMATION_END_NOW)
 	animate(displacement_filter, size = 0, time = duration - (0.1 SECONDS))
 
-#undef RIFTWALKER_TELEPORTER_RIFT_CHANCE
 #undef RIFTWALKER_TELEPORTER_BEACON_LINK_CHANCE
-#undef RIFTWALKER_RED_GATEWAY_RIFT_CHANCE
 #undef RIFTWALKER_SPACE_RUIN_CHANCE
 #undef RIFTWALKER_RED_RIFT_WINDUP_DURATION
 #undef RIFTWALKER_RED_RIFT_TRANSIT_DURATION
