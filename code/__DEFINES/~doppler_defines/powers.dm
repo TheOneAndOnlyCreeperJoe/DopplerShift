@@ -391,10 +391,10 @@
 /// Args: (list/recovery_bonus_percents)
 #define COMSIG_IMBUED_ENCHANTED_RECOVERY_MODIFIERS "imbued_enchanted_recovery_modifiers"
 
-// Trait that lets you see the riftwalker mechanic.
-#define TRAIT_IMBUED_RIFTWALKER_SIGHT_ONLY "riftwalker_sight_only"
 // Trait that lets you use the riftwalker mechanic.
 #define TRAIT_IMBUED_RIFTWALKER "riftwalker"
+// Trait that lets you see the riftwalker mechanic.
+#define TRAIT_IMBUED_RIFTWALKER_SIGHT_ONLY "riftwalker_sight_only"
 // Chance for a standard rift pair to yield a bluespace anomaly core when displaced.
 #define RIFTWALKER_STANDARD_RIFT_BLUESPACE_CORE_CHANCE 15
 // Chance for a red rift pair to yield a bluespace anomaly core when displaced.
