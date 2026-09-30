@@ -348,6 +348,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	qdel(src)
 
 /// Harms the user after entering another red rift shortly after entering another
+/// Mathematically, you're looking at about a 25% chance of receiving an injury that will kill you without immediate treatment.
 /datum/riftwalker_red_rift_transit/proc/apply_rift_instability(mob/living/user)
 	if(!iscarbon(user))
 		return
