@@ -1,35 +1,38 @@
 /// Rolls the sent dice and announces the resulting roll in LOOC.
 /client/verb/roll_dice(dice_expression as text)
 	set name = "Roll Dice"
-	set desc = "Roll one or more dice for nearby players to see. Example: 2d6."
+	set desc = "Roll dice for nearby players to see. Example: 2d6 or 1d20+5."
 	set category = "OOC"
 
 	if(isnull(dice_expression))
 		return
 
-	// Regex parser: before D is group 1 (count) and after D is group 2 (size).
-	var/static/regex/dice_pattern = regex(@"^(\d+)d(\d+)$", "i")
-	dice_expression = trim(dice_expression)
+	/// Regex parser: before D is group 1 (count), after D is group 2 (size) and anything after a + or - is group 3 (modifier).
+	var/static/regex/dice_pattern = regex(@"^(\d+)d(\d+)([+-]\d+)?$", "i")
+	dice_expression = LOWER_TEXT(trim(dice_expression))
 	if(length(dice_expression) > 16 || !dice_pattern.Find(dice_expression))
-		to_chat(src, span_warning("Enter dice in NdM format, such as 2d6."))
+		to_chat(src, span_warning("Enter dice such as 2d6, 1d20+5, or 1d20-4. Leave empty for 1d20!"))
 		return
 
-	// Extracts count and size from the arg.
+	// The only numbers here that matter in performance is dice-count.
+	// Size and modifier are only capped to prevent stupid chat-spam where you start breaking into 'to the power of E' territory. What tabletop system are you playing that you need modifiers that big?
 	var/dice_count = text2num(dice_pattern.group[1])
-	var/die_size = text2num(dice_pattern.group[2])
 	if(dice_count < 1 || dice_count > 100)
 		to_chat(src, span_warning("You must roll between 1 and 100 dice."))
 		return
+	var/die_size = text2num(dice_pattern.group[2])
 	if(die_size < 1 || die_size > 1000)
-		to_chat(src, span_warning("Dice must have between 1 and 1000 sides."))
+		to_chat(src, span_warning("Dice must have between 1 and 1,000 sides."))
+		return
+	var/flat_modifier = text2num(dice_pattern.group[3])
+	if(abs(flat_modifier) > 10000)
+		to_chat(src, span_warning("The dice modifier must be between -10,000 and 10,000."))
 		return
 
-	// Roll all die and combine them into the announced total.
-	var/roll_total = 0
-	for(var/die_number in 1 to dice_count)
-		roll_total += rand(1, die_size)
+	// RRRRRRRRROOOOOLL THE DICE.
+	var/roll_total = roll(dice_expression)
 
-	dice_looc_action("rolled [dice_count]d[die_size] = [roll_total]!")
+	dice_looc_action("rolled [dice_expression] = [roll_total]!")
 
 /// Sends the result as a LOOC message with the same checks and rules as LOOC. The exception is that we don't support wallpierce.
 /client/proc/dice_looc_action(message)
