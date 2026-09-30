@@ -231,6 +231,7 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 		new /obj/effect/particle_effect/fluid/smoke/bad(first_rift_turf)
 	if(second_rift_turf)
 		new /obj/effect/particle_effect/fluid/smoke/bad(second_rift_turf)
+	// Chance for a bluespace core, as rifts are too numerous to give out guaranteed but is flavorful nontheless.
 	if(prob(bluespace_core_chance) && !isnull(anomaly_core))
 		var/anomaly_core_type = /obj/item/assembly/signaler/anomaly/bluespace
 		if(SSresearch.is_core_available(anomaly_core_type))

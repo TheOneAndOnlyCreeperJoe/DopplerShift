@@ -396,9 +396,9 @@
 // Trait that lets you use the riftwalker mechanic.
 #define TRAIT_IMBUED_RIFTWALKER "riftwalker"
 // Chance for a standard rift pair to yield a bluespace anomaly core when displaced.
-#define RIFTWALKER_STANDARD_RIFT_BLUESPACE_CORE_CHANCE 10
+#define RIFTWALKER_STANDARD_RIFT_BLUESPACE_CORE_CHANCE 15
 // Chance for a red rift pair to yield a bluespace anomaly core when displaced.
-#define RIFTWALKER_RED_RIFT_BLUESPACE_CORE_CHANCE 33
+#define RIFTWALKER_RED_RIFT_BLUESPACE_CORE_CHANCE 30
 
 /**MORTAL DEFINES
 * I'm literally just using this to define Breacher Knuckle right now

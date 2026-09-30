@@ -1,12 +1,15 @@
 /// Relative spawn weights for each rift pair type.
 GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
-	/datum/riftwalker_rift_type = 60,
+	/datum/riftwalker_rift_type = 50,
 	/datum/riftwalker_rift_type/teleporter = 25,
-	/datum/riftwalker_rift_type/red = 15,
+	/datum/riftwalker_rift_type/maintenance = 15,
+	/datum/riftwalker_rift_type/red = 10,
 ))
 
 // Chance for teleporter rifts that spawn by a teleporter to link to a beacon.
 #define RIFTWALKER_TELEPORTER_BEACON_LINK_CHANCE 66
+// Chance for a maintenance rift's second rift to also spawn in maintenance.
+#define RIFTWALKER_MAINTENANCE_SECOND_RIFT_CHANCE 33
 // Chance for a red rift to lead to a space ruin, otherwise leading to a mining ruin.
 #define RIFTWALKER_SPACE_RUIN_CHANCE 66
 
@@ -91,6 +94,31 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	for(var/turf/gateway_turf as anything in gateway_area)
 		if(network.is_valid_station_rift_location(gateway_turf))
 			candidates += gateway_turf
+	return length(candidates) ? pick(candidates) : null
+
+/*
+*
+* Maintenance Rift: The first rift always spawns in maintenance. The second has a one-in-three chance to also spawn there, otherwise following normal placement rules.
+*
+*/
+/datum/riftwalker_rift_type/maintenance
+
+/datum/riftwalker_rift_type/maintenance/find_first_turf(datum/riftwalker_network_tracker/network)
+	return pick_valid_maintenance_turf(network)
+
+/datum/riftwalker_rift_type/maintenance/find_second_turf(datum/riftwalker_network_tracker/network)
+	if(prob(RIFTWALKER_MAINTENANCE_SECOND_RIFT_CHANCE))
+		var/turf/maintenance_turf = pick_valid_maintenance_turf(network)
+		if(maintenance_turf)
+			return maintenance_turf
+	return ..()
+
+/// Finds a clear station-maintenance turf suitable for a rift.
+/datum/riftwalker_rift_type/maintenance/proc/pick_valid_maintenance_turf(datum/riftwalker_network_tracker/network)
+	var/list/turf/candidates = list()
+	for(var/turf/maintenance_turf as anything in get_area_turfs(/area/station/maintenance, subtypes = TRUE))
+		if(network.is_valid_station_rift_location(maintenance_turf))
+			candidates += maintenance_turf
 	return length(candidates) ? pick(candidates) : null
 
 /*
@@ -372,6 +400,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 	animate(displacement_filter, size = 0, time = duration - (0.1 SECONDS))
 
 #undef RIFTWALKER_TELEPORTER_BEACON_LINK_CHANCE
+#undef RIFTWALKER_MAINTENANCE_SECOND_RIFT_CHANCE
 #undef RIFTWALKER_SPACE_RUIN_CHANCE
 #undef RIFTWALKER_RED_RIFT_WINDUP_DURATION
 #undef RIFTWALKER_RED_RIFT_TRANSIT_DURATION
