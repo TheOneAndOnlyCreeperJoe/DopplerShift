@@ -203,6 +203,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 		span_warning("[user] turns red as [user.p_they()] [user.p_are()] stretched and scattered into nothingness!"),
 		span_userdanger("Pain strikes your arm as it is stretched and pulled into [name]!")
 	)
+	// Failure states, including if the rift is deleted, in which case you lose your arm.
 	if(!do_after(user, RIFTWALKER_RED_RIFT_WINDUP_DURATION, target = src, timed_action_flags = IGNORE_USER_LOC_CHANGE | IGNORE_HELD_ITEM | IGNORE_INCAPACITATED | IGNORE_SLOWDOWNS))
 		if(QDELETED(src))
 			transit.rip_user_arm(user)
@@ -357,8 +358,8 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 		return
 	var/obj/item/bodypart/ripped_arm = pick(available_arms)
 	carbon_user.visible_message(
-		span_danger("The collapsing red rift catches [carbon_user]'s [ripped_arm.name] and tears it clean off!"),
-		span_userdanger("The collapsing red rift catches your [ripped_arm.name] and tears it clean off!")
+		span_danger("[carbon_user]'s [ripped_arm.name] tears clean off!"),
+		span_userdanger("The collapsing rift catches your [ripped_arm.name] and tears it clean off!")
 	)
 	ripped_arm.dismember(BRUTE, TRUE)
 
