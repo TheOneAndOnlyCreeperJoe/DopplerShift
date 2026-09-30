@@ -398,7 +398,7 @@
 // Chance for a standard rift pair to yield a bluespace anomaly core when displaced.
 #define RIFTWALKER_STANDARD_RIFT_BLUESPACE_CORE_CHANCE 10
 // Chance for a red rift pair to yield a bluespace anomaly core when displaced.
-#define RIFTWALKER_RED_RIFT_BLUESPACE_CORE_CHANCE 100
+#define RIFTWALKER_RED_RIFT_BLUESPACE_CORE_CHANCE 33
 
 /**MORTAL DEFINES
 * I'm literally just using this to define Breacher Knuckle right now

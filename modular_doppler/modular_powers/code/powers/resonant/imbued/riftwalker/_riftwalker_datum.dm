@@ -4,7 +4,7 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 // Minimum amount of pairs (two linked rifts) that can spawn
 #define RIFTWALKER_MIN_PAIRS 10
 // Maximum amount of pairs (two linked rifts) that can spawn
-#define RIFTWALKER_MAX_PAIRS 15
+#define RIFTWALKER_MAX_PAIRS 14
 // How often the game will attempt to generate rifts before giving up.
 #define RIFTWALKER_MAX_GENERATION_ATTEMPTS 200
 // How often the game will attempt to generate a rift at a specific location before giving up.
@@ -53,7 +53,7 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 		qdel(rift_type)
 		return FALSE
 	var/turf/second_turf = rift_type.find_second_turf(src)
-	// If we fail to find a second turf, or if they are too close together)
+	// Don't want them spawning too close together.
 	if(!second_turf || (second_turf.z == first_turf.z && get_dist(first_turf, second_turf) <= 1))
 		qdel(rift_type)
 		return FALSE
@@ -187,24 +187,23 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 	if(!do_after(user, 2 SECONDS, target = src))
 		return TRUE
 
-	var/turf/source_turf = get_turf(src)
-	var/turf/destination_turf = get_turf(linked_rift) || source_turf // You teleport to the same space if there is no linked rift.
-
-	/* removed fx
-	new /obj/effect/temp_visual/bluespace_fissure(source_turf)
-	new /obj/effect/temp_visual/bluespace_fissure(destination_turf)
-	*/
+	var/turf/rift_turf = get_turf(src)
+	var/turf/user_turf = get_turf(user)
+	var/turf/destination_turf = get_turf(linked_rift) || rift_turf // You teleport to the same space if there is no linked rift.
 
 	user.visible_message(span_warning("[user] [slip_in_message]."), ignored_mobs = user)
 
 	var/atom/movable/pulled = null
 	if(ismovable(user.pulling))
 		pulled = user.pulling
+		var/turf/pulled_turf = get_turf(pulled)
 		if(ismob(pulled))
 			to_chat(pulled, span_notice("You suddenly find yourself in a different location!"))
-		do_teleport(pulled, destination_turf, no_effects = TRUE, channel = TELEPORT_CHANNEL_BLUESPACE)
+		if(do_teleport(pulled, destination_turf, no_effects = TRUE, channel = TELEPORT_CHANNEL_BLUESPACE))
+			play_rift_departure_animation(pulled_turf, pulled)
 
 	if(do_teleport(user, destination_turf, no_effects = TRUE, channel = TELEPORT_CHANNEL_BLUESPACE))
+		play_rift_departure_animation(user_turf, user)
 		playsound(destination_turf, SFX_PORTAL_ENTER, 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 		user.visible_message(span_warning("[user] [slip_out_message]."), span_notice("...and find your way to the other side."))
 		if(pulled)
@@ -213,6 +212,10 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 		user.visible_message(span_warning("[user] [slip_out_message], ending up exactly where they left."), span_notice("...and find yourself where you started?"))
 
 	return TRUE
+
+/// Makes the user phase out when entering the rift.
+/obj/effect/riftwalker_rift/proc/play_rift_departure_animation(turf/departure_turf, atom/movable/user)
+	new /obj/effect/temp_visual/portal_animation(departure_turf, src, user)
 
 /obj/effect/riftwalker_rift/attack_ghost(mob/user)
 	if(QDELETED(linked_rift))
@@ -281,7 +284,7 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 		return NONE
 	return analyzer_act(user, analyzer)
 
-// Determines if a mob can see it.
+// Determines if a mob can see the rift.
 /datum/atom_hud/alternate_appearance/basic/riftwalker/mobShouldSee(mob/viewer)
 	if(!isliving(viewer))
 		return FALSE
