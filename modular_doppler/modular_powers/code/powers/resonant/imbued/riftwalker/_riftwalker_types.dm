@@ -343,7 +343,7 @@ GLOBAL_LIST_INIT(riftwalker_rift_type_weights, list(
 				apply_rift_instability(user)
 			user.visible_message(
 				span_warning("[user] forms into being!"),
-				span_warning("You finally feel whole again.")
+				span_warning("After what feels like days inside the rift, you finally feel whole again.")
 			)
 	qdel(src)
 

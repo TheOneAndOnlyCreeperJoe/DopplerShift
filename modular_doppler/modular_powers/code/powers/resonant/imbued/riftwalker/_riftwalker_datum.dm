@@ -232,15 +232,8 @@ GLOBAL_DATUM_INIT(riftwalker_network, /datum/riftwalker_network_tracker, new)
 	if(second_rift_turf)
 		new /obj/effect/particle_effect/fluid/smoke/bad(second_rift_turf)
 	// Chance for a bluespace core, as rifts are too numerous to give out guaranteed but is flavorful nontheless.
-	if(prob(bluespace_core_chance) && !isnull(anomaly_core))
-		var/anomaly_core_type = /obj/item/assembly/signaler/anomaly/bluespace
-		if(SSresearch.is_core_available(anomaly_core_type))
-			SSresearch.increment_existing_anomaly_cores(anomaly_core_type)
-			anomaly_core.forceMove(drop_location())
-			anomaly_core = null
-		else
-			visible_message(span_warning("[anomaly_core] loses its lustre as it falls to the ground, there is too little ambient energy to support another core of this type."))
-			new /obj/item/inert_anomaly(drop_location())
+	if(prob(bluespace_core_chance))
+		new /obj/item/raw_anomaly_core/bluespace(drop_location())
 	if(!QDELETED(linked_rift))
 		QDEL_NULL(linked_rift)
 	qdel(src)
