@@ -1,10 +1,10 @@
 /datum/quirk/genemodded
 	name = "Genemodded"
-	desc = "Some aspect of your physiology has been modified from your race's ordinary baseline, granting you a mutation of your choice."
+	desc = "Some aspect of your physiology has been modified from your race's ordinary baseline, granting you a neutral or negative mutation of your choice."
 	gain_text = span_notice("Your body feels unusual...")
 	lose_text = span_notice("Normality returns in a flash.")
 	medical_record_text = "Subject has innately modified genetic information."
-	value = 10
+	value = 0
 	icon = FA_ICON_FLASK
 	var/datum/mutation/added_mutation = NONE
 
@@ -36,12 +36,22 @@
 	can_randomize = FALSE
 
 /proc/generate_genemod_quirk_list()
-	var/list/stuff_we_dont_want = list(/datum/mutation/self_amputation, /datum/mutation/hulk, /datum/mutation/clever, /datum/mutation/blind, /datum/mutation/thermal, /datum/mutation/telepathy, /datum/mutation/telekinesis, /datum/mutation/void, /datum/mutation/badblink, /datum/mutation/acidflesh, /datum/mutation/inexorable)
+	var/list/allowed_mutation_qualities = list(NEGATIVE, MINOR_NEGATIVE)
+	// Negative mutations that are intentionally unavailable through Genemodded.
+	var/list/excluded_mutations = list(
+		/datum/mutation/blind,
+		/datum/mutation/void,
+		/datum/mutation/badblink,
+		/datum/mutation/acidflesh,
+		/datum/mutation/fire, // CI/CD pipeline issues
+		/datum/mutation/stoner, // CI/CD pipeline issues
+	)
 
 	var/list/genemods = list()
 	for (var/datum/mutation/mut as anything in subtypesof(/datum/mutation))
-		if (!mut.locked && !(mut in stuff_we_dont_want))
-			genemods[mut.name] = mut
+	// filters out quirks with a positive score
+		if (!initial(mut.locked) && (initial(mut.quality) in allowed_mutation_qualities) && !(mut in excluded_mutations))
+			genemods[initial(mut.name)] = mut
 
 	return genemods
 
