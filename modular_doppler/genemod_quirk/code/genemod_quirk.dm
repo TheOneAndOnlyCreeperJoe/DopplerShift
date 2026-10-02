@@ -17,6 +17,9 @@
 		human_holder.dna.add_mutation(added_mutation, MUTATION_SOURCE_QUIRK)
 
 /datum/quirk/genemodded/remove()
+	// Prevents deleting quirks when the mob's already being removed which causes runtimes.
+	if(QDELING(quirk_holder))
+		return
 	if (added_mutation)
 		var/mob/living/carbon/human/human_holder = quirk_holder
 		human_holder.dna.remove_mutation(added_mutation, MUTATION_SOURCE_QUIRK)
