@@ -56,7 +56,7 @@
 /datum/status_effect/power/focused_block
 	id = "focused_block"
 	duration = STATUS_EFFECT_PERMANENT
-	tick_interval = 0.1 SECONDS
+	tick_interval = 0.2 SECONDS
 	alert_type = /atom/movable/screen/alert/status_effect/focused_block
 	status_type = STATUS_EFFECT_REPLACE
 	/// Our linked action
