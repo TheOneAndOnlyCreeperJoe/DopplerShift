@@ -111,7 +111,7 @@
 
 	return SUCCESSFUL_BLOCK
 
-/// Returns Focused Block's chance, ignoring any chance granted by held items.
+/// Returns Focused Block's chance to block
 /datum/status_effect/power/focused_block/proc/get_current_block_chance()
 	var/current_base_block_chance = clamp(base_block_chance - (decay_elapsed SECONDS * base_block_chance / decay_duration), 0, 100)
 	// Alt block from other sources
@@ -124,7 +124,7 @@
 	// Returns the highest calculated
 	return max(current_base_block_chance, highest_bonus_block_chance)
 
-/// Applies decay and updates the chance shown below the status icon.
+/// Applies block decay and updates the chance shown below the status icon.
 /datum/status_effect/power/focused_block/tick(seconds_between_ticks)
 	var/should_decay = !(SEND_SIGNAL(owner, COMSIG_POWERS_FOCUSED_BLOCK_SHOULD_DECAY, src) & COMPONENT_POWERS_FOCUSED_BLOCK_DONT_DECAY)
 	if(should_decay)
