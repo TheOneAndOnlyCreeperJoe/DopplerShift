@@ -53,7 +53,7 @@
 		if (!initial(mut.locked) && (initial(mut.quality) in allowed_mutation_qualities) && !(mut in excluded_mutations))
 			genemods[initial(mut.name)] = mut
 
-	return genemods
+	return sort_list(genemods)
 
 GLOBAL_LIST_INIT(possible_genemods_for_quirk, generate_genemod_quirk_list())
 
