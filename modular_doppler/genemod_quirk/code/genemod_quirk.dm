@@ -37,8 +37,12 @@
 
 /proc/generate_genemod_quirk_list()
 	var/list/allowed_mutation_qualities = list(NEGATIVE, MINOR_NEGATIVE)
+	// Positive mutations that are intentionally available through Genemodded.
+	var/list/whitelisted_mutations = list(
+		/datum/mutation/dwarfism, // I'll be real this is cleaner than modular editing in a change to 0 stability. Oh no, alcohol healing. Oh no, tablepass.
+	)
 	// Negative mutations that are intentionally unavailable through Genemodded.
-	var/list/excluded_mutations = list(
+	var/list/blacklisted_mutations = list(
 		/datum/mutation/blind,
 		/datum/mutation/void,
 		/datum/mutation/badblink,
@@ -49,9 +53,17 @@
 
 	var/list/genemods = list()
 	for (var/datum/mutation/mut as anything in subtypesof(/datum/mutation))
-	// filters out quirks with a positive score
-		if (!initial(mut.locked) && (initial(mut.quality) in allowed_mutation_qualities) && !(mut in excluded_mutations))
-			genemods[initial(mut.name)] = mut
+		// Unavailable mutations
+		if(initial(mut.locked))
+			continue
+		// Mutations that are counted as positive that are not on the whitelist
+		if(!(initial(mut.quality) in allowed_mutation_qualities) && !(mut in whitelisted_mutations))
+			continue
+		// Mutations that are not positive that are on the blacklist.
+		if(mut in blacklisted_mutations)
+			continue
+
+		genemods[initial(mut.name)] = mut
 
 	return sort_list(genemods)
 
