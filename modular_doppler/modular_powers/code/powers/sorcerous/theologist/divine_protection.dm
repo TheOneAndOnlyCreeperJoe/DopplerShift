@@ -42,6 +42,10 @@
 	if(blocking_user.stat != CONSCIOUS || HAS_TRAIT(blocking_user, TRAIT_INCAPACITATED))
 		return NONE
 
+	// can't benefit if you're silenced.
+	if(HAS_TRAIT(blocking_user, TRAIT_RESONANCE_SILENCED))
+		return NONE
+
 	var/datum/component/theologist_piety/piety_component = blocking_user.GetComponent(/datum/component/theologist_piety)
 	if(!piety_component)
 		return NONE
