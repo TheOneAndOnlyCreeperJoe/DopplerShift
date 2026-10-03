@@ -2,7 +2,7 @@
 	name = "Focused Block"
 	desc = "Using what you have on you, you gain a block chance that begins at 90% and decays to 0% over 4 seconds, as long as you are holding a bulky-sized item or an item with a block chance. \
 	\nIf the item does not have a block chance, this bonus is halved.\
-	\nThis block counts as a separate block chance from your normal block chance and is unaffected by armor piercing, nor does it damage your shield."
+	\nThis block counts as a separate block chance from your normal block chance, is affected by armour piercing and does not damage your shield."
 	security_record_text = "Subject can block attacks with extreme efficiency while wielding a shield or large object."
 	security_threat = POWER_THREAT_MAJOR
 	value = 4
@@ -104,10 +104,14 @@
 		return NONE
 
 	var/current_block_chance = get_current_block_chance()
-	if(!prob(current_block_chance))
+	// Applies armour penetration to the block-chance.
+	var/block_armour_penetration = get_block_armour_penetration()
+	var/final_block_chance = current_block_chance - clamp((armour_penetration - block_armour_penetration) / 2, 0, 100)
+
+	if(!prob(final_block_chance))
 		return NONE
-	block_effect(blocking_user, attack_text, current_block_chance)
-	SEND_SIGNAL(blocking_user, COMSIG_POWERS_FOCUSED_BLOCK_SUCCESSFUL_BLOCK, src, current_block_chance)
+	block_effect(blocking_user, attack_text, final_block_chance)
+	SEND_SIGNAL(blocking_user, COMSIG_POWERS_FOCUSED_BLOCK_SUCCESSFUL_BLOCK, src, final_block_chance)
 
 	return SUCCESSFUL_BLOCK
 
@@ -123,6 +127,16 @@
 			highest_bonus_block_chance = max(highest_bonus_block_chance, block_chance_bonus)
 	// Returns the highest calculated
 	return max(current_base_block_chance, highest_bonus_block_chance)
+
+/// Returns the highest defensive armor penetration granted to Focused Block.
+/datum/status_effect/power/focused_block/proc/get_block_armour_penetration()
+	var/highest_block_armour_penetration = 0
+	var/list/block_armour_penetration_bonuses = list()
+	SEND_SIGNAL(owner, COMSIG_POWERS_FOCUSED_BLOCK_BONUS_ARMOUR_PENETRATION, src, block_armour_penetration_bonuses)
+	for(var/block_armour_penetration_bonus in block_armour_penetration_bonuses)
+		if(isnum(block_armour_penetration_bonus))
+			highest_block_armour_penetration = max(highest_block_armour_penetration, block_armour_penetration_bonus)
+	return clamp(highest_block_armour_penetration, 0, 100)
 
 /// Applies block decay and updates the chance shown below the status icon.
 /datum/status_effect/power/focused_block/tick(seconds_between_ticks)

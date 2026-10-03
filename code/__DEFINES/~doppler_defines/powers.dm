@@ -426,6 +426,9 @@
 /// Collects additional independent block chances for an active Focused Block.
 /// Args: (datum/status_effect/power/focused_block/focused_block_status, list/block_chance_bonuses)
 #define COMSIG_POWERS_FOCUSED_BLOCK_BONUS_BLOCK "powers_focused_block_bonus_block"
+/// Collects defensive armor penetration for an active Focused Block.
+/// Args: (datum/status_effect/power/focused_block/focused_block_status, list/block_armour_penetration_bonuses)
+#define COMSIG_POWERS_FOCUSED_BLOCK_BONUS_ARMOUR_PENETRATION "powers_focused_block_bonus_armour_penetration"
 /// Queries whether an active Focused Block should decay during its current tick.
 /// Args: (datum/status_effect/power/focused_block/focused_block_status)
 #define COMSIG_POWERS_FOCUSED_BLOCK_SHOULD_DECAY "powers_focused_block_should_decay"

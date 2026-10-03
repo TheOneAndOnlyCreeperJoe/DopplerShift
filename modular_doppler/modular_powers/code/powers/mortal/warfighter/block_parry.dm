@@ -1,6 +1,6 @@
 /datum/power/warfighter/block_parry
 	name = "Parrying Block"
-	desc = "With intense focus, you can parry any harm that is sent your way. Focused Block is fixed at 100% for its first 0.5 seconds, but now fully decays it's block bonus over 1 second.\
+	desc = "With intense focus, you can parry any harm that is sent your way. Focused Block is fixed at 100% and is unaffected by armour piercing in its first 0.5 seconds, but now fully decays it's block bonus over 1 second.\
 	\nSuccessfully blocking with Focused Block resets the cooldown during this timing window."
 	security_record_text = "Subject can parry attacks in short-succesion with precise timing."
 	security_threat = POWER_THREAT_MAJOR
@@ -21,10 +21,11 @@
 /datum/power/warfighter/block_parry/add()
 	RegisterSignal(power_holder, COMSIG_POWER_ACTION_SUCCESS, PROC_REF(on_power_action_success))
 	RegisterSignal(power_holder, COMSIG_POWERS_FOCUSED_BLOCK_BONUS_BLOCK, PROC_REF(on_bonus_block))
+	RegisterSignal(power_holder, COMSIG_POWERS_FOCUSED_BLOCK_BONUS_ARMOUR_PENETRATION, PROC_REF(on_bonus_armour_penetration))
 	RegisterSignal(power_holder, COMSIG_POWERS_FOCUSED_BLOCK_SUCCESSFUL_BLOCK, PROC_REF(on_focused_block_success))
 
 /datum/power/warfighter/block_parry/remove()
-	UnregisterSignal(power_holder, list(COMSIG_POWER_ACTION_SUCCESS, COMSIG_POWERS_FOCUSED_BLOCK_BONUS_BLOCK, COMSIG_POWERS_FOCUSED_BLOCK_SUCCESSFUL_BLOCK))
+	UnregisterSignal(power_holder, list(COMSIG_POWER_ACTION_SUCCESS, COMSIG_POWERS_FOCUSED_BLOCK_BONUS_BLOCK, COMSIG_POWERS_FOCUSED_BLOCK_BONUS_ARMOUR_PENETRATION, COMSIG_POWERS_FOCUSED_BLOCK_SUCCESSFUL_BLOCK))
 
 /// Configures the Focused Block status effect created by the action that just succeeded.
 /datum/power/warfighter/block_parry/proc/on_power_action_success(mob/living/source, datum/action/cooldown/power/used_power, atom/target)
@@ -45,6 +46,13 @@
 
 	if(world.time < parry_window_end)
 		block_chance_bonuses += 100
+
+/// Gives Parrying Block enough defensive armor penetration to resist every attack.
+/datum/power/warfighter/block_parry/proc/on_bonus_armour_penetration(mob/living/source, datum/status_effect/power/focused_block/focused_block_status, list/block_armour_penetration_bonuses)
+	SIGNAL_HANDLER
+
+	if(world.time < parry_window_end)
+		block_armour_penetration_bonuses += 100
 
 /// Fully resets Focused Block's cooldown after Focused Block itself blocks during the parry window.
 /datum/power/warfighter/block_parry/proc/on_focused_block_success(mob/living/source, datum/status_effect/power/focused_block/focused_block_status, current_block_chance)
