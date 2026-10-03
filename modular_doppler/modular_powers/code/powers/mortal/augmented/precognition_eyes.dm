@@ -9,7 +9,7 @@
 	security_record_text = "Subject has PRCG Precognitive Scanners, allowing them to automatically dodge projectiles at the cost of their stamina."
 	security_threat = POWER_THREAT_MAJOR // it is still a chemsprayer if you put murder chems in this it will kill
 
-	value = 8
+	value = 6
 	augment = /obj/item/organ/eyes/robotic/precognition_eyes
 
 /obj/item/organ/eyes/robotic/precognition_eyes
@@ -25,13 +25,13 @@
 	var/enabled = TRUE
 
 	/// How much quality do we lose on trigger?
-	var/quality_loss = AUGMENTED_PREMIUM_QUALITY_MINOR / 3
+	var/quality_loss = AUGMENTED_PREMIUM_QUALITY_MINOR / 1.5
 	/// Skillchip installed by this augment.
 	var/obj/item/skillchip/installed_chip
 	/// Did we add an extra skillchip slot?
 	var/added_skillchip_slot = FALSE
 	/// The minimum stamloss gained from this. Normally it is the projectile's damage * efficiency.
-	var/dodge_stamloss = 25 // higher than normal taunting. Git gud.
+	var/dodge_stamloss = 15
 	/// EMP cooldown decleration
 	COOLDOWN_DECLARE(emp_reenable_cooldown)
 	/// EMP cooldown duration
