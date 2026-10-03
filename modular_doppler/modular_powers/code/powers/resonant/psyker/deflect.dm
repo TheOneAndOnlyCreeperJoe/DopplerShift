@@ -23,9 +23,9 @@
 	/// Per-second upkeep while active.
 	var/stress_per_second = 5
 	/// Flat stress added on top of projectile damage when we successfully try to deflect it.
-	var/projectile_stress_bonus = 10
+	var/projectile_stress_bonus = 0
 	/// How much stress is also dealt as stamina damage? Multiplicative number.
-	var/stress_as_stam_damage = 0.33
+	var/stress_as_stam_damage = 0
 	/// If our power is able to deflect magic
 	var/can_deflect_magic = FALSE
 	/// The status effect on the caster.
