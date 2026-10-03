@@ -5,7 +5,7 @@
 /datum/power/theologist/divine_protection
 	name = "Divine Protection"
 	desc = "You gain a block chance (separate from all other block chance) equal to half your piety; reduce Piety by 5 when this triggers.\
-	\nDivine Protection can never have a higher block chance than 75%, and is uanffected by armour penetration."
+	\nDivine Protection can never have a higher block chance than 66%, and is uanffected by armour penetration."
 	security_record_text = "Subject tends to unpredictably and miraculously avoid harm."
 	security_threat = POWER_THREAT_MAJOR
 	value = 4
@@ -21,7 +21,7 @@
 	/// The ratio of piety to block.
 	var/piety_ratio = 0.5
 	/// The highest final block chance Divine Protection can grant.
-	var/max_block_chance = 75
+	var/max_block_chance = 66
 
 /datum/power/theologist/divine_protection/add()
 	RegisterSignal(power_holder, COMSIG_LIVING_CHECK_BLOCK, PROC_REF(check_block))
