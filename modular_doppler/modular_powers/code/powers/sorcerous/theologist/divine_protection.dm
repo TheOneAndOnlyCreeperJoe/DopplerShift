@@ -4,7 +4,8 @@
 
 /datum/power/theologist/divine_protection
 	name = "Divine Protection"
-	desc = "You gain a block chance (separate from all other block chance) equal to half your piety; reduce Piety by 5 when this triggers."
+	desc = "You gain a block chance (separate from all other block chance) equal to half your piety; reduce Piety by 5 when this triggers.\
+	\nDivine Protection can never have a higher block chance than 75%."
 	security_record_text = "Subject tends to unpredictably and miraculously avoid harm."
 	security_threat = POWER_THREAT_MAJOR
 	value = 4
@@ -19,6 +20,8 @@
 	var/last_block_effect = 0
 	/// The ratio of piety to block.
 	var/piety_ratio = 0.5
+	/// The highest final block chance Divine Protection can grant.
+	var/max_block_chance = 75
 
 /datum/power/theologist/divine_protection/add()
 	RegisterSignal(power_holder, COMSIG_LIVING_CHECK_BLOCK, PROC_REF(check_block))
@@ -41,20 +44,15 @@
 	if(!piety_component)
 		return NONE
 
-	// Attempts to roll the block chance with rerolls
+	// Collect additive block chance modifiers before applying Divine Protection's global cap.
 	var/block_chance = clamp(round(piety_component.piety * piety_ratio), 0, 100)
-	var/list/divine_protection_rolls = list(src) // listing source so that we have at least 1 roll
-	SEND_SIGNAL(power_holder, COMSIG_THEOLOGIST_DIVINE_PROTECTION_ROLLS, hitby, damage, attack_text, attack_type, armour_penetration, damage_type, divine_protection_rolls)
+	var/list/block_chance_modifiers = list()
+	SEND_SIGNAL(power_holder, COMSIG_THEOLOGIST_DIVINE_PROTECTION_MODIFIERS, hitby, damage, attack_text, attack_type, armour_penetration, damage_type, block_chance_modifiers)
+	for(var/block_chance_modifier in block_chance_modifiers)
+		block_chance += block_chance_modifier
+	block_chance = clamp(block_chance, 0, max_block_chance)
 
-	var/has_blocked = FALSE
-	if(block_chance >= 0)
-		// Again and again we roll.
-		for(var/reroll in divine_protection_rolls)
-			if(prob(block_chance))
-				has_blocked = TRUE
-				break
-
-	if(!has_blocked)
+	if(!prob(block_chance))
 		return NONE
 
 	// only a nat20 will save you now

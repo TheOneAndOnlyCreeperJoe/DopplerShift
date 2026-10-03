@@ -239,9 +239,9 @@
 // Trait made as to prevent duplicate smites.
 #define TRAIT_HAS_SMITING_STRIKE "has_smiting_strike"
 
-/// Fired by modular_doppler\modular_powers\code\powers\sorcerous\theologist\divine_protection.dm to check for any applicable rerolls
-/// Args: (mob/living/blocking_user, atom/movable/hitby, damage, attack_text, attack_type, armour_penetration, damage_type, list/divine_protection_rolls)
-#define COMSIG_THEOLOGIST_DIVINE_PROTECTION_ROLLS "theologist_divine_protection_rolls"
+/// Fired by modular_doppler\modular_powers\code\powers\sorcerous\theologist\divine_protection.dm to collect applicable block chance modifiers.
+/// Args: (atom/movable/hitby, damage, attack_text, attack_type, armour_penetration, damage_type, list/block_chance_modifiers)
+#define COMSIG_THEOLOGIST_DIVINE_PROTECTION_MODIFIERS "theologist_divine_protection_modifiers"
 
 /// Fired by modular_doppler\modular_powers\code\powers\sorcerous\theologist\_theologist_root_twisted.dm to collect modifiers to damage conversion rates.
 /// Args: (list/twisted_conversion_modifiers)
