@@ -5,7 +5,7 @@
 /datum/power/theologist/divine_protection
 	name = "Divine Protection"
 	desc = "You gain a block chance (separate from all other block chance) equal to half your piety; reduce Piety by 5 when this triggers.\
-	\nDivine Protection can never have a higher block chance than 66%, and is uanffected by armour penetration."
+	\nDivine Protection can never have a higher block chance than 66%, and is unaffected by armour penetration."
 	security_record_text = "Subject tends to unpredictably and miraculously avoid harm."
 	security_threat = POWER_THREAT_MAJOR
 	value = 4
