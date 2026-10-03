@@ -10,6 +10,7 @@
 	Will not hit other creatures if they are prone, nor will it function against point-blank firearm attacks. You also cannot deflect onto vehicles, defensive emplacements (such as barricades and energy-barriers) or blobs. \
 	\nFiring a gun disables this effect for 15 minutes. Action scenes must have tension, no?"
 	security_record_text = "Subject seems to be impossible to hit with projectiles when other targets are nearby."
+	security_threat = POWER_THREAT_MAJOR
 	value = 6
 
 	required_powers = list(/datum/power/imbued_root/anomalous)
