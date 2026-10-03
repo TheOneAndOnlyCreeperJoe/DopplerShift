@@ -7710,6 +7710,7 @@
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\_theologist_root_shared.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\_theologist_root_twisted.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\_theologist_root_unattended.dm"
+#include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\crusader_protection.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\culling.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\divine_protection.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\do_no_harm.dm"

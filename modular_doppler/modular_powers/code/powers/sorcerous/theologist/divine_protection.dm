@@ -41,8 +41,20 @@
 	if(!piety_component)
 		return NONE
 
+	// Attempts to roll the block chance with rerolls
 	var/block_chance = clamp(round(piety_component.piety * piety_ratio), 0, 100)
-	if(block_chance <= 0 || !prob(block_chance))
+	var/list/divine_protection_rolls = list(src) // listing source so that we have at least 1 roll
+	SEND_SIGNAL(power_holder, COMSIG_THEOLOGIST_DIVINE_PROTECTION_ROLLS, hitby, damage, attack_text, attack_type, armour_penetration, damage_type, divine_protection_rolls)
+
+	var/has_blocked = FALSE
+	if(block_chance >= 0)
+		// Again and again we roll.
+		for(var/reroll in divine_protection_rolls)
+			if(prob(block_chance))
+				has_blocked = TRUE
+				break
+
+	if(!has_blocked)
 		return NONE
 
 	// only a nat20 will save you now
