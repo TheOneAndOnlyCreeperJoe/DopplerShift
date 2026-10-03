@@ -32,6 +32,8 @@
 	var/added_skillchip_slot = FALSE
 	/// The minimum stamloss gained from this. Normally it is the projectile's damage * efficiency.
 	var/dodge_stamloss = 15
+	/// The percentage multiplier that projectiles do their damage as stam. This is before efficiency multiplication.
+	var/proj_damage_mult = 0.66
 	/// EMP cooldown decleration
 	COOLDOWN_DECLARE(emp_reenable_cooldown)
 	/// EMP cooldown duration
@@ -148,7 +150,7 @@
 	var/base_cost = dodge_stamloss
 	// If the projectile deals more damage, we use that for stamina cost instead of dodge_stamloss.
 	if(proj)
-		base_cost = max(base_cost, proj.damage)
+		base_cost = max(base_cost, proj.damage * proj_damage_mult)
 	source.adjustStaminaLoss(round(base_cost * (1 / max(efficiency, 0.01))))
 	premium_component?.adjust_quality(-AUGMENTED_PREMIUM_QUALITY_MINOR)
 	source.visible_message(span_warning("[source] dodges the [proj] with little effort!"), span_danger("You automatically dodge the [proj]!"))
