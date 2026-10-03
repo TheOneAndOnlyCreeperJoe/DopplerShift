@@ -115,12 +115,12 @@
 			valid_targets += potential_target
 	return valid_targets
 
-/// Adds harmless, dramatic bullet dents to nearby walls surrounding the deflection.
+/// Adds fake bullet dents to nearby walls surrounding the deflection.
 /datum/power/imbued/action_movie_syndrome/proc/add_nearby_wall_dents(mob/living/blocking_user)
 	var/turf/center_turf = get_turf(blocking_user)
 	if(!center_turf)
 		return
-	for(var/turf/closed/wall/nearby_wall as anything in RANGE_TURFS(2, center_turf))
+	for(var/turf/closed/wall/nearby_wall as anything in RANGE_TURFS(1, center_turf))
 		nearby_wall.add_dent(WALL_DENT_SHOT)
 
 /// Firing a gun removes the protection for a while, because you're not THAT big of a protagonist.
