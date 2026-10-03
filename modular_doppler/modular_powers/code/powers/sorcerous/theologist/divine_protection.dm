@@ -4,7 +4,7 @@
 
 /datum/power/theologist/divine_protection
 	name = "Divine Protection"
-	desc = "You gain a block chance (separate from all other block chance) equal to half your piety; reduce Piety by 5 when this triggers.\
+	desc = "You gain a block chance (separate from all other block chance) equal to half your piety; lose 1 Piety for every 5 damage blocked.\
 	\nDivine Protection can never have a higher block chance than 66%, and is unaffected by armour penetration."
 	security_record_text = "Subject tends to unpredictably and miraculously avoid harm."
 	security_threat = POWER_THREAT_MAJOR
@@ -14,8 +14,10 @@
 
 	required_powers = list(/datum/power/theologist_root/)
 	required_allow_subtypes = TRUE
-	/// World time (in deciseconds) when piety drain last triggered
-	var/last_piety_drain = 0
+	/// Blocked damage carried toward the next Piety cost.
+	var/blocked_damage_remainder = 0
+	/// Amount of blocked damage required to pay 1 Piety.
+	var/damage_per_piety = 5
 	/// World time (in deciseconds) when block effect last triggered
 	var/last_block_effect = 0
 	/// The ratio of piety to block.
@@ -61,10 +63,14 @@
 		return NONE
 
 	block_effect(blocking_user, attack_text, hitby, attack_type)
-	// We only allow piety loss once per 0.4 seconds so you don't get your piety nuked by a shotgun.
-	if(world.time >= last_piety_drain + 4)
-		piety_component.adjust_piety(-THEOLOGIST_PIETY_MINOR)
-		last_piety_drain = world.time
+	// We store the damage we take and for every full increment of damage_per_piety, we subtract 1 piety.
+	// Because I don't want to work with decimals subtractions for Piety, and so that microhits like legions/shotguns don't nuke your piety due to rounding.
+	if(isnum(damage) && damage > 0)
+		blocked_damage_remainder += damage
+		var/piety_cost = floor(blocked_damage_remainder / damage_per_piety)
+		if(piety_cost)
+			piety_component.adjust_piety(-piety_cost)
+			blocked_damage_remainder -= piety_cost * damage_per_piety
 	return SUCCESSFUL_BLOCK
 
 /// Special effects + feedback for the block.
