@@ -25,13 +25,13 @@
 	var/enabled = TRUE
 
 	/// How much quality do we lose on trigger?
-	var/quality_loss = AUGMENTED_PREMIUM_QUALITY_MINOR / 2
+	var/quality_loss = AUGMENTED_PREMIUM_QUALITY_MINOR / 3
 	/// Skillchip installed by this augment.
 	var/obj/item/skillchip/installed_chip
 	/// Did we add an extra skillchip slot?
 	var/added_skillchip_slot = FALSE
 	/// The minimum stamloss gained from this. Normally it is the projectile's damage * efficiency.
-	var/dodge_stamloss = 30 // higher than normal taunting. Git gud.
+	var/dodge_stamloss = 25 // higher than normal taunting. Git gud.
 	/// EMP cooldown decleration
 	COOLDOWN_DECLARE(emp_reenable_cooldown)
 	/// EMP cooldown duration
