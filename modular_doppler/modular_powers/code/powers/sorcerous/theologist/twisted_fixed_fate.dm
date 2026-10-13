@@ -2,9 +2,10 @@
 */
 /datum/power/theologist/twisted_fixed_fate
 	name = "Fixed Fate"
-	desc = "Choose a damage type besides suffocation. All uses of A Burden Twisted convert the target's damage into the chosen type, disregarding regular restrictions."
+	desc = "You always twist burdens into a particular type of injury. Choose a damage type besides suffocation.\
+	\nA Burden Twisted no longer heals that damage-type, instead converting all other damage besides suffocation into that type instead, regardless of how much damage that damage-type had."
 	security_record_text = "Subject's healing powers always convert the target's wounds into a fixed type."
-	value = 2
+	value = 1
 	required_powers = list(/datum/power/theologist_root/twisted)
 
 /datum/power/theologist/twisted_fixed_fate/get_security_record_text()
