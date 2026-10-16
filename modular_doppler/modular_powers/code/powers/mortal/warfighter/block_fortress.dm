@@ -48,4 +48,4 @@
 		return
 	stationary_ticks++
 	if(stationary_ticks >= 2)
-		return COMPONENT_POWERS_FOCUSED_BLOCK_DONT_DECAY
+		return TRUE

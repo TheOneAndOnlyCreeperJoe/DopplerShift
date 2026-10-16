@@ -435,8 +435,9 @@
 /// Fired when Focused Block itself successfully blocks an attack.
 /// Args: (datum/status_effect/power/focused_block/focused_block_status, current_block_chance)
 #define COMSIG_POWERS_FOCUSED_BLOCK_SUCCESSFUL_BLOCK "powers_focused_block_successful_block"
-/// Prevents Focused Block's decay for its current tick.
-#define COMPONENT_POWERS_FOCUSED_BLOCK_DONT_DECAY (1<<0)
+/// Queries whether a successful Focused Block should avoid its shield damage or chance-loss cost.
+/// Args: (datum/status_effect/power/focused_block/focused_block_status)
+#define COMSIG_POWERS_FOCUSED_BLOCK_PREVENT_BLOCK_COST "powers_focused_block_prevent_block_cost"
 
 // Martial Art define for Tchotchke Style
 #define MARTIALART_TCHOTCHKE_STYLE "tchotchke style"
