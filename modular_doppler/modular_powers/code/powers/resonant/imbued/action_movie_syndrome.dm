@@ -7,11 +7,11 @@
 	name = "Action Movie Syndrome"
 	desc = "Bullets seem to strike everything in your area but you: only an empty field could kill you, and even then it'd kill the grass first. \
 	\nIf there is a damageable structure or another creature adjacent to you when a projectile will hit you, it will instead hit them. Structures take extreme amounts of extra damage when this triggers. \
-	Will not hit other creatures if they are prone, nor will it function against point-blank firearm attacks. You also cannot deflect onto vehicles, defensive emplacements (such as barricades and energy-barriers) or blobs. \
+	Will not function while you are prone or unconscious, cannot hit prone or unconscious creatures, and cannot function against point-blank firearm attacks. You also cannot deflect onto vehicles, defensive emplacements (such as barricades and energy-barriers) or blobs. \
 	\nAction Movie Syndrome also applies to any guns you fire, causing targets you would've hit to deflect just as you would've."
 	security_record_text = "Subject seems to be impossible to hit with projectiles when other targets are nearby, but seems to suffer the same effects when wielding firearms."
 	security_threat = POWER_THREAT_MAJOR
-	value = 6
+	value = 9
 
 	required_powers = list(/datum/power/imbued_root/anomalous)
 
@@ -76,6 +76,9 @@
 
 /// Redirects a non-point-blank firearm projectile to an adjacent, valid target.
 /datum/power/imbued/action_movie_syndrome/proc/try_redirect_projectile(mob/living/redirecting_user, obj/projectile/hitting_projectile, mob/living/responsible_user = redirecting_user)
+	if(!can_redirect_projectiles(redirecting_user) || !can_redirect_projectiles(responsible_user))
+		return FALSE
+
 	if(is_point_blank_firearm_attack(redirecting_user, hitting_projectile))
 		return FALSE
 
@@ -113,6 +116,10 @@
 	)
 	return TRUE
 
+/// Returns whether a living mob can redirect projectiles through Action Movie Syndrome.
+/datum/power/imbued/action_movie_syndrome/proc/can_redirect_projectiles(mob/living/redirecting_user)
+	return redirecting_user && redirecting_user.stat < UNCONSCIOUS && redirecting_user.body_position != LYING_DOWN
+
 /// Point-blank gunfire immediately impacts its direct target, and therefore cannot be redirected.
 /datum/power/imbued/action_movie_syndrome/proc/is_point_blank_firearm_attack(mob/living/blocking_user, obj/projectile/hitting_projectile)
 	return isgun(hitting_projectile.fired_from) && hitting_projectile.original == blocking_user && get_dist(hitting_projectile.firer, blocking_user) <= 1
@@ -131,7 +138,7 @@
 		if(isliving(potential_target))
 			var/mob/living/living_target = potential_target
 			// Anyone that isn't dead, prone, can be hurt, and isn't a plot essential character (aka has the same power).
-			if(living_target.stat == DEAD || living_target.body_position == LYING_DOWN || HAS_TRAIT(living_target, TRAIT_GODMODE) || living_target.get_power(/datum/power/imbued/action_movie_syndrome))
+			if(living_target.stat >= UNCONSCIOUS || living_target.body_position == LYING_DOWN || HAS_TRAIT(living_target, TRAIT_GODMODE) || living_target.get_power(/datum/power/imbued/action_movie_syndrome))
 				continue
 			valid_targets += living_target
 			continue
@@ -144,5 +151,5 @@
 	var/turf/center_turf = get_turf(blocking_user)
 	if(!center_turf)
 		return
-	for(var/turf/closed/wall/nearby_wall as anything in RANGE_TURFS(1, center_turf))
+	for(var/turf/closed/wall/nearby_wall in RANGE_TURFS(1, center_turf))
 		nearby_wall.add_dent(WALL_DENT_SHOT)
