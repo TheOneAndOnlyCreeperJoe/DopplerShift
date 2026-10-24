@@ -73,7 +73,7 @@
 	living_target.log_message("was rammed by [charger] for [brute_damage_dealt] brute damage and [stamina_damage_dealt] stamina damage.", LOG_VICTIM)
 	charger.log_message("rammed [living_target] for [brute_damage_dealt] brute damage and [stamina_damage_dealt] stamina damage.", LOG_ATTACK)
 
-/// Temporarily reduces positive momentum adjustments after being hit by a ram.
+/// Temporarily reduces momentum gain after being hit by a ram.
 /datum/status_effect/power/ramming_speed_momentum_penalty
 	id = "ramming_speed_momentum_penalty"
 	status_type = STATUS_EFFECT_REPLACE
@@ -83,7 +83,7 @@
 	/// The percentage reduction applied to momentum gains.
 	var/momentum_gain_penalty = -50
 
-/// Sets the momentum penalty's duration from its application arguments.
+/// Sets the momentum penalty's duration.
 /datum/status_effect/power/ramming_speed_momentum_penalty/on_creation(mob/living/new_owner, effect_duration)
 	if(isnum(effect_duration))
 		duration = effect_duration
@@ -97,7 +97,7 @@
 	if(owner)
 		UnregisterSignal(owner, COMSIG_SPRINTING_MOMENTUM_CHANGE)
 
-/// Adds the momentum penalty to positive momentum adjustments.
+/// Adds the momentum penalty.
 /datum/status_effect/power/ramming_speed_momentum_penalty/proc/reduce_momentum_gain(mob/living/carbon/human/sprinter, amount, list/change_modifiers)
 	SIGNAL_HANDLER
 	if(amount > 0)
