@@ -7,7 +7,7 @@
 
 	required_powers = list(/datum/power/warfighter/focused_block)
 
-	menu_icon = 'modular_doppler/modular_weapons/icons/obj/shield.dmi'
+	menu_icon = 'modular_doppler/weaponry/icons/obj/shield.dmi'
 	menu_icon_state = "escarabajo"
 
 	/// The turf occupied at the previous Focused Block decay check.
