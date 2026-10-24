@@ -12,7 +12,7 @@
 	menu_icon_state = "speedster"
 
 	/// The percentage increase to sprint energy drain.
-	var/energy_drain_penalty = 50
+	var/energy_drain_penalty = 30
 	/// The full-momentum speed bonus granted for each Athletics level above None.
 	var/speed_bonus_per_athletics_level = 0.05
 	/// The power holder's sprinting component.
