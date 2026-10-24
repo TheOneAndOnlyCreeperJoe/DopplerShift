@@ -3,15 +3,16 @@
 	. = ..()
 	AddComponent(/datum/component/sprinting)
 
-/// Tracks sprint energy for a mob and displays its current level on the HUD.
+/// Tracks energy for a mob and displays its current level on the HUD.
 /datum/component/sprinting
 	dupe_mode = COMPONENT_DUPE_UNIQUE
 
 	/// The mob whose movement and HUD this component manages.
 	var/mob/living/carbon/human/sprint_owner
-	/// The current amount of sprint energy available.
+
+	/// The current amount of energy available.
 	var/energy = SPRINT_ENERGY_MAXIMUM
-	/// The maximum amount of sprint energy that can be stored.
+	/// The maximum amount of energy that can be stored.
 	var/max_energy = SPRINT_ENERGY_MAXIMUM
 	/// The amount of energy drained per second while moving.
 	var/energy_drain_per_second = 4
@@ -21,53 +22,55 @@
 	var/energy_regen_delay = 4 SECONDS
 	/// The amount of energy restored by each regeneration tick.
 	var/energy_regen_amount = 6.67
-	/// The interval between sprint-energy regeneration ticks.
+	/// The interval between energy regeneration ticks.
 	var/energy_regen_interval = 1 SECONDS
-	/// The stamina damage taken for each sprint-energy point that cannot be paid.
+	/// The stamina damage taken for each energy point that cannot be paid.
 	var/stamina_drain_per_energy = SPRINT_STAMINA_DRAIN_PER_ENERGY
 	/// The fraction of maximum stamina required to continue running.
 	var/minimum_stamina_fraction = 0.25
-	/// The sprint energy changed for each point of stamina adjustment.
+	/// The energy changed for each point of stamina adjustment.
 	var/energy_per_stamina_damage = SPRINT_ENERGY_PER_STAMINA_DAMAGE
-	/// The momentum lost for each point of qualifying stamina damage.
-	var/momentum_damage_per_stamina_damage = SPRINT_MOMENTUM_DAMAGE_PER_STAMINA_DAMAGE
-	/// The minimum effective stamina damage that can reduce momentum.
-	var/momentum_damage_stamina_threshold = SPRINT_MOMENTUM_STAMINA_DAMAGE_MIN
 	/// The world time at which energy was last successfully drained.
 	var/last_energy_loss_time = 0
-	/// The number of tiles moved since sprint energy was last drained.
+	/// The number of tiles moved since energy was last drained.
 	var/tiles_moved = 0
-	/// The number of consecutive processing ticks without a recorded running movement.
+	/// The number of consecutive processing ticks without running movement.
 	var/consecutive_stalled_ticks = 0
-	/// The current amount of momentum built up through movement.
+
+	/// The current amount of momentum built up.
 	var/momentum = SPRINT_MOMENTUM_MINIMUM
 	/// The maximum amount of momentum that can be stored.
 	var/max_momentum = SPRINT_MOMENTUM_MAXIMUM
 	/// The base momentum gained from moving in the current direction.
 	var/momentum_gain_base = 10
-	/// The fraction of current momentum gained from moving in the current direction.
+	/// Multiplier of how much existing momentum is added to the total amount gained, e.g 30 momentum would be 10 + 6 (30 * 0.2).
+	/// Effectively means that momentum builds faster at higher values.
 	var/momentum_gain_current_multiplier = 0.2
-	/// The maximum fraction of momentum retained after a 45-degree turn.
+	/// The fraction of the maximum that momentum drops to when making a 45-degree turn.
 	var/momentum_diagonal_turn_threshold = 0.5
-	/// The maximum fraction of momentum retained after a 90-degree turn.
+	/// The fraction of the maximum that momentum drops to when making a 90-degree turn.
 	var/momentum_right_angle_turn_threshold = 0.25
-	/// The direction currently used to evaluate momentum-building movement.
+	/// The direction currently used to determine momentum build-up.
 	var/momentum_direction
+	/// The momentum lost for each point of stamina damage.
+	var/momentum_damage_per_stamina_damage = SPRINT_MOMENTUM_DAMAGE_PER_STAMINA_DAMAGE
+	/// The minimum stamina damage required to damage momentum.
+	var/momentum_damage_stamina_threshold = SPRINT_MOMENTUM_STAMINA_DAMAGE_MIN
 
 	/// The delay before an empty momentum bar is hidden.
 	var/momentum_bar_hide_delay = 2 SECONDS
-	/// Whether the momentum bar is currently eligible to appear on the HUD.
+	/// Whether the momentum bar is currently hidden or not on the HUD.
 	var/momentum_bar_visible = FALSE
-	/// The pending timer that hides an empty momentum bar.
+	/// The timer that hides the momentum bar.
 	var/momentum_bar_hide_timer
 
 	/// The athletics experience earned for each second spent sprinting.
 	var/athletics_experience_per_second = 2
-	/// The fraction by which each athletics level above None reduces sprint energy drain.
+	/// The fraction by which each athletics level above None reduces energy drain.
 	var/athletics_energy_drain_reduction_per_level = SPRINT_ATHLETICS_ENERGY_DRAIN_REDUCTION_PER_LEVEL
-	/// The energy display installed on the owner's HUD.
+	/// The energy display on the owner's HUD.
 	var/atom/movable/screen/sprint_energy/energy_display
-	/// The momentum display installed on the owner's HUD.
+	/// The momentum display on the owner's HUD.
 	var/atom/movable/screen/sprint_momentum/momentum_display
 
 /datum/component/sprinting/Initialize()
@@ -82,7 +85,7 @@
 	RegisterSignal(sprint_owner, COMSIG_MOVE_INTENT_TOGGLED, PROC_REF(on_move_intent_toggled))
 	RegisterSignal(sprint_owner, COMSIG_LIVING_ADJUST_STAMINA_DAMAGE, PROC_REF(on_adjust_stamina_damage))
 	RegisterSignal(sprint_owner, COMSIG_LIVING_POST_FULLY_HEAL, PROC_REF(on_fully_healed))
-	// Since walk is now the norm with this we force mobs that use sprint to start with walk intent.
+	// Since walk is now the norm with this we force mobs that use sprint to spawn with walk intent.
 	if(sprint_owner.move_intent == MOVE_INTENT_RUN)
 		sprint_owner.toggle_move_intent()
 
@@ -107,7 +110,7 @@
 	sprint_owner = null
 	return .
 
-/// Installs the sprint-energy display after the owner's HUD has been created.
+/// Installs the energy display after the owner's HUD has been created.
 /datum/component/sprinting/proc/on_hud_created(datum/source)
 	SIGNAL_HANDLER
 	install_energy_hud()
@@ -120,18 +123,19 @@
 
 	update_momentum_slowdown()
 
-/// Converts stamina adjustments into sprint energy and momentum changes.
+/// Converts stamina adjustments into energy and momentum changes.
 /datum/component/sprinting/proc/on_adjust_stamina_damage(mob/living/source, damage_type, amount, forced)
 	SIGNAL_HANDLER
 	if(source != sprint_owner || !isnum(amount))
 		return
 
 	adjust_energy(-(amount * energy_per_stamina_damage))
+	// Momentum can only be lowered, not increased, by stamina.
 	// To prevent denting our own momentum when running with stamina, momentum isn't dented until it takes a chunk of stamina damage, which is usually enough to stop someone's sprint.
 	if(amount >= momentum_damage_stamina_threshold)
 		adjust_momentum(-(amount * momentum_damage_per_stamina_damage))
 
-/// Restores all sprint energy after the owner receives a full heal.
+/// Restores all energy after the owner receives a full heal.
 /datum/component/sprinting/proc/on_fully_healed(mob/living/source, heal_flags)
 	SIGNAL_HANDLER
 	if(source != sprint_owner)
@@ -139,7 +143,7 @@
 
 	adjust_energy(max_energy - energy)
 
-/// Records a running movement for sprint-energy processing.
+/// Tracks relevant movement to calculate both energy and momentum gain/loss.
 /datum/component/sprinting/proc/on_moved(mob/living/carbon/human/source, atom/old_loc, movement_dir, forced, list/old_locs, momentum_change)
 	SIGNAL_HANDLER
 	if(source != sprint_owner || source.move_intent != MOVE_INTENT_RUN)
@@ -163,7 +167,7 @@
 	update_momentum(current_direction)
 	START_PROCESSING(SSfastprocess, src)
 
-/// Drains sprint energy for movement recorded during the current processing tick.
+/// Updates stamina/momentum based on how movement performed since the last tick.
 /datum/component/sprinting/process(seconds_per_tick)
 	var/moved_this_tick = tiles_moved > 0
 	if(moved_this_tick)
@@ -211,7 +215,7 @@
 	to_chat(sprint_owner, span_userdanger("You can no longer run!"))
 	sprint_owner.toggle_move_intent()
 
-/// Builds momentum while traveling in the same direction and limits it after turns.
+/// Builds momentum while traveling in the same direction and reduces it after turns.
 /datum/component/sprinting/proc/update_momentum(new_direction)
 	if(isnull(momentum_direction) || new_direction == momentum_direction)
 		adjust_momentum(momentum_gain_base + (momentum * momentum_gain_current_multiplier))
@@ -229,7 +233,7 @@
 
 	momentum_direction = new_direction
 
-/// Changes momentum within its valid range and updates the momentum HUD display.
+/// Changes the momentum value and communicates hiding/updating the momentum bar.
 /datum/component/sprinting/proc/adjust_momentum(amount)
 	if(!isnum(amount) || !amount)
 		return
@@ -247,12 +251,13 @@
 			deltimer(momentum_bar_hide_timer)
 			momentum_bar_hide_timer = null
 	else if(momentum_bar_visible && !momentum_bar_hide_timer)
+		// Hides the bar if it remains empty for long enough.
 		momentum_bar_hide_timer = addtimer(CALLBACK(src, PROC_REF(hide_momentum_bar)), momentum_bar_hide_delay, TIMER_UNIQUE | TIMER_STOPPABLE)
 	update_momentum_slowdown()
 	momentum_display?.update_momentum(momentum, max_momentum)
 	update_hud_visibility()
 
-/// Hides the momentum bar when its momentum has remained empty through the hide delay.
+/// Hides the momentum bar and updates the HUD.
 /datum/component/sprinting/proc/hide_momentum_bar()
 	momentum_bar_hide_timer = null
 	if(momentum > SPRINT_MOMENTUM_MINIMUM)
@@ -261,7 +266,7 @@
 	momentum_bar_visible = FALSE
 	update_hud_visibility()
 
-/// Applies the run-intent delay penalty reduced by the owner's current momentum.
+/// Applies the sprinting move-speed penalty, reduced by the owner's current momentum. Alos applies the speed bonus, increased by the owner's current momentum.
 /datum/component/sprinting/proc/update_momentum_slowdown()
 	if(isnull(sprint_owner))
 		return
@@ -270,6 +275,7 @@
 		sprint_owner.remove_movespeed_modifier(/datum/movespeed_modifier/sprinting)
 		return
 
+	// Calm the run_penalty (so that we are at walk speed at 0 momentum) and the momentum_bonus (so that we go fast at 100 momentum)
 	var/momentum_fraction = clamp(momentum * 0.01, 0, 1)
 	var/run_penalty = SPRINT_RUN_PENALTY * (1 - momentum_fraction)
 	var/full_momentum_bonus = SPRINT_MOMENTUM_BONUS
@@ -281,12 +287,12 @@
 	var/momentum_bonus = full_momentum_bonus * momentum_fraction
 	sprint_owner.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/sprinting, multiplicative_slowdown = run_penalty - momentum_bonus)
 
-/// Applies the sprinting run-intent delay penalty independently of no-slow immunity.
+/// Applies the speed modifiers calculated by update_momentum_slowdown()
 /datum/movespeed_modifier/sprinting
 	variable = TRUE
 	flags = IGNORE_NOSLOW
 
-/// Restores sprint energy after the recovery delay has elapsed.
+/// Restores energy after the recovery delay has elapsed.
 /datum/component/sprinting/proc/regenerate_energy()
 	if(QDELETED(sprint_owner) || energy >= max_energy)
 		return
@@ -303,7 +309,7 @@
 	if(energy < max_energy)
 		addtimer(CALLBACK(src, PROC_REF(regenerate_energy)), energy_regen_interval, TIMER_UNIQUE | TIMER_OVERRIDE)
 
-/// Changes sprint energy within its valid range or an optional override cap and can convert unpaid drain into stamina damage.
+/// Changes energy, and optionally exceeds the energy cap and optionally passes it along as stamina damage.
 /datum/component/sprinting/proc/adjust_energy(amount, override_cap, stamina_if_empty = FALSE)
 	if(!isnum(amount) || !amount)
 		return 0
@@ -340,13 +346,13 @@
 
 	return modified_amount
 
-/// Creates the sprint displays and keeps the native stamina display visible for the owner's lifetime.
+/// Creates the sprint displays and keeps displays the stamina display on spawn.
 /datum/component/sprinting/proc/install_energy_hud()
 	if(energy_display || isnull(sprint_owner?.hud_used))
 		return
 
 	var/datum/hud/owner_hud = sprint_owner.hud_used
-	if(owner_hud.stamina && !(owner_hud.stamina in owner_hud.infodisplay))
+	if(owner_hud.stamina && !(owner_hud.stamina in owner_hud.infodisplay)) // WAKE UP, WHY ARE YOU ALWAYS VISIBLE BUT ONLY IF POKED ONCE
 		owner_hud.infodisplay += owner_hud.stamina
 	sprint_owner.update_stamina_hud()
 	energy_display = new(null, owner_hud)
@@ -355,19 +361,21 @@
 	momentum_display.update_momentum(momentum, max_momentum)
 	update_hud_visibility()
 
-/// Updates visibility of the sprint energy and momentum displays.
+/// Updates visibility of the energy and momentum displays.
 /datum/component/sprinting/proc/update_hud_visibility()
 	if(isnull(energy_display) || isnull(momentum_display) || isnull(sprint_owner?.hud_used))
 		return
-
 	var/datum/hud/owner_hud = sprint_owner.hud_used
 	var/hud_changed = FALSE
+	// Shows the energy bar
 	if(!(energy_display in owner_hud.infodisplay))
 		owner_hud.infodisplay += energy_display
 		hud_changed = TRUE
+	// Shows the momentum bar when it needs to be visible
 	if(momentum_bar_visible && !(momentum_display in owner_hud.infodisplay))
 		owner_hud.infodisplay += momentum_display
 		hud_changed = TRUE
+	// Hides the momentum bar if it needs to not be visible
 	if(!momentum_bar_visible && (momentum_display in owner_hud.infodisplay))
 		owner_hud.infodisplay -= momentum_display
 		hud_changed = TRUE
@@ -375,7 +383,7 @@
 	if(hud_changed)
 		owner_hud.show_hud(owner_hud.hud_version)
 
-/// Removes the sprint-energy display from the owner's HUD.
+/// Removes the energy display from the owner's HUD.
 /datum/component/sprinting/proc/remove_energy_hud()
 	if(isnull(energy_display))
 		return
@@ -385,7 +393,7 @@
 	QDEL_NULL(energy_display)
 	QDEL_NULL(momentum_display)
 
-/// Displays sprint energy under the standard stamina HUD, with depleted energy colored red from the top down.
+/// Displays energy under the standard stamina HUD, appearing as an outline.
 /atom/movable/screen/sprint_energy
 	icon = 'modular_doppler/sprinting/icons/ui.dmi'
 	icon_state = "sprint_energy"
@@ -393,7 +401,7 @@
 	layer = OBJ_LAYER - 0.1
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
-/// Updates the red depleted-energy overlay to match the supplied energy level.
+/// Updates the red energy UI icon to gradually turn red relative to energy levels.
 /atom/movable/screen/sprint_energy/proc/update_energy(current_energy, maximum_energy)
 	cut_overlays()
 	if(current_energy >= maximum_energy)
@@ -410,7 +418,7 @@
 	depleted_overlay.color = list(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0)
 	add_overlay(depleted_overlay)
 
-/// Displays the momentum-bar frame beneath the sprint energy indicator.
+/// Displays the momentum-bar frame beneath the energy indicator.
 /atom/movable/screen/sprint_momentum
 	icon = 'modular_doppler/sprinting/icons/ui.dmi'
 	icon_state = "sprintbar"
@@ -425,23 +433,21 @@
 	resource_display = new(src, null)
 	vis_contents += resource_display
 
-/// Updates the resource layer inside the momentum bar.
+/// Updates the resource bar on Momentum
 /atom/movable/screen/sprint_momentum/proc/update_momentum(current_momentum, maximum_momentum)
 	resource_display?.update_momentum(current_momentum, maximum_momentum)
 
-/// Displays the momentum resource inside its persistent bar frame.
+/// The actual 'resource' inside the bar, colored blue and rendered over the existing bar.
 /atom/movable/screen/sprint_momentum_fill
 	icon = 'modular_doppler/sprinting/icons/ui.dmi'
 	icon_state = "sprintbar"
 	color = COLOR_BLUE
 	vis_flags = VIS_INHERIT_ID | VIS_INHERIT_PLANE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	/// The mask that clips the resource layer to its current fullness.
+	/// The mask that adjusts what part of the bar is visible.
 	var/static/icon/bar_mask
-	/// The vertical offset applied to the resource-layer mask.
-	var/bar_offset
-	/// The last rounded momentum value used to update the resource layer.
-	var/last_momentum_band = -1
+	/// The last momentum value used to update the resource.
+	var/last_momentum_value = -1
 
 /atom/movable/screen/sprint_momentum_fill/Initialize(mapload, datum/hud/hud_owner)
 	. = ..()
@@ -449,18 +455,20 @@
 	screen_loc = parent_display?.screen_loc
 	bar_mask ||= icon(icon, icon_state)
 
-/// Updates the visible fullness of the momentum resource layer.
+/// Updates the resource bar to match the new momentum levels.
 /atom/movable/screen/sprint_momentum_fill/proc/update_momentum(current_momentum, maximum_momentum)
 	if(maximum_momentum <= SPRINT_MOMENTUM_MINIMUM)
 		return
 
+	// Rounds the bar down to 5% increments so it doesn't look weird.
 	var/momentum_ratio = clamp(current_momentum / maximum_momentum, 0, 1)
 	var/momentum_band = round(momentum_ratio, 0.05)
-	if(momentum_band == last_momentum_band)
+	if(momentum_band == last_momentum_value)
 		return
-	last_momentum_band = momentum_band
+	last_momentum_value = momentum_band
 
-	bar_offset = clamp(-SPRINT_MOMENTUM_BAR_HEIGHT + (SPRINT_MOMENTUM_BAR_HEIGHT * momentum_band), -SPRINT_MOMENTUM_BAR_HEIGHT, 0)
+	// Tells the alpha-mask the relative hight of the icon and scales its alpha based on how muc hof it should be filled.
+	var/bar_offset = clamp(-SPRINT_MOMENTUM_BAR_HEIGHT + (SPRINT_MOMENTUM_BAR_HEIGHT * momentum_band), -SPRINT_MOMENTUM_BAR_HEIGHT, 0)
 	if(isnull(get_filter("sprint_momentum_mask")))
 		add_filter("sprint_momentum_mask", 1, alpha_mask_filter(0, bar_offset, bar_mask))
 	else
