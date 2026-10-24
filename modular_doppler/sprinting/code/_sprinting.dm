@@ -39,7 +39,6 @@
 	var/tiles_moved = 0
 	/// The number of consecutive processing ticks without a recorded running movement.
 	var/consecutive_stalled_ticks = 0
-
 	/// The current amount of momentum built up through movement.
 	var/momentum = SPRINT_MOMENTUM_MINIMUM
 	/// The maximum amount of momentum that can be stored.
@@ -116,8 +115,10 @@
 /// Updates the sprint slowdown after the owner changes movement intent.
 /datum/component/sprinting/proc/on_move_intent_toggled(mob/living/source)
 	SIGNAL_HANDLER
-	if(source == sprint_owner)
-		update_momentum_slowdown()
+	if(source != sprint_owner)
+		return
+
+	update_momentum_slowdown()
 
 /// Converts stamina adjustments into sprint energy and momentum changes.
 /datum/component/sprinting/proc/on_adjust_stamina_damage(mob/living/source, damage_type, amount, forced)
@@ -125,14 +126,10 @@
 	if(source != sprint_owner || !isnum(amount))
 		return
 
-	var/requested_stamina_change = amount * CONFIG_GET(number/damage_multiplier)
-	if(!requested_stamina_change)
-		return
-
-	adjust_energy(-(requested_stamina_change * energy_per_stamina_damage))
+	adjust_energy(-(amount * energy_per_stamina_damage))
 	// To prevent denting our own momentum when running with stamina, momentum isn't dented until it takes a chunk of stamina damage, which is usually enough to stop someone's sprint.
-	if(requested_stamina_change >= momentum_damage_stamina_threshold)
-		adjust_momentum(-(requested_stamina_change * momentum_damage_per_stamina_damage))
+	if(amount >= momentum_damage_stamina_threshold)
+		adjust_momentum(-(amount * momentum_damage_per_stamina_damage))
 
 /// Restores all sprint energy after the owner receives a full heal.
 /datum/component/sprinting/proc/on_fully_healed(mob/living/source, heal_flags)
@@ -171,21 +168,24 @@
 	var/moved_this_tick = tiles_moved > 0
 	if(moved_this_tick)
 		consecutive_stalled_ticks = 0
-	if(moved_this_tick)
+		// Gets and applies the base athletics reduction
 		var/athletics_level = sprint_owner.mind?.get_skill_level(/datum/skill/athletics) || SKILL_LEVEL_NONE
 		var/athletics_drain_reduction = clamp((athletics_level - SKILL_LEVEL_NONE) * athletics_energy_drain_reduction_per_level, 0, 1)
+
+		// Gets how much energy we should drain.
+		// Basically the flat drain per second + every tile moved * seconds_per_tick * athletics level modifier
 		var/energy_drain = (energy_drain_per_second + (energy_drain_per_tile * tiles_moved)) * seconds_per_tick * (1 - athletics_drain_reduction)
-		var/available_energy = energy
-		adjust_energy(-energy_drain)
-		var/exhausted_energy = max(energy_drain - available_energy, SPRINT_ENERGY_MINIMUM)
-		if(exhausted_energy)
-			drain_stamina(exhausted_energy * stamina_drain_per_energy)
-		sprint_owner.mind?.adjust_experience(/datum/skill/athletics, athletics_experience_per_second * seconds_per_tick)
+		var/list/energy_drain_modifiers = list()
+		SEND_SIGNAL(sprint_owner, COMSIG_SPRINTING_ENERGY_DRAIN, energy_drain, energy_drain_modifiers)
+		energy_drain = apply_percentage_modifiers(energy_drain, energy_drain_modifiers)
+		adjust_energy(-energy_drain, null, TRUE)
+		sprint_owner.mind?.adjust_experience(/datum/skill/athletics, athletics_experience_per_second * seconds_per_tick) // Gain experience for going on a jog
+
+		// Save energy-loss to reference later.
 		last_energy_loss_time = world.time
 		addtimer(CALLBACK(src, PROC_REF(regenerate_energy)), energy_regen_delay, TIMER_UNIQUE | TIMER_OVERRIDE)
-	tiles_moved = 0
-
-	if(!moved_this_tick)
+	// stall timer to see if we should start draining momentum
+	else
 		consecutive_stalled_ticks++
 		if(consecutive_stalled_ticks >= 2)
 			adjust_momentum(-(max_momentum * seconds_per_tick * 2))
@@ -193,41 +193,54 @@
 			momentum_direction = null
 			STOP_PROCESSING(SSfastprocess, src)
 
-/// Drains stamina for sprint exertion and forces the owner to walk when too little stamina remains.
+	tiles_moved = 0
+
+/// Drains stamina as a consequence of sprinting and forces the owner to walk when too little stamina remains.
 /datum/component/sprinting/proc/drain_stamina(amount)
 	if(amount <= 0)
 		return
 
 	sprint_owner.adjustStaminaLoss(amount)
+	// Checks if we still have enough stam to keep sprinting.
 	var/remaining_stamina = sprint_owner.max_stamina - sprint_owner.getStaminaLoss()
 	if(remaining_stamina > sprint_owner.max_stamina * minimum_stamina_fraction || sprint_owner.move_intent != MOVE_INTENT_RUN)
 		return
 
+	// We're too low on stam so we stop sprinting.
 	sprint_owner.balloon_alert(sprint_owner, "no more stamina!")
 	to_chat(sprint_owner, span_userdanger("You can no longer run!"))
 	sprint_owner.toggle_move_intent()
 
-/// Builds momentum while traveling in the assumed direction and limits it after turns.
+/// Builds momentum while traveling in the same direction and limits it after turns.
 /datum/component/sprinting/proc/update_momentum(new_direction)
 	if(isnull(momentum_direction) || new_direction == momentum_direction)
 		adjust_momentum(momentum_gain_base + (momentum * momentum_gain_current_multiplier))
 	else
 		var/turn_angle = abs(closer_angle_difference(dir2angle(momentum_direction), dir2angle(new_direction)))
 		var/turn_threshold = SPRINT_MOMENTUM_MINIMUM
+		var/list/turn_loss_modifiers = list()
+		SEND_SIGNAL(sprint_owner, COMSIG_SPRINTING_TURNED, turn_angle, turn_loss_modifiers)
 		if(turn_angle == 45)
 			turn_threshold = max_momentum * momentum_diagonal_turn_threshold
 		else if(turn_angle == 90)
 			turn_threshold = max_momentum * momentum_right_angle_turn_threshold
-		adjust_momentum(min(momentum, turn_threshold) - momentum)
+		var/turn_momentum_loss = min(momentum, turn_threshold) - momentum
+		adjust_momentum(apply_percentage_modifiers(turn_momentum_loss, turn_loss_modifiers))
 
 	momentum_direction = new_direction
 
 /// Changes momentum within its valid range and updates the momentum HUD display.
 /datum/component/sprinting/proc/adjust_momentum(amount)
-	if(!isnum(amount))
+	if(!isnum(amount) || !amount)
 		return
 
-	momentum = clamp(momentum + amount, SPRINT_MOMENTUM_MINIMUM, max_momentum)
+	var/list/change_modifiers = list()
+	SEND_SIGNAL(sprint_owner, COMSIG_SPRINTING_MOMENTUM_CHANGE, amount, change_modifiers)
+	var/modified_amount = apply_percentage_modifiers(amount, change_modifiers)
+	if(!modified_amount)
+		return
+
+	momentum = clamp(momentum + modified_amount, SPRINT_MOMENTUM_MINIMUM, max_momentum)
 	if(momentum > SPRINT_MOMENTUM_MINIMUM)
 		momentum_bar_visible = TRUE
 		if(momentum_bar_hide_timer)
@@ -259,7 +272,13 @@
 
 	var/momentum_fraction = clamp(momentum * 0.01, 0, 1)
 	var/run_penalty = SPRINT_RUN_PENALTY * (1 - momentum_fraction)
-	var/momentum_bonus = SPRINT_MOMENTUM_BONUS * momentum_fraction
+	var/full_momentum_bonus = SPRINT_MOMENTUM_BONUS
+	var/list/speed_bonus_modifiers = list()
+	SEND_SIGNAL(sprint_owner, COMSIG_SPRINTING_SPEED_BONUS, speed_bonus_modifiers)
+	for(var/speed_bonus_modifier in speed_bonus_modifiers)
+		if(isnum(speed_bonus_modifier))
+			full_momentum_bonus += speed_bonus_modifier
+	var/momentum_bonus = full_momentum_bonus * momentum_fraction
 	sprint_owner.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/sprinting, multiplicative_slowdown = run_penalty - momentum_bonus)
 
 /// Applies the sprinting run-intent delay penalty independently of no-slow immunity.
@@ -273,10 +292,10 @@
 		return
 
 	var/time_since_energy_loss = world.time - last_energy_loss_time
-	if(time_since_energy_loss < energy_regen_delay)
+	if(time_since_energy_loss < energy_regen_delay) // too short
 		addtimer(CALLBACK(src, PROC_REF(regenerate_energy)), energy_regen_delay - time_since_energy_loss, TIMER_UNIQUE | TIMER_OVERRIDE)
 		return
-	if(sprint_owner.getStaminaLoss() > 0)
+	if(sprint_owner.getStaminaLoss() > 0) // no regen while you have stamloss
 		addtimer(CALLBACK(src, PROC_REF(regenerate_energy)), energy_regen_interval, TIMER_UNIQUE | TIMER_OVERRIDE)
 		return
 
@@ -284,15 +303,42 @@
 	if(energy < max_energy)
 		addtimer(CALLBACK(src, PROC_REF(regenerate_energy)), energy_regen_interval, TIMER_UNIQUE | TIMER_OVERRIDE)
 
-/// Changes sprint energy within its valid range or an optional override cap and updates the HUD display.
-/datum/component/sprinting/proc/adjust_energy(amount, override_cap)
-	if(!isnum(amount))
-		return
+/// Changes sprint energy within its valid range or an optional override cap and can convert unpaid drain into stamina damage.
+/datum/component/sprinting/proc/adjust_energy(amount, override_cap, stamina_if_empty = FALSE)
+	if(!isnum(amount) || !amount)
+		return 0
 
+	// Gets any percentage modifiers to energy changes.
+	var/list/energy_drain_modifiers = list()
+	SEND_SIGNAL(sprint_owner, COMSIG_SPRINTING_ENERGY_CHANGE, amount, energy_drain_modifiers)
+	amount = apply_percentage_modifiers(amount, energy_drain_modifiers)
+
+	// If it should lapse into stamina loss
+	if(stamina_if_empty && amount < 0)
+		// Calcs if we would have enough to avoid lapsing into stamina
+		var/energy_paid = min(energy, -amount)
+		var/exhausted_energy = -amount - energy_paid
+		amount = -energy_paid
+		if(exhausted_energy)
+			drain_stamina(exhausted_energy * stamina_drain_per_energy)
+	if(!amount)
+		return 0
+
+	// Actually drains the energy
 	var/cap_to = isnum(override_cap) ? override_cap : max_energy
 	energy = clamp(energy + amount, SPRINT_ENERGY_MINIMUM, cap_to)
 	energy_display?.update_energy(energy, max_energy)
 	update_hud_visibility()
+	return amount
+
+/// Applies percentage modifiers multiplicatively to the specified amount.
+/datum/component/sprinting/proc/apply_percentage_modifiers(amount, list/modifier_percents)
+	var/modified_amount = amount
+	for(var/modifier_percent in modifier_percents)
+		if(isnum(modifier_percent))
+			modified_amount *= 1 + (modifier_percent / 100)
+
+	return modified_amount
 
 /// Creates the sprint displays and keeps the native stamina display visible for the owner's lifetime.
 /datum/component/sprinting/proc/install_energy_hud()

@@ -24,3 +24,14 @@
 
 /// The pixel height of the visible momentum bar.
 #define SPRINT_MOMENTUM_BAR_HEIGHT 30
+
+/// Fired before a sprinting mob loses momentum from changing direction. Arguments: (mob/living/carbon/human/sprinter, turn_angle, list/turn_loss_modifiers)
+#define COMSIG_SPRINTING_TURNED "sprinting_turned"
+/// Fired before sprint momentum is adjusted. Arguments: (mob/living/carbon/human/sprinter, amount, list/change_modifiers)
+#define COMSIG_SPRINTING_MOMENTUM_CHANGE "sprinting_momentum_change"
+/// Fired before sprint energy is adjusted. Arguments: (mob/living/carbon/human/sprinter, amount, list/energy_drain_modifiers)
+#define COMSIG_SPRINTING_ENERGY_CHANGE "sprinting_energy_change"
+/// Fired before energy is drained for sprinting movement. Arguments: (mob/living/carbon/human/sprinter, energy_drain, list/energy_drain_modifiers)
+#define COMSIG_SPRINTING_ENERGY_DRAIN "sprinting_energy_drain"
+/// Fired before the full-momentum speed bonus is scaled by momentum. Arguments: (mob/living/carbon/human/sprinter, list/speed_bonus_modifiers)
+#define COMSIG_SPRINTING_SPEED_BONUS "sprinting_speed_bonus"
