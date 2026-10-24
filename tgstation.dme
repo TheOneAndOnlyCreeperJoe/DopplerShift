@@ -468,6 +468,7 @@
 #include "code\__DEFINES\~doppler_defines\species.dm"
 #include "code\__DEFINES\~doppler_defines\species_clothing_paths.dm"
 #include "code\__DEFINES\~doppler_defines\speech_channels.dm"
+#include "code\__DEFINES\~doppler_defines\sprinting.dm"
 #include "code\__DEFINES\~doppler_defines\strippable.dm"
 #include "code\__DEFINES\~doppler_defines\teshari.dm"
 #include "code\__DEFINES\~doppler_defines\TESHARI_WAR_defines.dm"
