@@ -48,24 +48,30 @@
 	if(!sprinting_component || sprinting_component.momentum < minimum_momentum)
 		return
 
-	// Damage calc based on athletics.
+	// Athletics determines the impact damage.
 	var/athletics_level = charger.mind?.get_skill_level(/datum/skill/athletics) || SKILL_LEVEL_NONE
 	var/bash_damage = max(athletics_level - SKILL_LEVEL_NONE, 0) * damage_per_athletics_level
 
-	// Where 2 yeet
+	// Throw the target away from the charger.
 	var/throw_direction = get_dir(charger, living_target)
 	var/turf/throw_target = get_ranged_target_turf(living_target, throw_direction, throw_distance)
 
-	new /obj/effect/temp_visual/dir_setting/warfighter_heavy_slam(get_turf(living_target), throw_direction) // no need to reinvent the wheel
+	new /obj/effect/temp_visual/dir_setting/warfighter_heavy_slam(get_turf(living_target), throw_direction)
 	playsound(living_target, 'sound/effects/meteorimpact.ogg', 60, TRUE, MEDIUM_RANGE_SOUND_EXTRARANGE)
+	living_target.visible_message(
+		span_danger("[charger] rams into [living_target], sending [living_target.p_them()] flying!"),
+		span_userdanger("[charger] rams into you, sending you flying!"),
+	)
 
-	// Yeet, damage, jitter, status.
 	living_target.throw_at(throw_target, range = throw_distance, speed = throw_speed, thrower = charger, gentle = FALSE)
-	living_target.apply_damage(bash_damage, BRUTE, BODY_ZONE_CHEST, living_target.run_armor_check(BODY_ZONE_CHEST, MELEE))
-	living_target.apply_damage(bash_damage * stamina_damage_multiplier, STAMINA, BODY_ZONE_CHEST, living_target.run_armor_check(BODY_ZONE_CHEST, MELEE))
+	var/brute_damage_dealt = living_target.apply_damage(bash_damage, BRUTE, BODY_ZONE_CHEST, living_target.run_armor_check(BODY_ZONE_CHEST, MELEE))
+	var/stamina_damage_dealt = living_target.apply_damage(bash_damage * stamina_damage_multiplier, STAMINA, BODY_ZONE_CHEST, living_target.run_armor_check(BODY_ZONE_CHEST, MELEE))
 	living_target.set_jitter_if_lower(debuff_duration)
 	living_target.apply_status_effect(/datum/status_effect/power/ramming_speed_momentum_penalty, debuff_duration)
 	sprinting_component.adjust_momentum(-sprinting_component.momentum)
+
+	living_target.log_message("was rammed by [charger] for [brute_damage_dealt] brute damage and [stamina_damage_dealt] stamina damage.", LOG_VICTIM)
+	charger.log_message("rammed [living_target] for [brute_damage_dealt] brute damage and [stamina_damage_dealt] stamina damage.", LOG_ATTACK)
 
 /// Temporarily reduces positive momentum adjustments after being hit by a ram.
 /datum/status_effect/power/ramming_speed_momentum_penalty
