@@ -147,6 +147,9 @@
 	SIGNAL_HANDLER
 	if(source != sprint_owner || source.move_intent != MOVE_INTENT_RUN)
 		return
+	// Forced movement, drifting and being thrown does not count as movement.
+	if(forced || source.inertia_moving || source.throwing)
+		return
 
 	var/turf/old_turf = get_turf(old_loc)
 	var/turf/new_turf = get_turf(source)
