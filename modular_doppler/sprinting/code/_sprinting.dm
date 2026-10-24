@@ -18,6 +18,8 @@
 	var/energy_drain_per_second = 4
 	/// The additional amount of energy drained for each tile moved between ticks.
 	var/energy_drain_per_tile = 2
+	/// The additional hunger lost for each tile moved while sprinting.
+	var/hunger_loss = HUNGER_FACTOR / 10
 	/// The delay after draining energy before regeneration begins.
 	var/energy_regen_delay = 4 SECONDS
 	/// The amount of energy restored by each regeneration tick.
@@ -183,6 +185,7 @@
 		SEND_SIGNAL(sprint_owner, COMSIG_SPRINTING_ENERGY_DRAIN, energy_drain, energy_drain_modifiers)
 		energy_drain = apply_percentage_modifiers(energy_drain, energy_drain_modifiers)
 		adjust_energy(-energy_drain, null, TRUE)
+		sprint_owner.adjust_nutrition(-(hunger_loss * tiles_moved))
 		sprint_owner.mind?.adjust_experience(/datum/skill/athletics, athletics_experience_per_second * seconds_per_tick) // Gain experience for going on a jog
 
 		// Save energy-loss to reference later.
