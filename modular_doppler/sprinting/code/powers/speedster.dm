@@ -6,7 +6,7 @@
 	\nYou also gain 500 Athletics experience, equivelant to Journeyman."
 	security_record_text = "Subject reaches extreme top speeds when performing a sprint."
 	security_threat = POWER_THREAT_MAJOR
-	value = 4
+	value = 6
 
 	menu_icon = 'modular_doppler/sprinting/icons/icons.dmi'
 	menu_icon_state = "speedster"
