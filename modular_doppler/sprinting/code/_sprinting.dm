@@ -49,9 +49,9 @@
 	/// Effectively means that momentum builds faster at higher values.
 	var/momentum_gain_current_multiplier = 0.2
 	/// The fraction of the maximum that momentum drops to when making a 45-degree turn.
-	var/momentum_diagonal_turn_threshold = 0.5
+	var/momentum_diagonal_turn_threshold = 0.4
 	/// The fraction of the maximum that momentum drops to when making a 90-degree turn.
-	var/momentum_right_angle_turn_threshold = 0.25
+	var/momentum_right_angle_turn_threshold = 0.2
 	/// The direction currently used to determine momentum build-up.
 	var/momentum_direction
 	/// The momentum lost for each point of stamina damage.
