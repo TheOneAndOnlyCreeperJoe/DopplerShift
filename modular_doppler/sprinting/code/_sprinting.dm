@@ -84,6 +84,7 @@
 /datum/component/sprinting/RegisterWithParent()
 	. = ..()
 	RegisterSignal(sprint_owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
+	RegisterSignal(sprint_owner, COMSIG_MOB_CLIENT_MOVED, PROC_REF(on_client_moved))
 	RegisterSignal(sprint_owner, COMSIG_MOVE_INTENT_TOGGLED, PROC_REF(on_move_intent_toggled))
 	RegisterSignal(sprint_owner, COMSIG_LIVING_ADJUST_STAMINA_DAMAGE, PROC_REF(on_adjust_stamina_damage))
 	RegisterSignal(sprint_owner, COMSIG_LIVING_POST_FULLY_HEAL, PROC_REF(on_fully_healed))
@@ -99,7 +100,7 @@
 
 /datum/component/sprinting/UnregisterFromParent()
 	. = ..()
-	UnregisterSignal(sprint_owner, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVE_INTENT_TOGGLED, COMSIG_MOB_HUD_CREATED, COMSIG_LIVING_ADJUST_STAMINA_DAMAGE, COMSIG_LIVING_POST_FULLY_HEAL))
+	UnregisterSignal(sprint_owner, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLIENT_MOVED, COMSIG_MOVE_INTENT_TOGGLED, COMSIG_MOB_HUD_CREATED, COMSIG_LIVING_ADJUST_STAMINA_DAMAGE, COMSIG_LIVING_POST_FULLY_HEAL))
 
 /datum/component/sprinting/Destroy(force)
 	STOP_PROCESSING(SSfastprocess, src)
@@ -163,6 +164,11 @@
 		return
 
 	tiles_moved++
+	START_PROCESSING(SSfastprocess, src)
+	// on_client_moved() handles diagonals so we return early.
+	if(source.client && source.moving_diagonally)
+		return
+
 	// Preserve the player's combined input so a held diagonal does not become alternating cardinal turns.
 	var/current_direction = source.client?.intended_direction
 	if(!current_direction)
@@ -170,7 +176,18 @@
 	if(!current_direction)
 		current_direction = get_dir(old_turf, new_turf)
 	update_momentum(current_direction)
-	START_PROCESSING(SSfastprocess, src)
+
+/// So for some reason on_moved()'s signaler passes back diagonal movement as two seperate movements, one in each step (thanks byond).
+/// For some reason this forgotten signaler used ONLY on mulebots and crab-walking tosses back diagonal dirs so uhh, that's what we're using.
+/// Basically updates momentum as above but only when its diagonal.
+/datum/component/sprinting/proc/on_client_moved(mob/living/carbon/human/source, movement_direction, old_direction)
+	SIGNAL_HANDLER
+	if(source != sprint_owner || source.move_intent != MOVE_INTENT_RUN || !ISDIAGONALDIR(movement_direction))
+		return
+	if(source.buckled || !isturf(source.loc))
+		return
+
+	update_momentum(movement_direction)
 
 /// Updates stamina/momentum based on how movement performed since the last tick.
 /datum/component/sprinting/process(seconds_per_tick)
