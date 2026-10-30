@@ -153,6 +153,9 @@
 	// Forced movement, drifting and being thrown does not count as movement.
 	if(forced || source.inertia_moving || source.throwing)
 		return
+	// No being buckled or inside something.
+	if(source.buckled || !isturf(source.loc))
+		return
 
 	var/turf/old_turf = get_turf(old_loc)
 	var/turf/new_turf = get_turf(source)

@@ -4,7 +4,7 @@
 	name = "Ramming Speed"
 	desc = "Ram into your foes, sending them flying and knocking the wind out of them.\
 	\nBumping into a mob whilst dashing in combat stance at 80% or more Momentum will cause you to send them flying, knocking them back two spaces, dealing brute and stamina dmage, as well as giving a short penalty to the person's ability to build Momentum.\
-	The brute damage dealt is equal to 10 + (Athletics Level * 2); the stamina damage deals the same damage but * 4 your Athletics level instead. This always hits the target's body and is affected by melee armor. Landing a charge sets your Momentum down to 0.\
+	\nThe brute damage dealt is equal to 10 + (Athletics Level * 2); the stamina damage deals the same damage but * 4 your Athletics level instead. This always hits the target's body and is affected by melee armor. Landing a charge sets your Momentum down to 0.\
 	\nRamming a static object deals the same amount of damage, but converts the stamina damage into brute damage and does not throw the object.\
 	\nYou also gain 500 Athletics experience, equivelant to Journeyman."
 	security_record_text = "Subject is specialized in ramming into targets, damaging and weakening them."
