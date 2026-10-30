@@ -3,8 +3,8 @@
 /datum/power/warfighter/ramming_speed
 	name = "Ramming Speed"
 	desc = "Ram into your foes, sending them flying and knocking the wind out of them.\
-	\nBumping into a mob whilst dashing in combat stance at 80% or more Momentum will cause you to send them flying, knocking them back two spaces, dealing brute damage and thrice as much stamina damage, as well as giving a short penalty to the person's ability to build Momentum.\
-	The damage dealt is equal to every earned Athletics level * 2, always hits the target's body and is affected by melee armor. Landing a charge sets your Momentum down to 0.\
+	\nBumping into a mob whilst dashing in combat stance at 80% or more Momentum will cause you to send them flying, knocking them back two spaces, dealing brute and stamina dmage, as well as giving a short penalty to the person's ability to build Momentum.\
+	The brute damage dealt is equal to 10 + (Athletics Level * 2); the stamina damage deals the same damage but * 4 your Athletics level instead. This always hits the target's body and is affected by melee armor. Landing a charge sets your Momentum down to 0.\
 	\nRamming a static object deals the same amount of damage, but converts the stamina damage into brute damage and does not throw the object.\
 	\nYou also gain 500 Athletics experience, equivelant to Journeyman."
 	security_record_text = "Subject is specialized in ramming into targets, damaging and weakening them."
@@ -23,6 +23,8 @@
 	var/throw_speed = 2
 	/// The brute damage dealt per earned Athletics level.
 	var/damage_per_athletics_level = 2
+	/// The flat damage added to each portion of a ram.
+	var/flat_damage = 10
 	/// The multiplier applied to brute damage to determine stamina damage.
 	var/stamina_damage_multiplier = 3
 	/// The duration of the target's jitter and momentum gain penalty.
@@ -60,6 +62,7 @@
 	var/throw_direction = get_dir(charger, living_target)
 	var/turf/throw_target = get_ranged_target_turf(living_target, throw_direction, throw_distance)
 
+	// FX
 	new /obj/effect/temp_visual/dir_setting/warfighter_heavy_slam(get_turf(living_target), throw_direction)
 	playsound(living_target, 'sound/effects/meteorimpact.ogg', 60, TRUE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 	living_target.visible_message(
@@ -67,9 +70,10 @@
 		span_userdanger("[charger] rams into you, sending you flying!"),
 	)
 
+	// YEET
 	living_target.throw_at(throw_target, range = throw_distance, speed = throw_speed, thrower = charger, gentle = FALSE)
-	var/brute_damage_dealt = living_target.apply_damage(bash_damage, BRUTE, BODY_ZONE_CHEST, living_target.run_armor_check(BODY_ZONE_CHEST, MELEE))
-	var/stamina_damage_dealt = living_target.apply_damage(bash_damage * stamina_damage_multiplier, STAMINA, BODY_ZONE_CHEST, living_target.run_armor_check(BODY_ZONE_CHEST, MELEE))
+	var/brute_damage_dealt = living_target.apply_damage(bash_damage + flat_damage, BRUTE, BODY_ZONE_CHEST, living_target.run_armor_check(BODY_ZONE_CHEST, MELEE))
+	var/stamina_damage_dealt = living_target.apply_damage((bash_damage * stamina_damage_multiplier) + flat_damage, STAMINA, BODY_ZONE_CHEST, living_target.run_armor_check(BODY_ZONE_CHEST, MELEE))
 	living_target.set_jitter_if_lower(debuff_duration)
 	living_target.apply_status_effect(/datum/status_effect/power/ramming_speed_momentum_penalty, debuff_duration)
 	sprinting_component.adjust_momentum(-sprinting_component.momentum)
@@ -100,7 +104,7 @@
 
 	var/athletics_level = charger.mind?.get_skill_level(/datum/skill/athletics) || SKILL_LEVEL_NONE
 	var/bash_damage = max(athletics_level - SKILL_LEVEL_NONE, 0) * damage_per_athletics_level
-	var/structural_damage = bash_damage * (1 + stamina_damage_multiplier)
+	var/structural_damage = (bash_damage * (1 + stamina_damage_multiplier)) + (flat_damage * 2)
 	var/impact_direction = get_dir(charger, structure_target)
 	new /obj/effect/temp_visual/dir_setting/warfighter_heavy_slam(get_turf(structure_target), impact_direction)
 	structure_target.visible_message(span_danger("[charger] rams into [structure_target] with a loud crash!"))
