@@ -191,9 +191,6 @@
 		sprint_owner.adjust_nutrition(-(hunger_loss * tiles_moved))
 		sprint_owner.mind?.adjust_experience(/datum/skill/athletics, athletics_experience_per_second * seconds_per_tick) // Gain experience for going on a jog
 
-		// Save energy-loss to reference later.
-		last_energy_loss_time = world.time
-		addtimer(CALLBACK(src, PROC_REF(regenerate_energy)), energy_regen_delay, TIMER_UNIQUE | TIMER_OVERRIDE)
 	// stall timer to see if we should start draining momentum
 	else
 		consecutive_stalled_ticks++
@@ -336,9 +333,13 @@
 	if(!amount)
 		return 0
 
-	// Actually drains the energy
+	// Apply the energy change and resets the recovery timer after losing any energy.
+	var/previous_energy = energy
 	var/cap_to = isnum(override_cap) ? override_cap : max_energy
 	energy = clamp(energy + amount, SPRINT_ENERGY_MINIMUM, cap_to)
+	if(energy < previous_energy)
+		last_energy_loss_time = world.time
+		addtimer(CALLBACK(src, PROC_REF(regenerate_energy)), energy_regen_delay, TIMER_UNIQUE | TIMER_OVERRIDE)
 	energy_display?.update_energy(energy, max_energy)
 	update_hud_visibility()
 	return amount
