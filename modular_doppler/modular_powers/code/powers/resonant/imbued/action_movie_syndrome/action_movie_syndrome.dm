@@ -6,9 +6,9 @@
 /datum/power/imbued/action_movie_syndrome
 	name = "Action Movie Syndrome"
 	desc = "Bullets seem to strike everything in your area but you: only an empty field could kill you, and even then it'd kill the grass first. \
-	\nIf there is a damageable structure or another creature adjacent to you when a projectile will hit you, it will instead hit them. Structures take extreme amounts of extra damage when this triggers. \
-	Will not function while you are prone or unconscious, cannot hit prone or unconscious creatures, and cannot function against point-blank firearm attacks. You also cannot deflect onto vehicles, defensive emplacements (such as barricades and energy-barriers) or blobs. \
-	\nAction Movie Syndrome also applies to any guns you fire, causing targets you would've hit to deflect just as you would've."
+	\nWhilst visibly wearing sunglasses: if there is a damageable structure or another creature adjacent to you when a projectile will hit you, it will instead hit them. Structures take extreme amounts of extra damage when this triggers. \
+	Will not function if neither you or the target are standing, and cannot function against point-blank firearm attacks. You also cannot deflect onto vehicles, defensive emplacements (such as barricades and energy-barriers) or blobs. \
+	\nAction Movie Syndrome also applies to any guns you fire (regardless of sunglasses), causing targets you would've hit to deflect just as you would've."
 	security_record_text = "Subject seems to be impossible to hit with projectiles when other targets are nearby, but seems to suffer the same effects when wielding firearms."
 	security_threat = POWER_THREAT_MAJOR
 	value = 9
@@ -39,15 +39,36 @@
 /datum/power/imbued/action_movie_syndrome/add()
 	RegisterSignal(power_holder, COMSIG_LIVING_CHECK_BLOCK, PROC_REF(should_block))
 	RegisterSignal(power_holder, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, PROC_REF(on_owner_projectile_fired))
+	RegisterSignal(power_holder, COMSIG_ATOM_EXAMINE, PROC_REF(on_examine))
 
 /datum/power/imbued/action_movie_syndrome/remove()
-	UnregisterSignal(power_holder, list(COMSIG_LIVING_CHECK_BLOCK, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE))
+	UnregisterSignal(power_holder, list(COMSIG_LIVING_CHECK_BLOCK, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, COMSIG_ATOM_EXAMINE))
+
+/// Makes it so that examining an AMS user while you possess a gun coems with a warning.
+/datum/power/imbued/action_movie_syndrome/proc/on_examine(mob/living/examined_user, mob/examining_user, list/examine_text)
+	SIGNAL_HANDLER
+
+	if(!iscarbon(examining_user))
+		return
+	// No spoiling the big reveal if we aren't wearing our sunglasses.
+	if(!are_we_cool(examined_user))
+		return
+
+	var/mob/living/carbon/carbon_examiner = examining_user
+	for(var/obj/item/carried_item in carbon_examiner.get_all_gear())
+		if(!isgun(carried_item))
+			continue
+
+		examine_text += span_bolddanger("You don't feel confident trying to land a shot on [examined_user.p_them()].")
+		return
 
 /// Redirects non-point-blank firearm projectiles to an adjacent, valid target.
 /datum/power/imbued/action_movie_syndrome/proc/should_block(mob/living/blocking_user, atom/movable/hit_by, damage, attack_text, attack_type, armour_penetration, damage_type)
 	SIGNAL_HANDLER
 
 	if(attack_type != PROJECTILE_ATTACK || !isprojectile(hit_by))
+		return NONE
+	if(!are_we_cool(blocking_user))
 		return NONE
 
 	var/obj/projectile/hitting_projectile = hit_by
@@ -119,6 +140,14 @@
 /// Returns whether a living mob can redirect projectiles through Action Movie Syndrome.
 /datum/power/imbued/action_movie_syndrome/proc/can_redirect_projectiles(mob/living/redirecting_user)
 	return redirecting_user && redirecting_user.stat < UNCONSCIOUS && redirecting_user.body_position != LYING_DOWN
+
+// Returns TRUE or FALSE depending on if the user is wearing sunglasses and has them visible.
+/datum/power/imbued/action_movie_syndrome/proc/are_we_cool(mob/living/redirecting_user)
+	if(!iscarbon(redirecting_user))
+		return FALSE
+
+	var/mob/living/carbon/carbon_user = redirecting_user
+	return HAS_TRAIT(carbon_user, TRAIT_WEARING_SUNGLASSES) && !(carbon_user.obscured_slots & HIDEEYES)
 
 /// Point-blank gunfire immediately impacts its direct target, and therefore cannot be redirected.
 /datum/power/imbued/action_movie_syndrome/proc/is_point_blank_firearm_attack(mob/living/blocking_user, obj/projectile/hitting_projectile)
