@@ -1,7 +1,7 @@
 /datum/power/warfighter/focused_block
 	name = "Focused Block"
-	desc = "Using what you have on you, you gain a block chance that begins at 90% and decays to 0% over 4 seconds, as long as you are holding a bulky-sized item or an item with a block chance. \
-	\nIf the item does not have a block chance, this bonus is halved.\
+	desc = "Using what you have on you, you gain a block chance that begins at 40% and decays to 0% over 4 seconds, as long as you are holding a bulky-sized item or an item with a block chance. \
+	This bonus is doubled if the held item is a shield.\
 	\nSuccesfully blocking deals damage to shields as normal. Blocking without a damageable shield instead lowers your remaining block chance for every point of damage blocked, reduced by a percentage equal to your item's block chance.\
 	\nThis block counts as a separate block chance from your normal block chance and is affected by armour piercing."
 	security_record_text = "Subject can block attacks with extreme efficiency while wielding a shield or large object."
@@ -12,12 +12,12 @@
 
 /datum/action/cooldown/power/warfighter/focused_block
 	name = "Focused Block"
-	desc = "Gain a block chance that begins at 90% and decays to 0% over 4 seconds, as long as you are holding a bulky-sized item or an item with a block chance. Halved effect with non-blocking items."
+	desc = "Gain a block chance that begins at 90% and decays to 0% over 4 seconds, as long as you are holding a bulky-sized item or an item with a block chance. Halved unless holding a shield."
 	button_icon = 'icons/obj/weapons/shields.dmi'
 	button_icon_state = "kite"
 	cooldown_time = 100
 	/// Starting block chance before item-specific adjustments.
-	var/base_block_chance = 90
+	var/base_block_chance = 80
 	/// Total time over which the block chance decays to 0%.
 	var/decay_duration = 4 SECONDS
 	/// How much damage causes us to lose 1% block chance if we are not holding a damageable shield.
@@ -28,20 +28,20 @@
 	var/obj/item/active_item = user.get_active_held_item()
 	var/obj/item/inactive_item = user.get_inactive_held_item()
 	var/has_valid_item = FALSE
-	var/has_blocking_item = FALSE
+	var/has_full_block_item = FALSE
 
 	if(active_item && (active_item.w_class >= WEIGHT_CLASS_BULKY || active_item.block_chance > 0))
 		has_valid_item = TRUE
 	if(inactive_item && (inactive_item.w_class >= WEIGHT_CLASS_BULKY || inactive_item.block_chance > 0))
 		has_valid_item = TRUE
-	if(active_item?.block_chance > 0 || inactive_item?.block_chance > 0)
-		has_blocking_item = TRUE
+	if(istype(active_item, /obj/item/shield) || istype(inactive_item, /obj/item/shield))
+		has_full_block_item = TRUE
 
 	if(!has_valid_item)
 		user.balloon_alert(user, "need bulky or blocking item")
 		return FALSE
 
-	var/applied_block_chance = has_blocking_item ? base_block_chance : base_block_chance / 2
+	var/applied_block_chance = has_full_block_item ? base_block_chance : base_block_chance / 2
 	var/datum/status_effect/power/focused_block/applied = user.apply_status_effect(/datum/status_effect/power/focused_block, applied_block_chance, decay_duration, damage_per_block_chance_loss)
 	if(applied)
 		applied.focused_block_action = src
