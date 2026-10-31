@@ -1,26 +1,26 @@
 
 /datum/power/theologist_root/revered
 	name = "A Burden Revered"
-	desc = "Nullifies pain and slowly heals the targeted creature's brute and burn damage over a prolonged period of time. This may be yourself. \
+	desc = "Nullifies pain and slowly heals the targeted creature's brute and burn damage over a prolonged period of time. \
 	\nGrants piety based on healing done, ends prematurely if the target reaches full health or if it is cast again. Does not work on synthetic bodyparts.\
 	\nModifiers to healing amount increase the maximum healing of this power as well as the healing rate."
-	security_record_text = "Subject can magically mend their own wounds and the wounds of others slowly over a long duration."
+	security_record_text = "Subject can magically mend the wounds of others slowly over a long duration."
 	security_threat = POWER_THREAT_MAJOR
 	action_path = /datum/action/cooldown/power/theologist/theologist_root/revered
 
-	value = 5
+	value = 4
 
 /datum/action/cooldown/power/theologist/theologist_root/revered
 	name = "A Burden Revered"
-	desc = "Nullifies pain and slowly heals the targeted creature's brute and burn damage over a prolonged period of time. This may be yourself. \
+	desc = "Nullifies pain and slowly heals the targeted creature's brute and burn damage over a prolonged period of time. \
 	Grants piety based on healing done, ends prematurely if the target reaches full health or if it is cast again. Does not work on synthetic bodyparts."
 	button_icon = 'modular_doppler/modular_powers/icons/powers/actions_icons.dmi'
 	button_icon_state = "burden_revered"
 	cooldown_time = 50
 	target_range = 1
 	target_type = /mob/living
+	target_self = FALSE
 	click_to_activate = TRUE
-	target_self = TRUE
 
 	/// Current instance of the status effect
 	var/datum/status_effect/power/burden_revered/active_effect

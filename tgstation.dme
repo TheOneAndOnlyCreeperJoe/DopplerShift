@@ -7725,6 +7725,7 @@
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\pious_prayer.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\purify.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\revered_flash_heal.dm"
+#include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\revered_self_heal.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\shared_breath_of_life.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\shared_martyr_sacrifice.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\smiting_strike.dm"

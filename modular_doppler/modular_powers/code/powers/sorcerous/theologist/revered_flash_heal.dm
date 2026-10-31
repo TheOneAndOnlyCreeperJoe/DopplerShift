@@ -5,7 +5,7 @@
 	desc = "Cast to instantly apply any remaining healing from your A Burden Revered onto its current target.\
 	\nDoing so causes Burden Revered to go on cooldown equal to 2.5x the remaining time it would have taken to heal its current target, or 4x if that target is yourself."
 	security_record_text = "Subject's healing powers can heal quickly in a short burst, at the cost of a refactory period."
-	security_threat = POWER_THREAT_MINOR
+	security_threat = POWER_THREAT_MAJOR
 	value = 3
 	required_powers = list(/datum/power/theologist_root/revered)
 	action_path = /datum/action/cooldown/power/theologist/revered_flash_heal
