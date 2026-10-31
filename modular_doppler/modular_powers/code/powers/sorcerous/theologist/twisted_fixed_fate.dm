@@ -2,7 +2,7 @@
 */
 /datum/power/theologist/twisted_fixed_fate
 	name = "Fixed Fate"
-	desc = "You always twist burdens into a particular type of injury. Choose a damage type besides suffocation.\
+	desc = "Rather than twisting grievous injuries into many smaller injuries, you instead twist them into one singular, larger injury. Choose a damage type besides suffocation.\
 	\nA Burden Twisted no longer heals that damage-type, instead converting all other damage besides suffocation into that type instead, regardless of how much damage that damage-type had."
 	security_record_text = "Subject's healing powers always convert the target's wounds into a fixed type."
 	value = 1

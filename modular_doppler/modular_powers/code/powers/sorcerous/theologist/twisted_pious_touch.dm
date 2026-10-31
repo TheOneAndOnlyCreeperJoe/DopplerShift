@@ -1,26 +1,26 @@
-/* Makes your Burden Twisted heal more efficiently based on stored Piety, by dividing the damage dealt by (1 + (piety*0.02))
-*/
 /datum/power/theologist/twisted_pious_touch
 	name = "Pious Touch"
-	desc = "Your Burden Twisted now converts damage more efficiently relative to the stored Piety you possess. The amount is the base damage, divided by (1 + (Piety * 0.02)).\
-	\nAs a point of measurement: at 50 Piety, this halves the amount of the damage you would normally inflict."
+	desc = "Your Piety allows you to heal even the slightest of scraps and bruises with a touch. Every 5 Piety lowers the minimum injury threshold of A Burden Twisted by 1% of the target's maximum health.\
+	\nAt 50 Piety, this will allow you to completely heal any injuries."
 	security_record_text = "Subject's healing powers become more powerful with repeated use."
 	value = 2
 	required_powers = list(/datum/power/theologist_root/twisted)
 
-	/// How much each point of Piety adds to Burden Twisted's conversion divider.
-	var/piety_to_conversion_modifier = 0.02
+	/// The Piety required to reduce Burden Twisted's healing threshold by one increment.
+	var/piety_per_threshold_reduction = 5
+	/// The amount Burden Twisted's healing threshold is reduced for each Piety increment.
+	var/healing_threshold_reduction = 0.01
 
 /datum/power/theologist/twisted_pious_touch/add(client/client_source)
 	. = ..()
-	RegisterSignal(power_holder, COMSIG_THEOLOGIST_TWISTED_CONVERSION_MODIFIERS, PROC_REF(add_twisted_conversion_modifier))
+	RegisterSignal(power_holder, COMSIG_THEOLOGIST_TWISTED_HEALING_THRESHOLD_MODIFIERS, PROC_REF(add_twisted_healing_threshold_modifier))
 
 /datum/power/theologist/twisted_pious_touch/remove()
 	. = ..()
-	UnregisterSignal(power_holder, COMSIG_THEOLOGIST_TWISTED_CONVERSION_MODIFIERS)
+	UnregisterSignal(power_holder, COMSIG_THEOLOGIST_TWISTED_HEALING_THRESHOLD_MODIFIERS)
 
-/// Adds the holder's current Piety contribution to Burden Twisted's conversion divider.
-/datum/power/theologist/twisted_pious_touch/proc/add_twisted_conversion_modifier(mob/living/source, list/twisted_conversion_modifiers)
+/// Adds the holder's current Piety contribution to Burden Twisted's healing-threshold reduction.
+/datum/power/theologist/twisted_pious_touch/proc/add_twisted_healing_threshold_modifier(mob/living/source, list/healing_threshold_modifiers)
 	SIGNAL_HANDLER
 
 	if(!istype(source))
@@ -30,5 +30,5 @@
 	if(!piety_component || piety_component.piety <= 0)
 		return NONE
 
-	twisted_conversion_modifiers += piety_component.piety * piety_to_conversion_modifier
+	healing_threshold_modifiers += piety_component.piety / piety_per_threshold_reduction * healing_threshold_reduction
 	return NONE

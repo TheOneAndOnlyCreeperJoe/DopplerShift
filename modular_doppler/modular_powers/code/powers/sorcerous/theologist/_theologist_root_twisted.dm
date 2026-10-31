@@ -74,7 +74,7 @@
 			to_chat(owner, span_notice("Your target has no other damage left to twist!"))
 			break
 		var/total_healed = 0
-		var/conversion_ratio = get_modified_conversion_ratio()
+		var/conversion_ratio = heal_to_damage_ratio
 		for(var/damage_type in damage_types_to_heal)
 			var/healed_amount = heal_damage_type(target, damage_type)
 			if(!healed_amount)
@@ -117,7 +117,7 @@
 		damage_types_to_heal += "tox"
 	if(fixed_damage_type)
 		damage_types_to_heal -= fixed_damage_type
-	var/damage_threshold = fixed_damage_type ? 0 : target.maxHealth * damage_healing_threshold
+	var/damage_threshold = fixed_damage_type ? 0 : target.maxHealth * get_modified_damage_healing_threshold()
 	for(var/damage_type in damage_types_to_heal.Copy())
 		if(get_damage_amount(target, damage_type) > damage_threshold)
 			continue
@@ -154,7 +154,7 @@
 /// Heals one damage type without reducing it below its configured threshold.
 /datum/action/cooldown/power/theologist/theologist_root/twisted/proc/heal_damage_type(mob/living/target, damage_type)
 	var/current_damage = get_damage_amount(target, damage_type)
-	var/damage_threshold = fixed_damage_type ? 0 : target.maxHealth * damage_healing_threshold
+	var/damage_threshold = fixed_damage_type ? 0 : target.maxHealth * get_modified_damage_healing_threshold()
 	if(current_damage <= damage_threshold)
 		return 0
 	var/healing_ratio = max(current_damage / target.maxHealth, base_healing_floor)
@@ -194,16 +194,16 @@
 			conversion_choices += damage_type
 	return pick(conversion_choices)
 
-/// Collects additive damage conversion modifiers and applies them as a divider to the base conversion ratio.
-/datum/action/cooldown/power/theologist/theologist_root/twisted/proc/get_modified_conversion_ratio()
-	var/list/conversion_modifiers = list()
-	SEND_SIGNAL(owner, COMSIG_THEOLOGIST_TWISTED_CONVERSION_MODIFIERS, conversion_modifiers)
+/// Returns the healing threshold after applying modifiers supplied by the owner's powers.
+/datum/action/cooldown/power/theologist/theologist_root/twisted/proc/get_modified_damage_healing_threshold()
+	var/list/healing_threshold_modifiers = list()
+	SEND_SIGNAL(owner, COMSIG_THEOLOGIST_TWISTED_HEALING_THRESHOLD_MODIFIERS, healing_threshold_modifiers)
 
-	var/total_conversion_modifier = 1
-	for(var/conversion_modifier in conversion_modifiers)
-		total_conversion_modifier += conversion_modifier
+	var/total_healing_threshold_reduction = 0
+	for(var/healing_threshold_modifier in healing_threshold_modifiers)
+		total_healing_threshold_reduction += healing_threshold_modifier
 
-	return heal_to_damage_ratio / total_conversion_modifier
+	return max(0, damage_healing_threshold - total_healing_threshold_reduction)
 
 /// Deals the appropriate damage back after healing.
 /datum/action/cooldown/power/theologist/theologist_root/twisted/proc/deal_damage_type(mob/living/target, damage_type, damage_amount)
