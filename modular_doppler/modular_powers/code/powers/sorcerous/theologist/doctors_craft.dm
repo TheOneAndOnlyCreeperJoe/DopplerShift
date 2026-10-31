@@ -8,8 +8,8 @@
 /datum/power/theologist/doctors_craft
 	name = "Doctor's Craft"
 	desc = "Even if your healing magic works as is, you manage to mix your craft with modern technology to get the most out of it.\
-	\nYour healing powers now heal more if the target is laying down on a table or bed (scaling with that location's surgery efficiency, 15% on an operating table), if the target is under the effect of painkillers (15%) and if they are sleeping or sedated (20%).\
-	\nAll of these bonuses are additive with eachother, but the final number is multiplicative with other modifiers."
+	\nYour healing powers now heal more if you are healing a target that is laying down on a table or bed (scaling with that location's surgery efficiency, 15% on an operating table), if the target is under the effect of painkillers (15%) and if they are sleeping, sedated or are in critical condition (20%).\
+	\nAll of these bonuses are additive with eachother, but the final number is multiplicative with other modifiers. These bonuses not apply when healing yourself."
 	value = 4
 	power_flags = POWER_HUMAN_ONLY | POWER_HEALING
 
@@ -41,6 +41,10 @@
 	if(!istype(source) || !isliving(healing_target))
 		return NONE
 
+	// No self healing bonuses
+	if(source == healing_target)
+		return NONE
+
 	var/mob/living/living_target = healing_target
 	var/total_healing_bonus = 0
 
@@ -54,8 +58,8 @@
 	if(HAS_TRAIT(living_target, TRAIT_ANALGESIA))
 		total_healing_bonus += analgesia_healing_bonus
 
-	// If the target is unconscious or asleep.
-	if(living_target.IsSleeping() || living_target.IsUnconscious())
+	// If the target is unconscious or asleep. We'll roll soft crit in there too cause why not.
+	if(living_target.IsSleeping() || living_target.IsUnconscious() || living_target.stat >= SOFT_CRIT)
 		total_healing_bonus += sedation_healing_bonus
 
 	// Maths out the total bonus and sends it.
