@@ -7,7 +7,7 @@
 /datum/power/theologist/shared_martyr_sacrifice
 	name = "Martyr's Sacrifice"
 	desc = "You give your life onto others, right up until the bitter end. A Burden Shared no longer transfers damage away from you, transfers at the maximum rate at all times (rather than scaling off of health difference) and will now keep transfering damage to you without an upper limit. It also has a much shorter cooldown. \
-	\nIn turn, you no longer fall unconscious in critical condition. Whilst in critical condition, you are incapable of partaking in combat and are afflicted with pacifism. If you do not have A Burden Shared active while in critical, your condition will deteriorate at an increasing rate. You will die as normal when reaching maximum damage.\
+	\nIn turn, you no longer fall unconscious in critical condition. Whilst in critical condition, you are incapable of partaking in combat and are afflicted with pacifism. If you do not have A Burden Shared active while in critical, your condition will deteriorate as it normally would. You will die as normal when reaching maximum damage.\
 	\nYour healing powers are much more potent the closer you are to death: 1% more healing for every percentage of health lost. This bonus is multiplicative"
 	security_record_text = "Subject's healing powers transfer all damage on the target onto themselves, and allow them to remain conscious even in critical condition."
 	security_threat = POWER_THREAT_MINOR
@@ -24,10 +24,6 @@
 	var/mob/living/shared_target
 	/// How much the first martyrdom death increases the holder's piety cap.
 	var/martyr_piety_cap_bonus = 25
-	/// Oxygen damage dealt on the first unsupported critical tick.
-	var/unshared_critical_damage = 0.5
-	/// Additional oxygen damage dealt for each consecutive unsupported second.
-	var/unshared_critical_damage_growth = 0.25
 	/// Whether this power has already granted its once-per-round piety cap reward.
 	var/martyr_reward_claimed = FALSE
 
@@ -63,6 +59,9 @@
 	if(used_power != shared_action || !isliving(target))
 		return
 	shared_target = target
+	var/datum/status_effect/power/martyrs_sacrifice/martyr_effect = power_holder.has_status_effect(/datum/status_effect/power/martyrs_sacrifice)
+	if(martyr_effect)
+		martyr_effect.shared_used_during_crit = TRUE
 	shared_action.snapshot_healing_multiplier(target)
 	START_PROCESSING(SSpowers, src)
 
@@ -114,12 +113,12 @@
 	alert_type = null
 	/// The power which will grant the martyrdom reward if the owner dies during this effect.
 	var/datum/power/theologist/shared_martyr_sacrifice/source_power
-	/// Damage dealt on the next tick spent in critical condition without an active Shared link.
-	var/current_unshared_damage
+	/// Whether A Burden Shared was active on entering critical condition or activated before leaving it.
+	var/shared_used_during_crit = FALSE
 
 /datum/status_effect/power/martyrs_sacrifice/on_creation(mob/living/new_owner, datum/power/theologist/shared_martyr_sacrifice/new_source_power)
 	source_power = new_source_power
-	current_unshared_damage = source_power.unshared_critical_damage
+	shared_used_during_crit = source_power.shared_action?.active
 	return ..()
 
 /datum/status_effect/power/martyrs_sacrifice/on_apply()
@@ -130,17 +129,17 @@
 	RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_owner_death))
 	return TRUE
 
-/// Recreates critical oxygen damage while the traits granted by this power keep the holder conscious.
+/// Mimmicks crit conditions because no-soft-crit removes those.
+/// Doesn't damage androids so they get a freebie.
 /datum/status_effect/power/martyrs_sacrifice/tick(seconds_per_tick)
 	if(source_power?.shared_action?.active) // you do not take damage while burden shared is active
-		current_unshared_damage = source_power.unshared_critical_damage
 		return
-	if(HAS_TRAIT(owner, TRAIT_STASIS))
+	if(HAS_TRAIT(owner, TRAIT_STASIS) || HAS_TRAIT(owner, TRAIT_NOCRITDAMAGE))
 		return
-	// basically mimmicks crit healthloss
-	var/damage_to_apply = current_unshared_damage * seconds_per_tick
-	current_unshared_damage += source_power.unshared_critical_damage_growth * seconds_per_tick
-	owner.adjustOxyLoss(damage_to_apply, forced = TRUE)
+	var/damage_per_second = HUMAN_CRIT_MAX_OXYLOSS / SSMOBS_DT
+	if(owner.health > HEALTH_THRESHOLD_FULLCRIT)
+		damage_per_second /= 4
+	owner.adjustOxyLoss(damage_per_second * seconds_per_tick)
 
 /datum/status_effect/power/martyrs_sacrifice/on_remove()
 	UnregisterSignal(owner, COMSIG_LIVING_DEATH)
@@ -151,5 +150,6 @@
 /// Gives us great power for our great deeds (by signalling on_martyr_death()).
 /datum/status_effect/power/martyrs_sacrifice/proc/on_owner_death(datum/source, gibbed)
 	SIGNAL_HANDLER
-	source_power?.on_martyr_death()
+	if(shared_used_during_crit)
+		source_power?.on_martyr_death()
 	qdel(src)
