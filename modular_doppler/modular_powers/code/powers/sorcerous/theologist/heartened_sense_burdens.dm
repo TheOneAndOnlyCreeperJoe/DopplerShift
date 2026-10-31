@@ -3,7 +3,7 @@
 /// The first hybrid power! I'd wish I had a more general mind reading power over on the psyker side to have as a requirement instead, but telepathy works well enough.
 
 /datum/power/theologist/heartened_sense_burdens
-	name = "Sense Burdens"
+	name = "Sense Mental Burdens"
 	desc = "A light form of mind reading, you can sense the details about another creature's mood.\
 	\nExamining a mob affected by your A Burden Heartened grants the exact same information about their mood as the mob does, allowing you to accurately pinpoint what is affecting their mood.\
 	\nThis does not work on mobs that are scrying immune (or immune to A Burden Heartened). You also cannot see certain moodlets that betray certain allegiances."
@@ -11,19 +11,17 @@
 	security_threat = POWER_THREAT_MAJOR
 	value = 3
 	required_powers = list(/datum/power/theologist_root/heartened, /datum/power/psyker_power/telepathy)
-	magic_flags = POWER_MAGIC_STANDARD | POWER_MAGIC_MENTAL
+	magic_flags = POWER_MAGIC_STANDARD | POWER_MAGIC_MENTAL | POWER_MAGIC_SCRYING
 
-/// Adds detailed mood information to examinations performed by the power holder.
 /datum/power/theologist/heartened_sense_burdens/add(client/client_source)
 	. = ..()
 	RegisterSignal(power_holder, COMSIG_MOB_EXAMINATE, PROC_REF(on_examine))
 
-/// Stops detailed mood information from appearing in the power holder's examinations.
 /datum/power/theologist/heartened_sense_burdens/remove()
 	UnregisterSignal(power_holder, COMSIG_MOB_EXAMINATE)
 	return ..()
 
-/// Displays a separate visible-moodlet readout for an eligible Heartened carbon target.
+/// Checks if the mob is elegible for Sense Mental Burdens and if so, read their moodlets.
 /datum/power/theologist/heartened_sense_burdens/proc/on_examine(mob/living/source, atom/examined_atom)
 	SIGNAL_HANDLER
 

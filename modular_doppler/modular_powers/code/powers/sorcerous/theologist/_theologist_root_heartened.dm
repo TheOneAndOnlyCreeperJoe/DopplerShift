@@ -2,13 +2,13 @@
 /datum/power/theologist_root/heartened
 	name = "A Burden Heartened"
 	desc = "Even if the physical wounds heal, the pain may often not leave, and you seek to comfort those who are still being weighed down by these burdens.\
-	\nYou have a passive 7x7 aura centered on you. Other carbon-based creatures in the area gain a buff which grants a 1.25x bonus to positive moodlets. \
-	You slowly gain Piety over time for every happy creature carrying this buff in your aura, even if another Heartened theologist originally bestowed it. The Piety gain diminishes as your Piety grows, requiring very high moods to reach maximum Piety.\
+	\nYou have a passive 7x7 aura centered on you. Other carbon-based creatures in the area gain a buff which grants a 1.25x bonus to positive moodlets, modified by your healing bonuses. \
+	\nYou slowly gain Piety over time for every happy creature carrying this buff in your aura, even if another Heartened theologist originally bestowed it. The Piety gain diminishes as your Piety grows, requiring very high moods to reach maximum Piety.\
 	\nYou also gain Mood Sight, a toggle which displays the mood of affected creatures. Scrying, magic, or mental immunity prevents this detection."
 	security_record_text = "Subject inspires unusual amounts of comfort and joy in those nearby."
 	action_path = /datum/action/cooldown/power/theologist/theologist_root/mood_sight
-	magic_flags = POWER_MAGIC_STANDARD | POWER_MAGIC_MENTAL
-	power_flags = POWER_HUMAN_ONLY | POWER_PROCESSES
+	magic_flags = POWER_MAGIC_STANDARD | POWER_MAGIC_MENTAL | POWER_MAGIC_SCRYING
+	power_flags = POWER_HUMAN_ONLY | POWER_PROCESSES | POWER_HEALING
 	maximum_process_stat = DEAD
 
 	menu_icon = 'icons/mob/simple/animal.dmi'
@@ -44,11 +44,12 @@
 			continue
 
 		current_targets += nearby_carbon
+		var/target_mood_multiplier = get_target_mood_multiplier(nearby_carbon)
 		var/datum/status_effect/power/burden_heartened/heartened_effect = nearby_carbon.has_status_effect(/datum/status_effect/power/burden_heartened)
 		if(!heartened_effect)
-			heartened_effect = nearby_carbon.apply_status_effect(/datum/status_effect/power/burden_heartened, src)
+			heartened_effect = nearby_carbon.apply_status_effect(/datum/status_effect/power/burden_heartened, src, target_mood_multiplier)
 		else
-			heartened_effect.add_source(src)
+			heartened_effect.add_source(src, target_mood_multiplier)
 
 		if(heartened_effect)
 			grant_mood_piety(nearby_carbon, seconds_per_tick)
@@ -58,6 +59,15 @@
 		previous_effect?.remove_source(src)
 
 	affected_targets = current_targets
+
+/// Calculates the highest healing multiplier after snapshotting healing modifiers.
+/datum/power/theologist_root/heartened/proc/get_target_mood_multiplier(mob/living/carbon/target)
+	var/datum/action/cooldown/power/theologist/theologist_root/mood_sight/mood_sight_action = action_path
+	if(!istype(mood_sight_action))
+		return mood_multiplier
+
+	var/healing_multiplier = mood_sight_action.snapshot_healing_multiplier(target)
+	return 1 + ((mood_multiplier - 1) * healing_multiplier)
 
 /// Returns whether the target is valid for the aura's effects or not.
 /datum/power/theologist_root/heartened/proc/is_target_in_aura(mob/living/carbon/target)
@@ -123,13 +133,16 @@
 
 	/// Heartened powers whose auras currently sustain this effect.
 	var/list/datum/power/theologist_root/heartened/sources = list()
+	/// Mood multiplier snapshotted for this target from each source.
+	var/list/source_mood_multipliers = list()
 	/// The strongest mood multiplier currently applied by the sustaining auras.
 	var/applied_mood_multiplier = 1
 
 /// Applies the positive-mood multiplier and records the first sustaining source.
-/datum/status_effect/power/burden_heartened/on_creation(mob/living/new_owner, datum/power/theologist_root/heartened/source_power)
+/datum/status_effect/power/burden_heartened/on_creation(mob/living/new_owner, datum/power/theologist_root/heartened/source_power, source_mood_multiplier)
 	if(source_power)
 		sources += source_power
+		source_mood_multipliers[source_power] = source_mood_multiplier
 	return ..()
 
 /// Multiplies the owner's positive moodlet contribution while a mood datum is available.
@@ -146,6 +159,7 @@
 		owner.mob_mood.update_mood()
 	applied_mood_multiplier = 1
 	sources.Cut()
+	source_mood_multipliers.Cut()
 	return ..()
 
 /// Discards invalid aura sources and removes the effect when no valid source remains.
@@ -153,20 +167,25 @@
 	for(var/datum/power/theologist_root/heartened/source_power as anything in sources.Copy())
 		if(QDELETED(source_power) || !source_power.is_target_in_aura(owner))
 			sources -= source_power
+			source_mood_multipliers -= source_power
 	if(!length(sources))
 		qdel(src)
 		return
 	refresh_mood_multiplier()
 
-/// Adds an aura source without changing or stacking the mood modifier.
-/datum/status_effect/power/burden_heartened/proc/add_source(datum/power/theologist_root/heartened/source_power)
-	if(source_power && !(source_power in sources))
+/// Adds or updates an aura source and their multiplier.
+/datum/status_effect/power/burden_heartened/proc/add_source(datum/power/theologist_root/heartened/source_power, source_mood_multiplier)
+	if(!source_power)
+		return
+	if(!(source_power in sources))
 		sources += source_power
-		refresh_mood_multiplier()
+	source_mood_multipliers[source_power] = source_mood_multiplier
+	refresh_mood_multiplier()
 
 /// Removes an aura source; the status tick performs final deletion after all auras can update their support.
 /datum/status_effect/power/burden_heartened/proc/remove_source(datum/power/theologist_root/heartened/source_power)
 	sources -= source_power
+	source_mood_multipliers -= source_power
 	if(length(sources))
 		refresh_mood_multiplier()
 
@@ -177,9 +196,10 @@
 
 	var/strongest_mood_multiplier = 1
 	for(var/datum/power/theologist_root/heartened/source_power as anything in sources)
-		if(QDELETED(source_power) || source_power.mood_multiplier <= 0)
+		var/source_mood_multiplier = source_mood_multipliers[source_power]
+		if(QDELETED(source_power) || source_mood_multiplier <= 0)
 			continue
-		strongest_mood_multiplier = max(strongest_mood_multiplier, source_power.mood_multiplier)
+		strongest_mood_multiplier = max(strongest_mood_multiplier, source_mood_multiplier)
 
 	if(strongest_mood_multiplier == applied_mood_multiplier)
 		return
