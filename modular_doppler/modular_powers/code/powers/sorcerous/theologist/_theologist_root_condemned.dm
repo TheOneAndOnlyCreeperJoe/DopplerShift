@@ -5,10 +5,11 @@
 /datum/power/theologist/root/condemned
 	name = "A Burden Condemned"
 	desc = "Bring justice to those that would seek to burden others, by making them feel the weight of suffering they shoulder onto the innocent.\
-	\nChoose a target within view: you mark that target, applying Condemned for 20 seconds or until it dies, which resets A Burden Condemned's cooldown. A Condemned target counts as Unholy for all of Theologist's powers, and you can only have one target Condemned.\
-	\nWhenever someone with this power damages a Condemned target with attacks, they apply Condemnation equal to half the pre-mitigation damage they would have dealt (regardless if the target blocks or mitigates it). \
-	Condemnation reduces the target's damage with attacks by the amount stored, up to 50% of the target's hit; this consumes the Condemnation equal to the damage prevented. \
-	\nYou build piety whenever a creature spends Condemnation when attacking a sentient mob: you also build Piety whenever you apply Condemnation to a mob that was already Unholy before you cast A Burden Condemned, or when striking a creature Condemned by someone else."
+	\nChoose a target within view: you mark that target, applying Condemned. A Condemned target counts as Unholy for all of Theologist's powers, and you can only have one target condemned.\
+	\nWhenever someone with this power damages the condemned with attacks, they apply Condemnation equal to half the pre-mitigation damage they would have dealt (regardless if the condemned blocks or mitigates it). \
+	Condemnation reduces the condemned's damage with attacks by the amount stored, up to 50% of the condemned's hit; this consumes the Condemnation equal to the damage prevented. \
+	\nYou build piety whenever a creature spends Condemnation when attacking a sentient mob: you also build Piety whenever you apply Condemnation to a mob that was already Unholy before you cast A Burden Condemned, or when striking a creature Condemned by someone else.\
+	\nLasts for 20 seconds, but lasts 1 additional second on hit. Cooldown is refreshed if the condemned dies."
 	security_record_text = "Subject can mark a single target in sight, weakening their attacks when struck by the subject, and amplying their own holy abilities against that target."
 	security_threat = POWER_THREAT_MAJOR
 	action_path = /datum/action/cooldown/power/theologist/theologist_root/condemned
@@ -19,11 +20,11 @@
 
 /datum/action/cooldown/power/theologist/theologist_root/condemned
 	name = "A Burden Condemned"
-	desc = "Condemn a creature, marking it as Unholy and causing your damage against the target to apply a debuff that reduces their damage. \
+	desc = "Condemn a creature, marking it as Unholy and causing your damage against the condemned to apply a debuff that reduces their damage. Extends the duration on hit, and restores the cooldown on condemned death.\
 	Builds Piety when you succesfuly reduce damage: or if you damage a mob that was Unholy before condemning them. You can only have one target marked as Condemned at a time"
 	button_icon = 'modular_doppler/modular_powers/icons/powers/actions_icons.dmi'
 	button_icon_state = "burden_condemned"
-	cooldown_time = 20 SECONDS
+	cooldown_time = 30 SECONDS
 	target_range = 10
 	target_self = FALSE
 	click_to_activate = TRUE
@@ -154,6 +155,7 @@
 	var/datum/action/cooldown/power/theologist/theologist_root/condemned/contributing_action = contributing_power?.action_path
 	if(!contributing_action || damage <= 0)
 		return
+	duration += 1 SECONDS // Cooldown reduction on hit
 	var/condemnation_added = damage * contributing_action.condemnation_rate
 	condemnation += condemnation_added
 	update_condemnation_alert()
@@ -163,7 +165,7 @@
 /// Updates the Condemned alert with the damage currently stored as Condemnation.
 /datum/status_effect/power/burden_condemned/proc/update_condemnation_alert()
 	var/rounded_condemnation = round(condemnation)
-	linked_alert?.maptext = MAPTEXT_TINY_UNICODE("<span style='text-align:center'>[rounded_condemnation]</span>")
+	linked_alert?.maptext = MAPTEXT_TINY_UNICODE("<span style='text-align:center'>-[rounded_condemnation] DMG</span>")
 	linked_alert?.desc = "You have been marked as evil and deal [rounded_condemnation] less damage with attacks; but no less than 50% of the attack's damage!"
 
 /// Applies the damage holder status to handle Condemned's damage reduction when attacking with an item.
