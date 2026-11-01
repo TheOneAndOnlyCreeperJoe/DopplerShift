@@ -1,0 +1,3 @@
+EFFECTS.dmi
+rifwalker_red / riftwalker_blue - Edit of Duelysts's Shatter art (icon_f6_shatter.png), distributed under CC0: https://github.com/open-duelyst/duelyst/tree/main
+burden_condemened - Edit of Duelyst's Razorskin art (icon_f5_razorskin.png), distributed under CC0: https://github.com/open-duelyst/duelyst/tree/main
