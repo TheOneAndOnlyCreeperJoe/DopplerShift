@@ -8,7 +8,7 @@
 	action_path = /datum/action/cooldown/power/theologist/time_of_need
 	value = 3
 
-	required_powers = list(/datum/power/theologist_root)
+	required_powers = list(/datum/power/theologist/root)
 	required_allow_subtypes = TRUE
 
 /datum/action/cooldown/power/theologist/time_of_need

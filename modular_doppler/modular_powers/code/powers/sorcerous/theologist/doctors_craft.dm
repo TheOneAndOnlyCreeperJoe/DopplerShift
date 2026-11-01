@@ -13,7 +13,7 @@
 	value = 4
 	power_flags = POWER_HUMAN_ONLY | POWER_HEALING
 
-	required_powers = list(/datum/power/theologist_root)
+	required_powers = list(/datum/power/theologist/root)
 	required_allow_subtypes = TRUE
 
 	menu_icon = 'modular_doppler/modular_powers/icons/powers/actions_icons.dmi'

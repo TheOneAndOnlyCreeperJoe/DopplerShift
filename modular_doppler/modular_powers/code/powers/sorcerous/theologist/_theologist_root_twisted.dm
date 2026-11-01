@@ -1,4 +1,4 @@
-/datum/power/theologist_root/twisted
+/datum/power/theologist/root/twisted
 	name = "A Burden Twisted"
 	desc = "Channel a beam that adjust the target's body, twisting large injuries into smaller, insubstantial injuries. The beam persists so long as you remain adjacent to the target, regardless of your activities.\
 	\nA Burden Twisted heals any damage-type besides suffocation, with the healing amount scaling based on how much health is missing. This cannot heal a damage-type that only has 10% or less of the target's maximum health as damage, per damage-type. \

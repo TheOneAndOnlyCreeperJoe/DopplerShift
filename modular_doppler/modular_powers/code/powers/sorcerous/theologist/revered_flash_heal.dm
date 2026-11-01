@@ -7,7 +7,7 @@
 	security_record_text = "Subject's healing powers can heal quickly in a short burst, at the cost of a refactory period."
 	security_threat = POWER_THREAT_MAJOR
 	value = 3
-	required_powers = list(/datum/power/theologist_root/revered)
+	required_powers = list(/datum/power/theologist/root/revered)
 	action_path = /datum/action/cooldown/power/theologist/revered_flash_heal
 	power_flags = POWER_HUMAN_ONLY | POWER_HEALING
 
@@ -32,7 +32,7 @@
 	. = ..()
 	var/mob/living/living_owner = granted_to
 	if(living_owner)
-		var/datum/power/theologist_root/revered/revered_power = living_owner.get_power(/datum/power/theologist_root/revered)
+		var/datum/power/theologist/root/revered/revered_power = living_owner.get_power(/datum/power/theologist/root/revered)
 		revered_action = revered_power?.action_path
 
 /// Ensures Burden Revered exists and doesn't runtime when using this power.

@@ -6,7 +6,7 @@
 	\nThe Piety gained is based on the pre-mitigation damage (block, armor etc). Damage that comes from self-flagellation is based on the actual damage taken."
 	security_record_text = "Subject fuels their powers by being hurt by others."
 	value = 4
-	required_powers = list(/datum/power/theologist_root)
+	required_powers = list(/datum/power/theologist/root)
 	required_allow_subtypes = TRUE
 	menu_icon = 'icons/obj/weapons/whip.dmi'
 	menu_icon_state = "whip"

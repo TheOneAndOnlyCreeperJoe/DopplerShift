@@ -16,7 +16,7 @@
 	value = 5
 	power_flags = POWER_HUMAN_ONLY | POWER_HEALING
 
-	required_powers = list(/datum/power/theologist_root)
+	required_powers = list(/datum/power/theologist/root)
 	required_allow_subtypes = TRUE
 
 /datum/action/cooldown/power/theologist/purify

@@ -1,5 +1,5 @@
 
-/datum/power/theologist_root/revered
+/datum/power/theologist/root/revered
 	name = "A Burden Revered"
 	desc = "Nullifies pain and slowly heals the targeted creature's brute and burn damage over a prolonged period of time. \
 	\nGrants piety based on healing done, ends prematurely if the target reaches full health or if it is cast again. Does not work on synthetic bodyparts.\

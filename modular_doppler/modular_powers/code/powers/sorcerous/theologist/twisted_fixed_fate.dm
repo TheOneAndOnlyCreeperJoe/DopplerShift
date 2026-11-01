@@ -6,7 +6,7 @@
 	\nA Burden Twisted no longer heals that damage-type, instead converting all other damage besides suffocation into that type instead, regardless of how much damage that damage-type had."
 	security_record_text = "Subject's healing powers always convert the target's wounds into a fixed type."
 	value = 1
-	required_powers = list(/datum/power/theologist_root/twisted)
+	required_powers = list(/datum/power/theologist/root/twisted)
 
 /datum/power/theologist/twisted_fixed_fate/get_security_record_text()
 	return "Subject's healing powers always convert the target's injuries into [get_preferred_damage_type()] injuries."
@@ -27,7 +27,7 @@
 
 /// Gets the action belonging to the required A Burden Twisted power.
 /datum/power/theologist/twisted_fixed_fate/proc/get_twisted_action()
-	var/datum/power/theologist_root/twisted/twisted_power = power_holder?.get_power(/datum/power/theologist_root/twisted)
+	var/datum/power/theologist/root/twisted/twisted_power = power_holder?.get_power(/datum/power/theologist/root/twisted)
 	var/datum/action/cooldown/power/theologist/theologist_root/twisted/twisted_action = twisted_power?.action_path
 	if(istype(twisted_action))
 		return twisted_action

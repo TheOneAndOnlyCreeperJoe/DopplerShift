@@ -2,7 +2,7 @@
 /// By default, the target is treated as unholy for theologist powers and apply a stacking debuff that reduces their next damage dealt.
 /// You gain Piety when these stacks are spent, encouraging you to fight active combatants. Mobs that were unholy before using this power (not including other Condemns) also grant Piety for building stacks.
 
-/datum/power/theologist_root/condemned
+/datum/power/theologist/root/condemned
 	name = "A Burden Condemned"
 	desc = "Bring justice that would seek to burden others, by making them feel the weight of suffering they bring.\
 	\nChoose a target within view: you mark that target, applying Condemned for 20 seconds. A Condemned target counts as Unholy for all of Theologist's powers, and you can only have one target Condemned.\
@@ -16,21 +16,6 @@
 	power_flags = POWER_HUMAN_ONLY // the only root that doesn't heal
 
 	value = 3
-
-/// Determines whether a living mob is considered unholy by A Burden Condemned.
-/datum/power/theologist_root/condemned/proc/is_unholy(mob/living/target)
-	if(is_type_in_typecache(target, GLOB.unholy_mobs))
-		return TRUE
-	if(HAS_TRAIT(target, TRAIT_DEEMED_UNHOLY))
-		return TRUE
-	if(!iscarbon(target))
-		return FALSE
-	if(HAS_TRAIT(target, TRAIT_EVIL) || HAS_TRAIT(target, TRAIT_CULT_HALO))
-		return TRUE
-	var/datum/antagonist/heretic/heretic_datum = target.mind?.has_antag_datum(/datum/antagonist/heretic)
-	if(heretic_datum && (HAS_TRAIT(target, TRAIT_HERETIC_AURA_HIDDEN) || heretic_datum.should_show_aura()))
-		return TRUE
-	return FALSE
 
 /datum/action/cooldown/power/theologist/theologist_root/condemned
 	name = "A Burden Condemned"
@@ -81,7 +66,7 @@
 
 /// Determines whether a target was unholy before this power's Condemned effects are considered.
 /datum/action/cooldown/power/theologist/theologist_root/condemned/proc/was_unholy_before_condemnation(mob/living/target)
-	var/datum/power/theologist_root/condemned/condemned_power = origin_power
+	var/datum/power/theologist/root/condemned/condemned_power = origin_power
 	if(!condemned_power?.is_unholy(target))
 		return FALSE
 	if(!HAS_TRAIT(target, TRAIT_DEEMED_UNHOLY))

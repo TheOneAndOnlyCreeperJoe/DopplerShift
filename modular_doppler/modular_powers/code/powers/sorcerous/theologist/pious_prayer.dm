@@ -9,7 +9,7 @@
 	power_flags = POWER_HUMAN_ONLY | POWER_HEALING
 
 	action_path = /datum/action/cooldown/power/theologist/pious_prayer
-	required_powers = list(/datum/power/theologist_root)
+	required_powers = list(/datum/power/theologist/root)
 	required_allow_subtypes = TRUE
 
 	/// How much of a healing multiplier pious prayer gives. Base healing * (1 + healing_bonus).

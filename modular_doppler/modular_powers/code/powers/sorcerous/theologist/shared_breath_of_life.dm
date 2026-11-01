@@ -7,7 +7,7 @@
 	security_record_text = "Subject's healing powers can function as a respiratory aid"
 	value = 2
 	power_flags = POWER_HUMAN_ONLY | POWER_PROCESSES
-	required_powers = list(/datum/power/theologist_root/shared)
+	required_powers = list(/datum/power/theologist/root/shared)
 
 	/// The base A Burden Shared action this upgrade enhances.
 	var/datum/action/cooldown/power/theologist/theologist_root/shared/shared_action
@@ -16,7 +16,7 @@
 
 /datum/power/theologist/shared_breath_of_life/post_add()
 	. = ..()
-	var/datum/power/theologist_root/shared/shared_power = power_holder?.get_power(/datum/power/theologist_root/shared)
+	var/datum/power/theologist/root/shared/shared_power = power_holder?.get_power(/datum/power/theologist/root/shared)
 	shared_action = shared_power?.action_path
 	RegisterSignal(power_holder, COMSIG_POWER_ACTION_SUCCESS, PROC_REF(on_power_action_success))
 

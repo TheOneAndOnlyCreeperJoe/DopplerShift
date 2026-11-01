@@ -1,5 +1,5 @@
 /// Healing is not always physical. A Burden Heartened comforts nearby people and draws piety from their happiness.
-/datum/power/theologist_root/heartened
+/datum/power/theologist/root/heartened
 	name = "A Burden Heartened"
 	desc = "Even if the physical wounds heal, the pain may often not leave, and you seek to comfort those who are still being weighed down by these burdens.\
 	\nYou have a passive 7x7 aura centered on you. Other carbon-based creatures in the area gain a buff which grants a 1.25x bonus to positive moodlets, modified by your healing bonuses. \
@@ -24,7 +24,7 @@
 	var/mood_multiplier = 1.25
 
 /// Removes every sustained buff and the Mood Sight action from the current holder.
-/datum/power/theologist_root/heartened/remove()
+/datum/power/theologist/root/heartened/remove()
 	clear_affected_targets()
 	if(istype(action_path, /datum/action/cooldown/power/theologist/theologist_root/mood_sight))
 		var/datum/action/cooldown/power/theologist/theologist_root/mood_sight/mood_sight_action = action_path
@@ -34,7 +34,7 @@
 	return ..()
 
 /// Maintains the passive aura and grants piety for affected creatures' current moods.
-/datum/power/theologist_root/heartened/process(seconds_per_tick)
+/datum/power/theologist/root/heartened/process(seconds_per_tick)
 	if(!power_holder)
 		return
 
@@ -61,7 +61,7 @@
 	affected_targets = current_targets
 
 /// Calculates the highest healing multiplier after snapshotting healing modifiers.
-/datum/power/theologist_root/heartened/proc/get_target_mood_multiplier(mob/living/carbon/target)
+/datum/power/theologist/root/heartened/proc/get_target_mood_multiplier(mob/living/carbon/target)
 	var/datum/action/cooldown/power/theologist/theologist_root/mood_sight/mood_sight_action = action_path
 	if(!istype(mood_sight_action))
 		return mood_multiplier
@@ -70,7 +70,7 @@
 	return 1 + ((mood_multiplier - 1) * healing_multiplier)
 
 /// Returns whether the target is valid for the aura's effects or not.
-/datum/power/theologist_root/heartened/proc/is_target_in_aura(mob/living/carbon/target)
+/datum/power/theologist/root/heartened/proc/is_target_in_aura(mob/living/carbon/target)
 	// No holder or were fukken DEAD
 	if(!power_holder || QDELETED(power_holder) || power_holder.stat == DEAD)
 		return FALSE
@@ -83,13 +83,13 @@
 	return TRUE
 
 /// Returns whether this aura can apply or sustain its mood buff on the supplied target.
-/datum/power/theologist_root/heartened/proc/can_affect_target(mob/living/carbon/target)
+/datum/power/theologist/root/heartened/proc/can_affect_target(mob/living/carbon/target)
 	if(!is_target_in_aura(target))
 		return FALSE
 	return !target.can_block_magic(MAGIC_RESISTANCE | MAGIC_RESISTANCE_MIND, charge_cost = 0)
 
 /// Grants piety relative to a target's mood, capped at a certain amount.
-/datum/power/theologist_root/heartened/proc/grant_mood_piety(mob/living/carbon/target, seconds_per_tick)
+/datum/power/theologist/root/heartened/proc/grant_mood_piety(mob/living/carbon/target, seconds_per_tick)
 	var/datum/component/theologist_piety/piety_component = power_holder.GetComponent(/datum/component/theologist_piety)
 	if(!piety_component || !target.ckey || !target.mob_mood)
 		return
@@ -117,7 +117,7 @@
 	piety_component.adjust_piety(piety_gain, piety_cap)
 
 /// Removes this power as a sustaining source from every status effect it currently supports.
-/datum/power/theologist_root/heartened/proc/clear_affected_targets()
+/datum/power/theologist/root/heartened/proc/clear_affected_targets()
 	for(var/mob/living/carbon/affected_target as anything in affected_targets)
 		var/datum/status_effect/power/burden_heartened/heartened_effect = affected_target?.has_status_effect(/datum/status_effect/power/burden_heartened)
 		heartened_effect?.remove_source(src)
@@ -132,14 +132,14 @@
 	alert_type = null
 
 	/// Heartened powers whose auras currently sustain this effect.
-	var/list/datum/power/theologist_root/heartened/sources = list()
+	var/list/datum/power/theologist/root/heartened/sources = list()
 	/// Mood multiplier snapshotted for this target from each source.
 	var/list/source_mood_multipliers = list()
 	/// The strongest mood multiplier currently applied by the sustaining auras.
 	var/applied_mood_multiplier = 1
 
 /// Applies the positive-mood multiplier and records the first sustaining source.
-/datum/status_effect/power/burden_heartened/on_creation(mob/living/new_owner, datum/power/theologist_root/heartened/source_power, source_mood_multiplier)
+/datum/status_effect/power/burden_heartened/on_creation(mob/living/new_owner, datum/power/theologist/root/heartened/source_power, source_mood_multiplier)
 	if(source_power)
 		sources += source_power
 		source_mood_multipliers[source_power] = source_mood_multiplier
@@ -164,7 +164,7 @@
 
 /// Discards invalid aura sources and removes the effect when no valid source remains.
 /datum/status_effect/power/burden_heartened/tick(seconds_between_ticks)
-	for(var/datum/power/theologist_root/heartened/source_power as anything in sources.Copy())
+	for(var/datum/power/theologist/root/heartened/source_power as anything in sources.Copy())
 		if(QDELETED(source_power) || !source_power.is_target_in_aura(owner))
 			sources -= source_power
 			source_mood_multipliers -= source_power
@@ -174,7 +174,7 @@
 	refresh_mood_multiplier()
 
 /// Adds or updates an aura source and their multiplier.
-/datum/status_effect/power/burden_heartened/proc/add_source(datum/power/theologist_root/heartened/source_power, source_mood_multiplier)
+/datum/status_effect/power/burden_heartened/proc/add_source(datum/power/theologist/root/heartened/source_power, source_mood_multiplier)
 	if(!source_power)
 		return
 	if(!(source_power in sources))
@@ -183,7 +183,7 @@
 	refresh_mood_multiplier()
 
 /// Removes an aura source; the status tick performs final deletion after all auras can update their support.
-/datum/status_effect/power/burden_heartened/proc/remove_source(datum/power/theologist_root/heartened/source_power)
+/datum/status_effect/power/burden_heartened/proc/remove_source(datum/power/theologist/root/heartened/source_power)
 	sources -= source_power
 	source_mood_multipliers -= source_power
 	if(length(sources))
@@ -195,7 +195,7 @@
 		return
 
 	var/strongest_mood_multiplier = 1
-	for(var/datum/power/theologist_root/heartened/source_power as anything in sources)
+	for(var/datum/power/theologist/root/heartened/source_power as anything in sources)
 		var/source_mood_multiplier = source_mood_multipliers[source_power]
 		if(QDELETED(source_power) || source_mood_multiplier <= 0)
 			continue

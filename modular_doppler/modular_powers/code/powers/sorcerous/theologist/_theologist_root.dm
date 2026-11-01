@@ -1,8 +1,8 @@
-/datum/power/theologist_root
+/datum/power/theologist/root
 	name = "Abstract theologist root"
 	desc = "Some spend most of their life looking for the holy grail, the root of life, yggdrasil and all those things. This is the root. Of the healer powers. So you're getting close? \
 	Present this to the developers for the next hint in your quest. Because you're not actually meant to have this."
-	abstract_parent_type = /datum/power/theologist_root
+	abstract_parent_type = /datum/power/theologist/root
 
 	power_flags = POWER_HUMAN_ONLY | POWER_HEALING
 	magic_flags = POWER_MAGIC_STANDARD
@@ -10,14 +10,14 @@
 	path = POWER_PATH_THEOLOGIST
 	priority = POWER_PRIORITY_ROOT
 
-/datum/power/theologist_root/post_add() // I'd love to run this during add but that runtimes at round start.
+/datum/power/theologist/root/post_add() // I'd love to run this during add but that runtimes at round start.
 	if(!power_holder) // So it doesn't runtime at init
 		return
 	// We pass along the piety component to actually handle most of the piety stuff.
 	power_holder.AddComponent(/datum/component/theologist_piety, power_holder)
 	. = ..()
 
-/datum/power/theologist_root/remove()
+/datum/power/theologist/root/remove()
 	. = ..()
 	var/mob/living/holder = power_holder
 	if(!holder)
@@ -26,7 +26,7 @@
 	// We check for other roots of our type, in the event that admin shenanigangs gave multiple roots. Don't want to throw out the whole component when other things are still in use.
 	var/has_other_root = FALSE
 	for(var/datum/power/power as anything in holder.powers)
-		if(istype(power, /datum/power/theologist_root))
+		if(istype(power, /datum/power/theologist/root))
 			has_other_root = TRUE
 			break
 

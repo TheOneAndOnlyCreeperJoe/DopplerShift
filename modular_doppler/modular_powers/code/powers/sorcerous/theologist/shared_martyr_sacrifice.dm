@@ -13,7 +13,7 @@
 	security_threat = POWER_THREAT_MINOR
 	value = 2
 	power_flags = POWER_HUMAN_ONLY | POWER_PROCESSES | POWER_HEALING
-	required_powers = list(/datum/power/theologist_root/shared)
+	required_powers = list(/datum/power/theologist/root/shared)
 
 	menu_icon = 'modular_doppler/modular_powers/icons/powers/actions_icons.dmi'
 	menu_icon_state = "burden_shared_sacrifice"
@@ -29,7 +29,7 @@
 
 /datum/power/theologist/shared_martyr_sacrifice/post_add()
 	. = ..()
-	var/datum/power/theologist_root/shared/shared_power = power_holder?.get_power(/datum/power/theologist_root/shared)
+	var/datum/power/theologist/root/shared/shared_power = power_holder?.get_power(/datum/power/theologist/root/shared)
 	shared_action = shared_power?.action_path
 	if(shared_action)
 		shared_action.transfer_mode = BURDEN_TRANSFER_DRAW_ALL

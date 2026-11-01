@@ -9,7 +9,7 @@
 	mob_trait = TRAIT_MEDICAL_HUD
 	value = 2
 
-	required_powers = list(/datum/power/theologist_root)
+	required_powers = list(/datum/power/theologist/root)
 	required_allow_subtypes = TRUE
 
 	menu_icon = 'icons/obj/clothing/glasses.dmi'

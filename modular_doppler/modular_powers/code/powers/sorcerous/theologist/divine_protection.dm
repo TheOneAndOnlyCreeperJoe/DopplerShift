@@ -11,7 +11,7 @@
 	menu_icon = 'icons/effects/effects.dmi'
 	menu_icon_state = "shield-yellow"
 
-	required_powers = list(/datum/power/theologist_root/)
+	required_powers = list(/datum/power/theologist/root)
 	required_allow_subtypes = TRUE
 	/// World time (in deciseconds) when piety drain last triggered
 	var/last_piety_drain = 0

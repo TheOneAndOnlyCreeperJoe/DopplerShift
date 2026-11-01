@@ -6,7 +6,7 @@
 /// Transfers ALL damage to the user from the target regardless of healthstates.
 #define BURDEN_TRANSFER_DRAW_ALL 2
 
-/datum/power/theologist_root/shared
+/datum/power/theologist/root/shared
 	name = "A Burden Shared"
 	desc = "Channels a beam of energy between you and a target, equalizing damage over a period of time, scaling with severity. The beam requires continuous line of sight to function, and ends prematurely if you are knocked down or incapacitated.\
 	\nGenerates Piety if you are transferring damage to yourself. Works on synthetic body parts."

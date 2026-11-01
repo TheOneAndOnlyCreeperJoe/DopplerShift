@@ -8,7 +8,7 @@
 	security_record_text = "Subject can heal themselves using their healing powers."
 	security_threat = POWER_THREAT_MAJOR
 	value = 3
-	required_powers = list(/datum/power/theologist_root/revered)
+	required_powers = list(/datum/power/theologist/root/revered)
 	power_flags = POWER_HUMAN_ONLY | POWER_HEALING
 
 /datum/power/theologist/revered_self_heal/post_add()
@@ -26,7 +26,7 @@
 
 /// Gets A Burden Revered.
 /datum/power/theologist/revered_self_heal/proc/get_revered_action()
-	var/datum/power/theologist_root/revered/revered_power = power_holder?.get_power(/datum/power/theologist_root/revered)
+	var/datum/power/theologist/root/revered/revered_power = power_holder?.get_power(/datum/power/theologist/root/revered)
 	var/datum/action/cooldown/power/theologist/theologist_root/revered/revered_action = revered_power?.action_path
 	if(istype(revered_action))
 		return revered_action

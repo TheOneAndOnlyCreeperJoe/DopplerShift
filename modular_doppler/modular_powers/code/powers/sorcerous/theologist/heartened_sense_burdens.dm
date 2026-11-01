@@ -10,7 +10,7 @@
 	security_record_text = "Subject can read a target's mind and ascertain their general moods, needs and worries."
 	security_threat = POWER_THREAT_MAJOR
 	value = 3
-	required_powers = list(/datum/power/theologist_root/heartened, /datum/power/psyker_power/telepathy)
+	required_powers = list(/datum/power/theologist/root/heartened, /datum/power/psyker_power/telepathy)
 	magic_flags = POWER_MAGIC_STANDARD | POWER_MAGIC_MENTAL | POWER_MAGIC_SCRYING
 
 /datum/power/theologist/heartened_sense_burdens/add(client/client_source)

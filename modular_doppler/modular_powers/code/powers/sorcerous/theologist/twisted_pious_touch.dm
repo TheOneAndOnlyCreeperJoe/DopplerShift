@@ -4,7 +4,7 @@
 	\nAt 50 Piety, this will allow you to completely heal any injuries."
 	security_record_text = "Subject's healing powers become more powerful with repeated use."
 	value = 2
-	required_powers = list(/datum/power/theologist_root/twisted)
+	required_powers = list(/datum/power/theologist/root/twisted)
 
 	/// The Piety required to reduce Burden Twisted's healing threshold by one increment.
 	var/piety_per_threshold_reduction = 5
