@@ -65,6 +65,8 @@
 	//FX
 	user.playsound_local(target, 'modular_doppler/modular_powers/sounds/condemned/condemned.ogg', 50, FALSE)
 	target.playsound_local(target, 'modular_doppler/modular_powers/sounds/condemned/condemned.ogg', 50, FALSE)
+	target.log_message("was condemned by [user].", LOG_VICTIM)
+	user.log_message("condemned [target].", LOG_ATTACK)
 	to_chat(target, span_boldwarning("You feel the crushing weight of condemnation settle upon you as [user] points at you!"))
 	to_chat(user, span_warning("You condemn [target]!"))
 	return TRUE
