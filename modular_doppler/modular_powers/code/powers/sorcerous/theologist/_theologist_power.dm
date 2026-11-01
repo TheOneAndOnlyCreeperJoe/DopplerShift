@@ -16,6 +16,9 @@
 	// Powers can deem any living creature unholy, including non-carbon mobs.
 	if(HAS_TRAIT(target, TRAIT_DEEMED_UNHOLY))
 		return TRUE
+	// Being undead is VERY unholy!
+	if(target.mob_biotypes & MOB_UNDEAD)
+		return TRUE
 	if(!iscarbon(target))
 		return FALSE
 	/// Anyone that has the evil trait (some quirks) or a cultist halo.
