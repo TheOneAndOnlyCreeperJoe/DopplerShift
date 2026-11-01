@@ -8,3 +8,23 @@
 	priority = POWER_PRIORITY_BASIC
 	magic_flags = POWER_MAGIC_STANDARD
 	abstract_parent_type = /datum/power/theologist
+
+/// Determines whether a living mob is considered unholy by Theologist powers.
+/datum/power/theologist/proc/is_unholy(mob/living/target)
+	if(is_type_in_typecache(target, GLOB.unholy_mobs))
+		return TRUE
+	// Powers can deem any living creature unholy, including non-carbon mobs.
+	if(HAS_TRAIT(target, TRAIT_DEEMED_UNHOLY))
+		return TRUE
+	if(!iscarbon(target))
+		return FALSE
+	/// Anyone that has the evil trait (some quirks) or a cultist halo.
+	if(HAS_TRAIT(target, TRAIT_EVIL) || HAS_TRAIT(target, TRAIT_CULT_HALO))
+		return TRUE
+	/// Heretic aura/robes because god forbid Heretic has a trait that shows when they have an aura.
+	var/datum/antagonist/heretic/heretic_datum = target.mind?.has_antag_datum(/datum/antagonist/heretic)
+	if(heretic_datum && (HAS_TRAIT(target, TRAIT_HERETIC_AURA_HIDDEN) || heretic_datum.should_show_aura()))
+		return TRUE
+
+	/// CONGRATULATIONS, YOU'RE NOT A BLASPHEMER.
+	return FALSE

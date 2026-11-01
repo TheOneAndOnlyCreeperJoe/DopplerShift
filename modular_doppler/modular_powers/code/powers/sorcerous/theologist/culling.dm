@@ -42,8 +42,8 @@
 	if(is_type_in_typecache(died, mob_blacklist)) // not worth piety
 		return
 
-	// Attempts to give piety if the mob is on the unholy mob list
-	if(is_type_in_typecache(died, GLOB.unholy_mobs))
+	// Attempts to give piety if the mob is unholy.
+	if(is_unholy(died))
 		if(ismegafauna(died) || (istype(died, /mob/living/simple_animal/hostile/asteroid/elite) && died.mind)) // Sentient elites and megafauna grant 25
 			piety_component.adjust_piety(THEOLOGIST_PIETY_MAJOR)
 			to_chat(power_holder, span_boldnotice("Slaying a mighty foe has granted you a great amount of piety!"))
@@ -56,4 +56,3 @@
 			return
 		// Sound effect to confirm you got piety
 		playsound(power_holder, 'sound/effects/magic/charge.ogg', 75, TRUE, SILENCED_SOUND_EXTRARANGE)
-

@@ -67,12 +67,12 @@
 		currently_imbued.RemoveElement(/datum/element/theologist_smite)
 		currently_imbued = null
 	currently_imbued = to_imbue
-	currently_imbued.AddElement(/datum/element/theologist_smite, smite_damage, unholy_smite_bonus, smite_knockback, FALSE, TRUE, TRUE)
+	currently_imbued.AddElement(/datum/element/theologist_smite, smite_damage, unholy_smite_bonus, smite_knockback, origin_power, FALSE, TRUE, TRUE)
 	to_chat(owner, span_notice("You infuse smiting energies into [currently_imbued]"))
 
 /// Applies the element and does not remove any existing ones.
 /datum/action/cooldown/power/theologist/smiting_strike/proc/imbue_global(obj/to_imbue)
-	to_imbue.AddElement(/datum/element/theologist_smite, smite_damage, unholy_smite_bonus, smite_knockback, FALSE, TRUE, FALSE)
+	to_imbue.AddElement(/datum/element/theologist_smite, smite_damage, unholy_smite_bonus, smite_knockback, origin_power, FALSE, TRUE, FALSE)
 	to_chat(owner, span_notice("You infuse smiting energies into [to_imbue]"))
 
 // Whilst I originally considered adding just the knockback element, we kind-of want more control over when the smite fades.
@@ -91,6 +91,8 @@
 	var/throw_gentle
 	/// whether dropping this item ends the element
 	var/self_terminate_on_drop
+	/// The power that applied this smite.
+	var/datum/power/theologist/source_power
 	/// The person assigned to be the holder of the object.
 	var/mob/living/holder
 	/// the bless effect
@@ -98,7 +100,7 @@
 
 
 // This is basically the knockback code but hybridized. Sue me.
-/datum/element/theologist_smite/Attach(atom/target, smite_damage = 1, unholy_smite_bonus = 1, throw_distance = 1, throw_anchored = FALSE, throw_gentle = FALSE, self_terminate_on_drop = FALSE)
+/datum/element/theologist_smite/Attach(atom/target, smite_damage = 1, unholy_smite_bonus = 1, throw_distance = 1, datum/power/theologist/new_source_power, throw_anchored = FALSE, throw_gentle = FALSE, self_terminate_on_drop = FALSE)
 // While the balancer inside me suggests we restrict this to melee hits... I kind of want to see the fun of ranged smites.
 // For the future person to balance this; really just remove projectile_hit() and the first if in this sequence if you want to axe ranged.
 	. = ..()
@@ -116,6 +118,7 @@
 	src.throw_anchored = throw_anchored
 	src.throw_gentle = throw_gentle
 	src.self_terminate_on_drop = self_terminate_on_drop
+	source_power = new_source_power
 
 	if(isitem(target) && self_terminate_on_drop) // No point tracking this if we aren't going to self_terminate on drop
 		RegisterSignal(target, COMSIG_ITEM_DROPPED, PROC_REF(on_item_dropped))
@@ -192,8 +195,8 @@
 	target.safe_throw_at(throw_target, throw_distance, 1, thrower, gentle = throw_gentle)
 	new /obj/effect/temp_visual/electricity(get_turf(target), "#ddd166")
 	playsound(target, 'sound/effects/magic/magic_block_holy.ogg', 75, TRUE)
-	//If the mob is in the unholy mob typecache, they take more damage from smite.
-	if(is_type_in_typecache(target, GLOB.unholy_mobs))
+	// Unholy mobs take more damage from smite.
+	if(source_power?.is_unholy(target))
 		target.adjustFireLoss(smite_damage + unholy_smite_bonus)
 	else
 		target.adjustFireLoss(smite_damage)

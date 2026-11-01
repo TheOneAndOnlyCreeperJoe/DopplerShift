@@ -19,6 +19,7 @@
 /datum/power/thaumaturge_root/hemomancy/post_add()
 	if(!power_holder) // So it doesn't runtime at init
 		return
+	ADD_TRAIT(power_holder, TRAIT_DEEMED_UNHOLY, src)
 	// Spell preperation is so complicated we basically handle it all in a component, including the UI part.
 	power_holder.AddComponent(/datum/component/thaumaturge/hemomancy, power_holder)
 	. = ..()
@@ -27,6 +28,7 @@
 	. = ..()
 	if(!power_holder)
 		return
+	REMOVE_TRAIT(power_holder, TRAIT_DEEMED_UNHOLY, src)
 	var/tobedel = power_holder.GetComponent(/datum/component/thaumaturge/hemomancy)
 	QDEL_NULL(tobedel)
 

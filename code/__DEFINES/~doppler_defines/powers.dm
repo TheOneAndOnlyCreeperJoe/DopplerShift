@@ -257,6 +257,10 @@
 #define THEOLOGIST_PIETY_MAJOR (THEOLOGIST_PIETY_MAX / 2)
 #define THEOLOGIST_PIETY_CRUSHING (THEOLOGIST_PIETY_MAX)
 
+/// Trait given to mobs by Powers to indicate they're 'unholy'. This is not to be confused with TRAIT_EVIL, which changes the mob's moods and behaviour and means they are truly evil.
+/// This is just the brand of shame regardless of if its deserved or not.
+#define TRAIT_DEEMED_UNHOLY "deemed_unholy"
+
 /**
  * RESONANT
  * All defines related to the resonant archetype.
