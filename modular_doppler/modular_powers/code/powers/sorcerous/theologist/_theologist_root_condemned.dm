@@ -5,7 +5,7 @@
 /datum/power/theologist/root/condemned
 	name = "A Burden Condemned"
 	desc = "Bring justice to those that would seek to burden others, by making them feel the weight of suffering they shoulder onto the innocent.\
-	\nChoose a target within view: you mark that target, applying Condemned. A Condemned target counts as Unholy for all of Theologist's powers, and you can only have one target condemned.\
+	\nChoose a target within view that is not holy: you mark that target, applying Condemned. A Condemned target counts as Unholy for all of Theologist's powers, and you can only have one target condemned.\
 	\nWhenever someone with this power damages the condemned with attacks, they apply Condemnation equal to half the pre-mitigation damage they would have dealt (regardless if the condemned blocks or mitigates it). \
 	Condemnation reduces the condemned's damage with attacks by the amount stored, up to 50% of the condemned's hit; this consumes the Condemnation equal to the damage prevented. \
 	\nYou build piety whenever a creature spends Condemnation when attacking a sentient mob: you also build Piety whenever you apply Condemnation to a mob that was already Unholy before you cast A Burden Condemned, or when striking a creature Condemned by someone else.\
@@ -51,6 +51,10 @@
 	if(!isliving(target))
 		return FALSE
 	var/mob/living/living_target = target
+	// No condemning holy men.
+	if(HAS_TRAIT(living_target, TRAIT_HOLY))
+		user.balloon_alert(user, "too holy!")
+		return FALSE
 	if(living_target.has_status_effect(/datum/status_effect/power/burden_condemned))
 		user.balloon_alert(user, "already condemned!")
 		return FALSE

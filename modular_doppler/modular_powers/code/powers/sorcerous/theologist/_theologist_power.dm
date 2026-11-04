@@ -11,6 +11,10 @@
 
 /// Determines whether a living mob is considered unholy by Theologist powers.
 /datum/power/theologist/proc/is_unholy(mob/living/target)
+	// Holymen should never be unholy.
+	if(HAS_TRAIT(target, TRAIT_HOLY))
+		return FALSE
+	// List of mobs that are definetly unholy
 	if(is_type_in_typecache(target, GLOB.unholy_mobs))
 		return TRUE
 	// Powers can deem any living creature unholy, including non-carbon mobs.
