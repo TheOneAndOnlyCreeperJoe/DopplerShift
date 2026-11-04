@@ -25,6 +25,7 @@
 	target_self = FALSE // why would you
 	click_to_activate = TRUE
 	use_time = 5 SECONDS
+	use_time_overlay_type = null
 
 	// Used to determine the cost
 	var/last_cocoon_was_mob = FALSE

@@ -24,7 +24,6 @@
 	click_to_activate = TRUE
 	anti_magic_on_target = FALSE
 
-	use_time_overlay_type = /obj/effect/temp_visual/conjure_rain
 	use_time = 1 SECONDS
 
 	/// the chem that the base rain uses

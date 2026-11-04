@@ -60,6 +60,8 @@
 	human_only = FALSE
 	/// Amount of time it takes to transform.
 	use_time = 2 SECONDS
+	use_time_overlay_type = null
+
 	cost = ABERRANT_HUNGER_MODERATE
 	/// Tracks if the current activation performed a shift (not a revert).
 	var/just_shifted = FALSE

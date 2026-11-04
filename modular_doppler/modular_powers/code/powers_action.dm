@@ -41,8 +41,10 @@
 	var/use_time = 0
 	/// Flags passed to do_after during use_time (e.g. IGNORE_HELD_ITEM, IGNORE_USER_LOC_CHANGE).
 	var/use_time_flags = NONE
-	/// Optional overlay to show on the user during use_time.
-	var/use_time_overlay_type
+	/// Optional overlay to show on the user during use_time. Defaults to the casting icon.
+	var/use_time_overlay_type = /obj/effect/temp_visual/casting
+	/// Color override of the overlay
+	var/use_time_overlay_color
 
 	/// Maximum targeting range (in tiles) for click_to_activate powers. Set to 0 or null for no range limit.
 	var/target_range
@@ -182,6 +184,19 @@
 		var/atom/overlay_obj = new use_time_overlay_type(null)
 		use_overlay = new /mutable_appearance(overlay_obj)
 		qdel(overlay_obj)
+		var/overlay_color
+		// If we're using the default, get the power's associated color.
+		if(use_time_overlay_type == /obj/effect/temp_visual/casting && !use_time_overlay_color)
+			overlay_color = GLOB.power_paths_by_define[origin_power?.path]?.theme_color
+		else if(use_time_overlay_color)
+			overlay_color = use_time_overlay_color
+		if(overlay_color)
+			var/list/overlay_color_matrix = color_to_full_rgba_matrix(overlay_color)
+			// Basically makes it somewhat brighter so it matches the color more directly.
+			overlay_color_matrix[17] = 0.15
+			overlay_color_matrix[18] = 0.15
+			overlay_color_matrix[19] = 0.15
+			use_overlay.color = overlay_color_matrix
 		user.add_overlay(use_overlay)
 	if(click_to_activate && unset_after_click) // unsets the mouse on use time.
 		unset_click_ability(user)
@@ -189,6 +204,12 @@
 	if(use_overlay && !QDELETED(user))
 		user.cut_overlay(use_overlay)
 	return success
+
+/// Cast effect
+/obj/effect/temp_visual/casting
+	icon = 'modular_doppler/modular_powers/icons/powers/effects.dmi'
+	icon_state = "casting"
+	duration = 60 SECONDS // gets cut automatically anyway
 
 /// Anything that should happen as a result of use_action returning TRUE.
 /// Cost systems for archetypes to name an example.
