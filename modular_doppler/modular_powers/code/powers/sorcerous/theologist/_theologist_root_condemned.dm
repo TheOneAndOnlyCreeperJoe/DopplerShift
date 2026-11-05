@@ -21,7 +21,7 @@
 /datum/action/cooldown/power/theologist/theologist_root/condemned
 	name = "A Burden Condemned"
 	desc = "Condemn a creature, marking it as Unholy and causing your damage against the condemned to apply a debuff that reduces their damage. Extends the duration on hit, and restores the cooldown on condemned death.\
-	Builds Piety when you succesfuly reduce damage: or if you damage a mob that was Unholy before condemning them. You can only have one target marked as Condemned at a time"
+	Builds Piety when you succesfuly reduce damage: or if you damage a mob that was Unholy before condemning them. You can only have one target Condemned at a time"
 	button_icon = 'modular_doppler/modular_powers/icons/powers/actions_icons.dmi'
 	button_icon_state = "burden_condemned"
 	cooldown_time = 30 SECONDS
@@ -124,6 +124,7 @@
 	RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_owner_death))
 	/// To get this to work, these signalers all apply a status effect that then applies COMSIG_MOB_APPLY_DAMAGE_MODIFIERS, which then handles Condemnation's effects, rather than trying to juggle all these signal args.
 	RegisterSignal(owner, COMSIG_LIVING_CHECK_BLOCK, PROC_REF(build_condemnation))
+	RegisterSignal(owner, COMSIG_PROJECTILE_PREHIT, PROC_REF(build_projectile_condemnation))
 	RegisterSignal(owner, COMSIG_MOB_ITEM_ATTACK, PROC_REF(prepare_item_attack))
 	RegisterSignal(owner, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(prepare_unarmed_attack))
 	RegisterSignal(owner, COMSIG_HOSTILE_PRE_ATTACKINGTARGET, PROC_REF(prepare_hostile_attack))
@@ -133,7 +134,7 @@
 /datum/status_effect/power/burden_condemned/on_remove()
 	owner.cut_overlay(condemned_overlay)
 	REMOVE_TRAIT(owner, TRAIT_DEEMED_UNHOLY, src)
-	UnregisterSignal(owner, list(COMSIG_ATOM_DISPEL, COMSIG_LIVING_DEATH, COMSIG_LIVING_CHECK_BLOCK, COMSIG_MOB_ITEM_ATTACK, COMSIG_LIVING_UNARMED_ATTACK, COMSIG_HOSTILE_PRE_ATTACKINGTARGET, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE))
+	UnregisterSignal(owner, list(COMSIG_ATOM_DISPEL, COMSIG_LIVING_DEATH, COMSIG_LIVING_CHECK_BLOCK, COMSIG_PROJECTILE_PREHIT, COMSIG_MOB_ITEM_ATTACK, COMSIG_LIVING_UNARMED_ATTACK, COMSIG_HOSTILE_PRE_ATTACKINGTARGET, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE))
 	for(var/obj/projectile/tracked_projectile as anything in tracked_projectiles)
 		UnregisterSignal(tracked_projectile, list(COMSIG_PROJECTILE_SELF_PREHIT, COMSIG_QDELETING))
 	tracked_projectiles.Cut()
@@ -153,9 +154,11 @@
 	condemning_action?.ResetCooldown()
 	qdel(src)
 
-/// Builds Condemnation based on the supplied damage (which is pre-mtiigation)
-/datum/status_effect/power/burden_condemned/proc/build_condemnation(mob/living/source, atom/movable/hit_by, damage, attack_text, attack_type, armour_penetration, damage_type)
+/// Builds Condemnation from an attack's pre-mitigation damage.
+/datum/status_effect/power/burden_condemned/proc/build_condemnation(mob/living/source, atom/movable/hit_by, damage, attack_text, attack_type, armour_penetration, damage_type, from_projectile_prehit = FALSE)
 	SIGNAL_HANDLER
+	if(attack_type == PROJECTILE_ATTACK && !from_projectile_prehit)
+		return
 	var/mob/living/attack_source = get_attack_source_mob(hit_by)
 	var/datum/power/theologist/root/condemned/contributing_power = attack_source?.get_power(/datum/power/theologist/root/condemned)
 	var/datum/action/cooldown/power/theologist/theologist_root/condemned/contributing_action = contributing_power?.action_path
@@ -167,6 +170,11 @@
 	update_condemnation_alert()
 	if(was_unholy || contributing_action != condemning_action) // piggybacking off of others is valid!
 		contributing_action.adjust_piety(condemnation_added * contributing_action.piety_per_unholy_condemnation_built)
+
+/// Builds Condemnation from a projectile that has reached this effect's owner.
+/datum/status_effect/power/burden_condemned/proc/build_projectile_condemnation(mob/living/source, obj/projectile/projectile)
+	SIGNAL_HANDLER
+	build_condemnation(source, projectile, projectile.damage, "\the [projectile]", PROJECTILE_ATTACK, projectile.armour_penetration, projectile.damage_type, TRUE)
 
 /// Updates the Condemned alert with the damage currently stored as Condemnation.
 /datum/status_effect/power/burden_condemned/proc/update_condemnation_alert()

@@ -14,20 +14,23 @@
 	// Holymen should never be unholy.
 	if(HAS_TRAIT(target, TRAIT_HOLY))
 		return FALSE
+
 	// List of mobs that are definetly unholy
 	if(is_type_in_typecache(target, GLOB.unholy_mobs))
 		return TRUE
-	// Powers can deem any living creature unholy, including non-carbon mobs.
+	// Certain powers can deem any living creature unholy.
 	if(HAS_TRAIT(target, TRAIT_DEEMED_UNHOLY))
 		return TRUE
 	// Being undead is VERY unholy!
 	if(target.mob_biotypes & MOB_UNDEAD)
 		return TRUE
-	if(!iscarbon(target))
-		return FALSE
 	/// Anyone that has the evil trait (some quirks) or a cultist halo.
 	if(HAS_TRAIT(target, TRAIT_EVIL) || HAS_TRAIT(target, TRAIT_CULT_HALO))
 		return TRUE
+	// At this point we cleared simple mobs so we're dropping them off.
+	if(!iscarbon(target))
+		return FALSE
+
 	/// Heretic aura/robes because god forbid Heretic has a trait that shows when they have an aura.
 	var/datum/antagonist/heretic/heretic_datum = target.mind?.has_antag_datum(/datum/antagonist/heretic)
 	if(heretic_datum && (HAS_TRAIT(target, TRAIT_HERETIC_AURA_HIDDEN) || heretic_datum.should_show_aura()))
