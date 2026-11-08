@@ -16,14 +16,14 @@
 
 	value = 3
 
-	/// Carbon mobs currently sustained by this power's aura.
+	/// Carbon mobs currently affected by this power's aura.
 	var/list/mob/living/carbon/affected_targets = list()
 	/// Radius in tiles used to apply and sustain the passive aura.
 	var/aura_range = 3
 	/// Multiplier applied to positive moodlets within this power's aura.
 	var/mood_multiplier = 1.25
 
-/// Removes every sustained buff and the Mood Sight action from the current holder.
+/// Removes every buff given by the power, and the Mood Sight action from the current holder.
 /datum/power/theologist/root/heartened/remove()
 	clear_affected_targets()
 	if(istype(action_path, /datum/action/cooldown/power/theologist/theologist_root/mood_sight))
@@ -33,7 +33,7 @@
 		action_path = null
 	return ..()
 
-/// Maintains the passive aura and grants piety for affected creatures' current moods.
+/// Maintains the passive aura and grants piety based on affected creatures' current moods.
 /datum/power/theologist/root/heartened/process(seconds_per_tick)
 	if(!power_holder)
 		return
@@ -74,7 +74,7 @@
 	// No holder or were fukken DEAD
 	if(!power_holder || QDELETED(power_holder) || power_holder.stat == DEAD)
 		return FALSE
-	// Nobody here to feel shit.
+	// Nobody here
 	if(!target || QDELETED(target) || target == power_holder || !target.mob_mood)
 		return FALSE
 	// OUT OF RANGE
@@ -116,14 +116,14 @@
 	var/piety_gain = min(piety_rate * seconds_per_tick, piety_cap - piety_component.piety)
 	piety_component.adjust_piety(piety_gain, piety_cap)
 
-/// Removes this power as a sustaining source from every status effect it currently supports.
+/// Removes this power as a source from every status effect it currently supports.
 /datum/power/theologist/root/heartened/proc/clear_affected_targets()
 	for(var/mob/living/carbon/affected_target as anything in affected_targets)
 		var/datum/status_effect/power/burden_heartened/heartened_effect = affected_target?.has_status_effect(/datum/status_effect/power/burden_heartened)
 		heartened_effect?.remove_source(src)
 	affected_targets.Cut()
 
-/// A unique mood buff sustained by one or more nearby Heartened theologists.
+/// The status effect given by burden heartened. Doesn't stack.
 /datum/status_effect/power/burden_heartened
 	id = "burden_heartened"
 	duration = STATUS_EFFECT_PERMANENT
@@ -131,28 +131,28 @@
 	status_type = STATUS_EFFECT_UNIQUE
 	alert_type = null
 
-	/// Heartened powers whose auras currently sustain this effect.
+	/// All thoe sources who currently sustain this effect.
 	var/list/datum/power/theologist/root/heartened/sources = list()
 	/// Mood multiplier snapshotted for this target from each source.
 	var/list/source_mood_multipliers = list()
-	/// The strongest mood multiplier currently applied by the sustaining auras.
+	/// The strongest mood multiplier currently applied by the power(s).
 	var/applied_mood_multiplier = 1
 
-/// Applies the positive-mood multiplier and records the first sustaining source.
+/// Applies the positive-mood multiplier and records the first source.
 /datum/status_effect/power/burden_heartened/on_creation(mob/living/new_owner, datum/power/theologist/root/heartened/source_power, source_mood_multiplier)
 	if(source_power)
 		sources += source_power
 		source_mood_multipliers[source_power] = source_mood_multiplier
 	return ..()
 
-/// Multiplies the owner's positive moodlet contribution while a mood datum is available.
+/// Updates the status effect to check which is stronger.
 /datum/status_effect/power/burden_heartened/on_apply()
 	if(!owner.mob_mood)
 		return FALSE
 	refresh_mood_multiplier()
 	return TRUE
 
-/// Restores the owner's positive moodlet contribution and clears all sustaining sources.
+/// Restores the mob's mood multiplier and removes all sources.
 /datum/status_effect/power/burden_heartened/on_remove()
 	if(owner.mob_mood)
 		owner.mob_mood.positive_mood_modifier /= applied_mood_multiplier
@@ -162,7 +162,7 @@
 	source_mood_multipliers.Cut()
 	return ..()
 
-/// Discards invalid aura sources and removes the effect when no valid source remains.
+/// Checks all sources to see if they are still valid: remove any that aren't, and remove the status effect if none are left.
 /datum/status_effect/power/burden_heartened/tick(seconds_between_ticks)
 	for(var/datum/power/theologist/root/heartened/source_power as anything in sources.Copy())
 		if(QDELETED(source_power) || !source_power.is_target_in_aura(owner))
@@ -173,7 +173,7 @@
 		return
 	refresh_mood_multiplier()
 
-/// Adds or updates an aura source and their multiplier.
+/// Adds or updates a buff source and their multiplier.
 /datum/status_effect/power/burden_heartened/proc/add_source(datum/power/theologist/root/heartened/source_power, source_mood_multiplier)
 	if(!source_power)
 		return
@@ -182,14 +182,14 @@
 	source_mood_multipliers[source_power] = source_mood_multiplier
 	refresh_mood_multiplier()
 
-/// Removes an aura source; the status tick performs final deletion after all auras can update their support.
+/// Removes a buff source.
 /datum/status_effect/power/burden_heartened/proc/remove_source(datum/power/theologist/root/heartened/source_power)
 	sources -= source_power
 	source_mood_multipliers -= source_power
 	if(length(sources))
 		refresh_mood_multiplier()
 
-/// Replaces the applied mood multiplier with the strongest value supplied by any sustaining aura.
+/// Replaces the applied mood multiplier with the strongest value supplied by any source.
 /datum/status_effect/power/burden_heartened/proc/refresh_mood_multiplier()
 	if(!owner?.mob_mood)
 		return
@@ -209,7 +209,8 @@
 	owner.mob_mood.positive_mood_modifier *= applied_mood_multiplier
 	owner.mob_mood.update_mood()
 
-/// Toggles client-only mood-colored overlays on creatures carrying A Burden Heartened.
+/// Power action that lets people see other's moods. Its like the sims diamonds.
+/// Not to be confused with sanity..
 /datum/action/cooldown/power/theologist/theologist_root/mood_sight
 	name = "Mood Sight"
 	desc = "Toggle your ability to see the mood of creatures affected by A Burden Heartened."
@@ -223,14 +224,14 @@
 	var/list/mob/living/carbon/tracked_targets = list()
 	var/list/image/target_images = list()
 
-/// Disables Mood Sight and removes all of its client-only images.
+/// Disables Mood Sight and removes all overlays
 /datum/action/cooldown/power/theologist/theologist_root/mood_sight/Remove(mob/removed_from)
 	active = FALSE
 	STOP_PROCESSING(SSprocessing, src)
 	clear_mood_sight_overlays(removed_from)
 	return ..()
 
-/// Toggles Mood Sight and its periodic overlay refresh.
+/// Toggles Mood Sight and periodically refreshes it.
 /datum/action/cooldown/power/theologist/theologist_root/mood_sight/use_action(mob/living/user, atom/target)
 	if(!user.client)
 		return FALSE
@@ -246,11 +247,12 @@
 	user.balloon_alert(user, active ? "mood sight on" : "mood sight off")
 	return TRUE
 
-/// Reports whether Mood Sight is currently enabled for action-button styling.
+/// Reports whether Mood Sight is currently enabled.
 /datum/action/cooldown/power/theologist/theologist_root/mood_sight/is_action_active(atom/movable/screen/movable/action_button/current_button)
 	return active
 
-/// Refreshes Mood Sight while it is toggled on.
+/// Refreshes the displayed moods of all mobs in sight.
+/// Keep in mind we are processing on an action so it competes with cooldown processing, but is largely irrelevant due to lack fo cooldown.
 /datum/action/cooldown/power/theologist/theologist_root/mood_sight/process(seconds_per_tick)
 	if(!active || !owner?.client)
 		active = FALSE
@@ -259,12 +261,13 @@
 		return
 	update_mood_sight_overlays()
 
-/// Adds, recolors, and removes client-only overlays to match currently visible valid targets.
+/// Adjusts the mood overlay per target.
 /datum/action/cooldown/power/theologist/theologist_root/mood_sight/proc/update_mood_sight_overlays()
 	if(!owner?.client)
 		return
 
 	var/list/mob/living/carbon/visible_targets = list()
+	/// Applies the overlay if it isn't there, updates the color if it is.
 	for(var/mob/living/carbon/seen_carbon in view(owner))
 		var/overlay_color = get_mood_sight_color(seen_carbon)
 		if(!overlay_color)
@@ -278,6 +281,7 @@
 			target_images[seen_carbon] = mood_sight_image
 		mood_sight_image.color = overlay_color
 
+	/// Removes any overlay on mobs we can't see.
 	for(var/mob/living/carbon/tracked_target as anything in tracked_targets - visible_targets)
 		var/image/old_image = target_images[tracked_target]
 		if(old_image)
@@ -311,7 +315,7 @@
 			return "#2eeb9a"
 	return null
 
-/// Removes the blips created by Mood Sight.
+/// Removes the overlay created by Mood Sight.
 /datum/action/cooldown/power/theologist/theologist_root/mood_sight/proc/clear_mood_sight_overlays(mob/viewer = owner)
 	if(viewer?.client)
 		for(var/mob/living/carbon/tracked_target as anything in tracked_targets)
