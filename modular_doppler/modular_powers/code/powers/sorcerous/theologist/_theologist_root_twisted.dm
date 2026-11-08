@@ -2,7 +2,7 @@
 	name = "A Burden Twisted"
 	desc = "Channel a beam that adjust the target's body, twisting large injuries into smaller, insubstantial injuries. The beam persists so long as you remain adjacent to the target, regardless of your activities.\
 	\nA Burden Twisted heals any damage-type besides suffocation, with the healing amount scaling based on how much health is missing. This cannot heal a damage-type that only has 10% or less of the target's maximum health as damage, per damage-type. \
-	Half the damage healed is dealt again as damage to a different type.\
+	\nHalf the damage healed is dealt again as damage to a different type: this is reduced by your healing modifiers (e.g 100% healing modifiers reduces it down to a quarter of the healing dealt as damage).\
 	\nGives Piety proportional to the net-positive amount of damage healed. Works on synthetic bodyparts, but cannot heal or deal toxins damage to a synthetic bodypart."
 	security_record_text = "Subject can rapidly transmute the injuries of a target into smaller, insubstantial injuries."
 	action_path = /datum/action/cooldown/power/theologist/theologist_root/twisted
@@ -74,7 +74,7 @@
 			to_chat(owner, span_notice("Your target has no other damage left to twist!"))
 			break
 		var/total_healed = 0
-		var/conversion_ratio = heal_to_damage_ratio
+		var/conversion_ratio = healing_multiplier ? heal_to_damage_ratio / healing_multiplier : 0
 		for(var/damage_type in damage_types_to_heal)
 			var/healed_amount = heal_damage_type(target, damage_type)
 			if(!healed_amount)
