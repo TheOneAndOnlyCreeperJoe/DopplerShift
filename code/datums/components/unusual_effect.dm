@@ -44,6 +44,7 @@
 	if (istype(parent_movable))
 		parent_movable.remove_filter("unusual_effect")
 	STOP_PROCESSING(SSobj, src)
+	QDEL_NULL(special_effects) // DOPPLER EDIT ADDITION - Fixes the unusual effect never being removed.
 	return ..()
 
 /datum/component/unusual_effect/process(seconds_per_tick)

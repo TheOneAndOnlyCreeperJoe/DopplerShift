@@ -244,7 +244,11 @@
 #define THEOLOGIST_ALT_UI_SCREEN_LOC "WEST+1,CENTER-2:15"
 
 // Trait made as to prevent duplicate smites.
+#define TRAIT_HAS_SMITE "has_smite"
 #define TRAIT_HAS_SMITING_STRIKE "has_smiting_strike"
+
+// The shared cooldown used by all smites when you land a succesful one.
+#define THEOLOGIST_SMITE_HIT_COOLDOWN (20 SECONDS)
 
 /// Fired by modular_doppler\modular_powers\code\powers\sorcerous\theologist\_theologist_root_twisted.dm to collect reductions to its healing threshold.
 /// Args: (list/healing_threshold_modifiers)
