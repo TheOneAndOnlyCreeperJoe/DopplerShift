@@ -168,7 +168,8 @@
 	var/condemnation_added = damage * contributing_action.condemnation_rate
 	condemnation += condemnation_added
 	update_condemnation_alert()
-	if(was_unholy || contributing_action != condemning_action) // piggybacking off of others is valid!
+	// Gives piety if the target was already unholy, is not dead and is condemned.
+	if(owner.stat != DEAD && (was_unholy || contributing_action != condemning_action)) // piggybacking off of others is valid!
 		contributing_action.adjust_piety(condemnation_added * contributing_action.piety_per_unholy_condemnation_built)
 
 /// Builds Condemnation from a projectile that has reached this effect's owner.
