@@ -17,6 +17,7 @@
 	required_allow_subtypes = TRUE
 
 	power_flags = POWER_HUMAN_ONLY
+	gives_unholy_sight = TRUE
 
 /// Partially lifted from Magical Barrage
 /datum/action/cooldown/power/theologist/righteous_wrath

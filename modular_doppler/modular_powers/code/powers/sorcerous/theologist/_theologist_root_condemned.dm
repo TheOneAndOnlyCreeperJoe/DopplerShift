@@ -15,6 +15,7 @@
 	action_path = /datum/action/cooldown/power/theologist/theologist_root/condemned
 
 	power_flags = POWER_HUMAN_ONLY // the only root that doesn't heal
+	gives_unholy_sight = TRUE
 
 	value = 5
 

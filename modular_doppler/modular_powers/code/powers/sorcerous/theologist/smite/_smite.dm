@@ -6,6 +6,8 @@
 	abstract_parent_type = /datum/power/theologist/smite
 	action_path = /datum/action/cooldown/power/theologist/smite
 
+	gives_unholy_sight = TRUE
+
 /datum/action/cooldown/power/theologist/smite
 	name = "abstract smite action"
 	desc = "You know, Theologist needed a second abstract type. Why? Well, I can give you good programming reasons, but you're not the developer. Go tell an admin, BECAUSE I SAID SO."

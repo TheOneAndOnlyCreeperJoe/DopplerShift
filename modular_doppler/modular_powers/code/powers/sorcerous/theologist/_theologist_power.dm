@@ -9,6 +9,21 @@
 	magic_flags = POWER_MAGIC_STANDARD
 	abstract_parent_type = /datum/power/theologist
 
+	/// Determines if the power should also give unholy sight. Anything that interacts with unholy should have this as TRUE
+	var/gives_unholy_sight = FALSE
+
+/datum/power/theologist/post_add()
+	// Passes along unholy sight
+	if(gives_unholy_sight && power_holder)
+		var/has_unholy_sight = FALSE
+		for(var/datum/action/action in power_holder.actions)
+			if(istype(action, /datum/action/cooldown/power/theologist/unholy_sight))
+				has_unholy_sight = TRUE
+				break
+		if(!has_unholy_sight)
+			grant_action(/datum/action/cooldown/power/theologist/unholy_sight)
+	. = ..()
+
 /// Determines whether a living mob is considered unholy by Theologist powers.
 /datum/power/theologist/proc/is_unholy(mob/living/target)
 	// Holymen should never be unholy.

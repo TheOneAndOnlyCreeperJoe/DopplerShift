@@ -1,10 +1,16 @@
-EFFECTS.dmi
-rifwalker_red / riftwalker_blue - Edit of Duelysts's Shatter art (icon_f6_shatter.png), distributed under CC0: https://github.com/open-duelyst/duelyst/tree/main
-burden_condemened - Edit of Duelyst's Razorskin art (icon_f5_razorskin.png), distributed under CC0: https://github.com/open-duelyst/duelyst/tree/main
+(All Duelyst assets are sourced from the Duelyst repo, which is released by the developers under CC0: https://github.com/open-duelyst/duelyst/tree/main)
+
+effects.dmi
+rifwalker_red / riftwalker_blue - Edit of Duelysts's Shatter art (icon_f6_shatter.png),
+burden_condemened - Edit of Duelyst's Razorskin art (icon_f5_razorskin.png)
+unholy - Edit of Duelyst's Wraithling Fury spritesheet
+holy - Edit of Duelyst's Lasting Judgement spritesheet
 
 64x64.dmi
-explosive_smite_big - Duelyst's Lightning Strike spritesheet, distributed under CC0: https://github.com/open-duelyst/duelyst/tree/main
+explosive_smite_big - Duelyst's Lightning Strike spritesheet
 
 action_icons.dmi
-righteous_wrath - Edit of Duelyst's Magitekupgrade spritesheet, distributed under CC0:
-explosive_smite - Edit of Duelyst's Thunderclap spritesheet, distributed under CC0: https://github.com/open-duelyst/duelyst/tree/main
+righteous_wrath - Edit of Duelyst's Magitekupgrade spritesheet
+explosive_smite - Edit of Duelyst's Thunderclap spritesheet
+
+

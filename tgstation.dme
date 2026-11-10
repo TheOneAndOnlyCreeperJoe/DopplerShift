@@ -7737,6 +7737,7 @@
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\time_of_need.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\twisted_fixed_fate.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\twisted_pious_touch.dm"
+#include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\unholy_sight.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\smite\_smite.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\smite\explosive_smite.dm"
 #include "modular_doppler\modular_powers\code\security\reality_anchor.dm"

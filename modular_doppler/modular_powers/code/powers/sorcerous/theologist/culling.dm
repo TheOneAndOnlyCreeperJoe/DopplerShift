@@ -11,6 +11,8 @@
 	menu_icon = 'icons/mob/actions/actions_elites.dmi'
 	menu_icon_state = "bonfire_teleport"
 
+	gives_unholy_sight = TRUE
+
 	/// Reference to the owner's piety component
 	var/datum/component/theologist_piety/piety_component
 	/// Mobs that should never grant piety on death either for being weak or otherwise.
