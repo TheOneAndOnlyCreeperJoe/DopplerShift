@@ -77,6 +77,9 @@
 	var/turf/impact_turf = get_turf(primary_target)
 	if(!impact_turf)
 		return FALSE
+	// If the target's immune to magic then the whole thing comes crashing down.
+	if(primary_target.can_block_resonance(1))
+		return TRUE
 
 	var/screenshake_multiplier = get_piety() >= big_smite_req ? 1 : 0.5
 	var/damage_dealt = apply_explosive_damage(primary_target)
@@ -94,6 +97,8 @@
 	var/cleave_knockback_enabled = get_piety() >= main_knockback_piety_req
 	for(var/mob/living/secondary_target in range(1, impact_turf))
 		if(secondary_target == primary_target || secondary_target == owner)
+			continue
+		if(secondary_target.can_block_resonance(1)) // you're spared from the cleave.
 			continue
 
 		var/cleave_damage_dealt = apply_explosive_damage(secondary_target, cleave = TRUE, def_zone = ran_zone())
