@@ -5,7 +5,7 @@
 /datum/power/theologist/righteous_wrath
 	name = "Wrath of the Righteous"
 	desc = "Bring forth justice that casts down the unholy and the condemned.\
-	\nChannel to fire three moving projectiles after 2 seconds. The projectiles home and lock onto the unholy target that you can see closest to where you clicked. This passes through other humanoids and cannot injure anything that is not an unholy target. It does not damage structures. \
+	\nChannel to fire 3 slow moving projectiles after 2 seconds. The projectiles home and lock onto the unholy target that you can see closest to where you clicked. This passes through other mobs and cannot injure anything that is not an unholy target. It does not damage structures. \
 	On hit, it deals 10 + (Piety * 0.2) burn damage. This projectile has a high amount of armour pierce and is affected by the target's laser resistance. Deals drastically increased damage against mining mobs.\
 	\nMoving or performing other actions will cancel the channel."
 	security_record_text = "Subject can shoot homing projectiles of light that only strike those deemned unholy."
@@ -22,8 +22,8 @@
 /datum/action/cooldown/power/theologist/righteous_wrath
 	name = "Wrath of the Righteous"
 	desc = "Channel and fire three slow moving projectiles after a 2 second delay, homing in on an unholy target, dealing burn damage and piercing armour. Scales with Piety. Taking any action while channeling stops the effect."
-	button_icon = 'icons/obj/weapons/guns/projectiles.dmi'
-	button_icon_state = "blastwave"
+	button_icon = 'modular_doppler/modular_powers/icons/powers/actions_icons.dmi'
+	button_icon_state = "righteous_wrath"
 
 	cooldown_time = 3 SECONDS
 
@@ -223,8 +223,8 @@
 	if(!theologist_source_power?.is_unholy(living_target))
 		return
 	projectile_instance.homing_turn_speed = 2
-	projectile_instance.homing_inaccuracy_min = 4
-	projectile_instance.homing_inaccuracy_max = 10
+	projectile_instance.homing_inaccuracy_min = 2
+	projectile_instance.homing_inaccuracy_max = 6
 	projectile_instance.set_homing_target(living_target)
 
 /// Phases through non-unholy living mobs and buffs it against mining mobs.
