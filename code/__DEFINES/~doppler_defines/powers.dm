@@ -245,7 +245,6 @@
 
 // Trait made as to prevent duplicate smites.
 #define TRAIT_HAS_SMITE "has_smite"
-#define TRAIT_HAS_SMITING_STRIKE "has_smiting_strike"
 
 // The shared cooldown used by all smites when you land a succesful one.
 #define THEOLOGIST_SMITE_HIT_COOLDOWN (20 SECONDS)

@@ -27,6 +27,19 @@
 	log_game("[ckey_to_log]'s power \"[old_name]\" was renamed to \"[new_name]\" in their savefile.")
 
 /**
+ * Generic helper for quickly removing a power from someone's savefile
+ */
+/datum/preferences/proc/remove_saved_power(list/save_data, to_be_removed)
+	var/list/saved_powers = save_data?["all_powers"]
+	if(!islist(saved_powers))
+		return
+	if(!(to_be_removed in saved_powers))
+		return
+	saved_powers -= to_be_removed
+	var/ckey_to_log = parent?.ckey || "\[UNKNOWN CKEY\]"
+	log_game("[ckey_to_log]'s power \"[to_be_removed]\" was removed from their savefile.")
+
+/**s
  * Renames the "Beastial Body" power to its corrected spelling, "Bestial Body", in people's savefiles.
  */
 /datum/preferences/proc/rename_beastial_to_bestial(list/save_data)
@@ -35,17 +48,11 @@
 /**
  * Renames the "Purify" power to "Hallow"
  * Removes Entropic Mending
+ * Removes Smiting Strike
+ * Removes Imbue Armaments
  */
 /datum/preferences/proc/rename_and_remove_theologist_powers(list/save_data)
-	// Renames Purify to Hallow
 	rename_saved_power(save_data, "Purify", "Hallow")
-
-	// Removes Entropic Mending
-	var/list/saved_powers = save_data?["all_powers"]
-	if(!islist(saved_powers))
-		return
-	if(!("Entropic Mending" in saved_powers))
-		return
-	saved_powers -= "Entropic Mending"
-	var/ckey_to_log = parent?.ckey || "\[UNKNOWN CKEY\]"
-	log_game("[ckey_to_log]' had Entropic Mending removed from their savefile.")
+	remove_saved_power(save_data, "Entropic Mending")
+	remove_saved_power(save_data, "Smiting Strike")
+	remove_saved_power(save_data, "Imbue Armaments")
