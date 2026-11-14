@@ -31,3 +31,9 @@
  */
 /datum/preferences/proc/rename_beastial_to_bestial(list/save_data)
 	rename_saved_power(save_data, "Beastial Body", "Bestial Body")
+
+/**
+ * Renames the "Purify" power to "Hallow" in people's savefiles.
+ */
+/datum/preferences/proc/rename_purify_to_hallow(list/save_data)
+	rename_saved_power(save_data, "Purify", "Hallow")

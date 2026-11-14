@@ -1,9 +1,10 @@
 
-#define DOPPLER_SAVEFILE_VERSION_MAX 3
+#define DOPPLER_SAVEFILE_VERSION_MAX 4
 
 #define VERSION_NEW_POWERS 1
 #define VERSION_BESTIAL_RENAME 2
 #define VERSION_ETHEREAL_MUTANT_COLOR 3
+#define VERSION_THEOLOGIST_OVERHAUL 4
 
 #define SHOULD_UPDATE_DOPPLER_DATA(version) (version < DOPPLER_SAVEFILE_VERSION_MAX)
 
@@ -32,6 +33,9 @@
 	// Transfers legacy Ethereal palette selections to the standard mutant color preference.
 	if(current_version < VERSION_ETHEREAL_MUTANT_COLOR)
 		migrate_ethereal_color_to_mutant_color(save_data)
+	// Rolls out all the name changes in the theologist update
+	if(current_version < VERSION_THEOLOGIST_OVERHAUL)
+		rename_purify_to_hallow(save_data)
 
 /datum/preferences/proc/save_character_doppler(list/save_data)
 	save_data["languages"] = languages
@@ -44,4 +48,5 @@
 #undef VERSION_NEW_POWERS
 #undef VERSION_BESTIAL_RENAME
 #undef VERSION_ETHEREAL_MUTANT_COLOR
+#undef VERSION_THEOLOGIST_OVERHAUL
 #undef SHOULD_UPDATE_DOPPLER_DATA
