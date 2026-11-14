@@ -35,7 +35,7 @@
 		migrate_ethereal_color_to_mutant_color(save_data)
 	// Rolls out all the name changes in the theologist update
 	if(current_version < VERSION_THEOLOGIST_OVERHAUL)
-		rename_purify_to_hallow(save_data)
+		rename_and_remove_theologist_powers(save_data)
 
 /datum/preferences/proc/save_character_doppler(list/save_data)
 	save_data["languages"] = languages

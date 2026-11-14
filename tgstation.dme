@@ -7722,7 +7722,6 @@
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\do_no_harm.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\doctors_craft.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\doctors_sight.dm"
-#include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\entropic_mending.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\flagellant.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\healing_domain.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\theologist\heartened_sense_burdens.dm"
