@@ -23,7 +23,7 @@
 
 	// Clearly the Chaplain is VERY pious.
 	if(is_chaplain_job(attached_mob.mind?.assigned_role))
-		max_piety *= 2
+		max_piety *= THEOLOGIST_CHAPLAIN_MULT
 
 	RegisterWithParent()
 

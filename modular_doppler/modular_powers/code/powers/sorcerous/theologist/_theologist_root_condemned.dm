@@ -10,7 +10,7 @@
 	Condemnation reduces the condemned's damage with attacks by the amount stored, up to 50% of the condemned's hit; this consumes the Condemnation equal to the damage prevented. \
 	\nYou build piety whenever a creature spends Condemnation when attacking a sentient mob: you also build Piety whenever you apply Condemnation to a mob that was already Unholy before you cast A Burden Condemned, or when striking a creature Condemned by someone else.\
 	\nLasts for 20 seconds, but lasts 1 additional second on hit. Cooldown is refreshed if the condemned dies."
-	security_record_text = "Subject can mark a single target in sight, weakening their attacks when struck by the subject, and amplying their own holy abilities against that target."
+	security_record_text = "Subject can mark a single target in sight and condemn them, weakening their attacks when struck by the subject, and amplying their own holy abilities against that target."
 	security_threat = POWER_THREAT_MAJOR
 	action_path = /datum/action/cooldown/power/theologist/theologist_root/condemned
 

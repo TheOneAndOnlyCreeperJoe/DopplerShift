@@ -5,7 +5,7 @@
 	desc = "Imbues your currently held weapon with flames. Your next succesful melee or ranged hit on a living target wreathes the target in flames, \
 	dealing high amounts of burn damage to the target and setitng them on fire. The smite deals 5 + (Piety * 0.3) burn damage to the target, resisted by FIRE armor. The target then is set aflame and receives fire stacks equal to (Piety * 0.1).\
 	\nIf you are at or above 25 Piety, the formula for fire stacks becomes (Piety * 0.15) instead.\
-	\nAfter succesfuly smiting a creature, you are immune to being set on fire (but not to fire damage) for 5 seconds.\
+	\nAfter succesfuly smiting a creature, you are immune to being set on fire (but not to burn damage) for 5 seconds.\
 	\nUnholy targets take 50% more damage and fire stacks. \
 	\nIf the smiting weapon ever leaves your hands, it ends the smiting effect. Goes on a lengthy cooldown on hit."
 
@@ -24,7 +24,7 @@
 	button_icon_state = "searing_smite"
 	cooldown_time = 2.5 SECONDS
 
-	smite_color = '#FF5E21'
+	smite_color = "#FF5E21"
 
 	small_smite_temp_visual = /obj/effect/temp_visual/theologist_smite/searing
 	big_smite_temp_visual = /obj/effect/temp_visual/theologist_smite/searing/big

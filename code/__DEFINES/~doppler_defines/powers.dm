@@ -237,6 +237,9 @@
 // Maximum amount of Piety (chaplain gets double this amount)
 #define THEOLOGIST_PIETY_MAX 50
 
+// Max piety mult that the chaplain gets
+#define THEOLOGIST_CHAPLAIN_MULT 1.5
+
 // UI location of the Piety element
 #define THEOLOGIST_UI_SCREEN_LOC "WEST,CENTER-2:15"
 
