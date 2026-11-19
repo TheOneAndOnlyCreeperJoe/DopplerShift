@@ -58,8 +58,12 @@
 /datum/action/cooldown/power/theologist/smite/proc/melee_smite(obj/item/smite_item, atom/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	return
 
-/// Handles a projectile fired from an smited item that hits a target.
-/datum/action/cooldown/power/theologist/smite/proc/projectile_smite(datum/fired_from, atom/movable/firer, atom/target, angle, hit_limb, blocked, pierce_hit)
+/// Handles a projectile fired from a smited item before it begins moving.
+/datum/action/cooldown/power/theologist/smite/proc/projectile_fired(obj/projectile/projectile, atom/original_target)
+	return
+
+/// Handles a smited projectile striking a target.
+/datum/action/cooldown/power/theologist/smite/proc/projectile_hit(obj/projectile/projectile, atom/movable/firer, atom/target, angle, hit_limb, blocked, pierce_hit)
 	return
 
 /// Plays this smite's configured hit visual and sound at an impact turf.
@@ -100,6 +104,8 @@ Component below
 	var/mob/living/holder
 	/// The visual effect applied while this smite is active.
 	var/datum/component/unusual_effect/smite_effect
+	/// The projectile modified by this smite and monitored for its impact.
+	var/obj/projectile/fired_projectile
 
 /datum/component/theologist_smite/Initialize(datum/action/cooldown/power/theologist/smite/new_source_action, mob/living/new_holder)
 	if(!isitem(parent))
@@ -114,14 +120,18 @@ Component below
 		smite_effect.special_effects.particles.color = source_action.smite_color
 
 /datum/component/theologist_smite/RegisterWithParent()
-	RegisterSignal(parent, COMSIG_PROJECTILE_ON_HIT, PROC_REF(projectile_hit))
+	RegisterSignal(holder, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, PROC_REF(projectile_fired))
 	RegisterSignal(parent, COMSIG_ITEM_AFTERATTACK, PROC_REF(melee_hit))
 	RegisterSignal(parent, COMSIG_ITEM_POST_UNEQUIP, PROC_REF(on_item_unequipped))
 	RegisterSignal(source_action, COMSIG_QDELETING, PROC_REF(on_source_action_deleted))
 
 /datum/component/theologist_smite/UnregisterFromParent()
 	if(parent)
-		UnregisterSignal(parent, list(COMSIG_PROJECTILE_ON_HIT, COMSIG_ITEM_AFTERATTACK, COMSIG_ITEM_POST_UNEQUIP))
+		UnregisterSignal(parent, list(COMSIG_ITEM_AFTERATTACK, COMSIG_ITEM_POST_UNEQUIP))
+	if(holder)
+		UnregisterSignal(holder, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE)
+	if(fired_projectile)
+		UnregisterSignal(fired_projectile, list(COMSIG_PROJECTILE_SELF_ON_HIT, COMSIG_QDELETING))
 	if(source_action)
 		UnregisterSignal(source_action, COMSIG_QDELETING)
 
@@ -130,20 +140,41 @@ Component below
 	if(!QDELETED(smite_effect))
 		qdel(smite_effect)
 	smite_effect = null
+	fired_projectile = null
 	. = ..()
 	source_action = null
 	holder = null
 	return .
 
-/// Relays a projectile hit from the smited item to the action that applied this smite.
-/datum/component/theologist_smite/proc/projectile_hit(datum/fired_from, atom/movable/firer, atom/target, angle, hit_limb, blocked, pierce_hit)
+/// Relays a projectile fired from the smited item to the action that applied this smite.
+/datum/component/theologist_smite/proc/projectile_fired(atom/movable/firer, obj/projectile/projectile, atom/fired_from, atom/original_target)
+	SIGNAL_HANDLER
+	SHOULD_CALL_PARENT(TRUE)
+
+	if(fired_from != parent)
+		return
+	if(!source_action?.projectile_fired(projectile, original_target))
+		return
+	fired_projectile = projectile
+	UnregisterSignal(holder, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE)
+	RegisterSignal(fired_projectile, COMSIG_PROJECTILE_SELF_ON_HIT, PROC_REF(projectile_hit))
+	RegisterSignal(fired_projectile, COMSIG_QDELETING, PROC_REF(on_projectile_deleted))
+	source_action?.smite_succesful_hit() // evne if it isnt a succesful hit, it should go on cooldown anyway since we succesfuly applied the effects.
+
+/// Relays the modified projectile's impact to the action that applied this smite.
+/datum/component/theologist_smite/proc/projectile_hit(obj/projectile/projectile, atom/movable/firer, atom/target, angle, hit_limb, blocked, pierce_hit)
 	SIGNAL_HANDLER
 
 	var/turf/impact_turf = get_turf(target)
-	if(!source_action?.projectile_smite(fired_from, firer, target, angle, hit_limb, blocked, pierce_hit))
+	if(!source_action?.projectile_hit(fired_projectile, firer, target, angle, hit_limb, blocked, pierce_hit))
 		return
 	source_action?.play_smite_effect(impact_turf)
-	source_action?.smite_succesful_hit()
+	qdel(src)
+
+/// Removes the smite after its fired projectile is deleted without activating it.
+/datum/component/theologist_smite/proc/on_projectile_deleted(datum/source)
+	SIGNAL_HANDLER
+
 	qdel(src)
 
 /// Relays a melee attack from the smited item to the action that applied this smite.
