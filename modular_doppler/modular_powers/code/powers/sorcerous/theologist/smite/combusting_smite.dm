@@ -12,7 +12,7 @@
 	security_record_text = "Subject can smite foes with a burst of flame with either a melee weapon or firearm, setting them on fire."
 	security_threat = POWER_THREAT_MAJOR
 	action_path = /datum/action/cooldown/power/theologist/smite/combusting_smite
-	value = 6
+	value = 7
 
 	required_powers = list(/datum/power/theologist/root)
 	required_allow_subtypes = TRUE
@@ -131,7 +131,7 @@
 	var/fire_stacks_per_point = get_piety() >= big_smite_req ? big_fire_stacks_per_piety : fire_stacks_per_piety
 	var/fire_stacks = get_piety() * fire_stacks_per_point
 	// flashfires do ignite by themself so you get a penalty to the burn to offset that.
-	if((is_ranged) && (get_piety >= big_smite_reg))
+	if((is_ranged) && (get_piety() >= big_smite_req))
 		fire_stacks *= ranged_fire_stacks_multiplier
 	// unholy mult
 	var/datum/power/theologist/theologist_power = origin_power

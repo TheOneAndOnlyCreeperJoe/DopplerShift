@@ -99,8 +99,10 @@
 	log_smite_target(primary_target, damage_dealt)
 	to_chat(owner, span_warning("You smite [primary_target] with a blast of lightning!"))
 	shake_camera(primary_target, 3, primary_screenshake_strength * screenshake_multiplier)
-	if(owner?.Adjacent(primary_target))
-		shake_camera(owner, 2, secondary_screenshake_strength * screenshake_multiplier)
+	// shake the cam more if adjacent to the target
+	var/cam_shake = owner?.Adjacent(primary_target) ? 2 : 1
+	shake_camera(owner, cam_shake, secondary_screenshake_strength * screenshake_multiplier)
+
 	throw_smite_target(primary_target, throw_direction, get_main_knockback(primary_target), thrower)
 
 	var/cleave_knockback_enabled = get_piety() >= main_knockback_piety_req
