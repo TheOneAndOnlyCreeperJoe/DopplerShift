@@ -1,4 +1,4 @@
-/datum/power/thaumaturge_root/spell_preparation
+/datum/power/thaumaturge/root/spell_preparation
 	name = "Spell Preparation"
 	desc = "You cast spells by focusing on your thaumaturgic magic throughout your sleep. Your spells have a limited amount of charges based upon the total amount of points in the Thaumaturgy path. You can allocate up to 6 charges to these spells \
 	by using a special action, depending on each spell's power cost. You can change which spells you have prepared and recharge them by sleeping with your Spell Focus. \
@@ -8,18 +8,18 @@
 
 	value = 0
 
-/datum/power/thaumaturge_root/spell_preparation/add_unique(client/client_source)
+/datum/power/thaumaturge/root/spell_preparation/add_unique(client/client_source)
 	var/obj/item/spell_focus/spell_focus = new(get_turf(power_holder))
 	give_item_to_holder(spell_focus, list(LOCATION_BACKPACK, LOCATION_HANDS))
 
-/datum/power/thaumaturge_root/spell_preparation/post_add()
+/datum/power/thaumaturge/root/spell_preparation/post_add()
 	if(!power_holder) // So it doesn't runtime at init
 		return
 	// Spell preperation is so complicated we basically handle it all in a component, including the UI part.
 	power_holder.AddComponent(/datum/component/thaumaturge/preparation, power_holder)
 	. = ..()
 
-/datum/power/thaumaturge_root/spell_preparation/remove()
+/datum/power/thaumaturge/root/spell_preparation/remove()
 	. = ..()
 	if(!power_holder)
 		return

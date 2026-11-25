@@ -50,11 +50,9 @@
 
 /// Checks if we have our referenced thaumaturge component for mechanics/display behavior.
 /datum/action/cooldown/power/thaumaturge/proc/ValidateThaumaturgeComponent()
-	if(owner && !thaumaturge_component)
-		thaumaturge_component = owner.GetComponent(/datum/component/thaumaturge)
-	if(!thaumaturge_component)
-		return FALSE
-	return TRUE
+	var/datum/power/thaumaturge/thaumaturge_power = origin_power
+	thaumaturge_component = thaumaturge_power.ValidateThaumaturgeComponent()
+	return thaumaturge_component
 
 /datum/action/cooldown/power/thaumaturge/sync_magic_resistance_types_from_power()
 	. = ..()
@@ -116,39 +114,9 @@
 */
 /// Gets and reutrns a mob's current highest affinity number.
 /datum/action/cooldown/power/thaumaturge/proc/get_affinity(mob/living/user)
-	ValidateThaumaturgeComponent()
-	var/highest_affinity = 0
-
-	// If the root power benefits from dressing like a wizard.
-	if(thaumaturge_component?.affinity_benefits_from_items)
-		// Checks if you're wearing items with affinity. This has to be clothing; wearing your staff does not count.
-		var/list/equipped_items = user.get_equipped_items()
-		for(var/obj/item/equipped_item as anything in equipped_items)
-			if(!equipped_item)
-				continue
-			if(!istype(equipped_item, /obj/item/clothing) && !equipped_item.affinity_worn_override)
-				continue
-
-			if(equipped_item.affinity > highest_affinity)
-				highest_affinity = equipped_item.affinity
-
-		// Checks if you're holding items with affinity.
-		for(var/obj/item/held_item as anything in user.held_items)
-			if(!held_item)
-				continue
-
-			// Holding clothing or worn-override items shouldn't contribute.
-			if(istype(held_item, /obj/item/clothing) || held_item.affinity_worn_override)
-				continue
-
-			if(held_item.affinity > highest_affinity)
-				highest_affinity = held_item.affinity
-
-	// Seed affinity and let external listeners influence affinity.
-	// Generally speaking you should only add and subtract to this number.
-	affinity = highest_affinity
-	SEND_SIGNAL(user, COMSIG_THAUMATURGE_AFFINITY_QUERY, src)
-	return max(0, affinity)
+	var/datum/action/cooldown/power/thaumaturge/thaumaturge_power = origin_power
+	affinity = thaumaturge_power.get_affinity(user)
+	return affinity
 
 /*
 	Deviating massively from the original cooldown system, thaumaturge has charges they have to prepare and plan for in advance, just like the classic vanician spellcasting system.

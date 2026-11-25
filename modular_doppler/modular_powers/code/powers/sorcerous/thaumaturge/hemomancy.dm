@@ -4,7 +4,7 @@
 	Comes with an innate ability to drain blood from various things much like sanguine absorption. So you can aura-farm blood without needing to quite literally drink it.
 	Given the cultist stereotypes, your magic is also now affected by holy resistance.
 */
-/datum/power/thaumaturge_root/hemomancy
+/datum/power/thaumaturge/root/hemomancy
 	name = "Hemomancy"
 	desc = "You cast spells by channeling your blood. All your spells drain your blood when wielding them, usually 4 * the power's allocation cost, instead of using spell charges. \
 	Blood exceeding 110% of your natural blood threshold is consumed at higher rates to boost the affinity of your spells, empowering them to higher levels of Affinity, up to a maximum of 6. This does not trigger on spells that have a chance to refund charges based on affinity. \
@@ -16,7 +16,7 @@
 	value = 5
 	magic_flags = POWER_MAGIC_STANDARD | POWER_MAGIC_UNHOLY
 
-/datum/power/thaumaturge_root/hemomancy/post_add()
+/datum/power/thaumaturge/root/hemomancy/post_add()
 	if(!power_holder) // So it doesn't runtime at init
 		return
 	ADD_TRAIT(power_holder, TRAIT_DEEMED_UNHOLY, src)
@@ -24,7 +24,7 @@
 	power_holder.AddComponent(/datum/component/thaumaturge/hemomancy, power_holder)
 	. = ..()
 
-/datum/power/thaumaturge_root/hemomancy/remove()
+/datum/power/thaumaturge/root/hemomancy/remove()
 	. = ..()
 	if(!power_holder)
 		return

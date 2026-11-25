@@ -94,6 +94,7 @@
 	piety = clamp(piety + amount, 0, cap_to)
 
 	theologist_ui?.maptext = FORMAT_PIETY_TEXT(piety)
+	return TRUE
 
 // UI Elements for Piety
 /atom/movable/screen/theologist_piety

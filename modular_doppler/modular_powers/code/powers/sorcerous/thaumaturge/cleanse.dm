@@ -8,22 +8,22 @@
 	\nCasting Cleanse on an object removes 15u worth of poisons from any reagents housed within it.\
 	\nRequires Affinity 1. Additional affinity increases duration by +4 seconds. Bonuses to healing modifiers increase purge amount and heal amount, at half the regular amount each."
 	security_record_text = "Subject can remove chemicals from a target's body and heal them based on the amount."
-	value = 3
+	value = 2
 	power_flags = POWER_HUMAN_ONLY | POWER_HEALING
 
 	action_path = /datum/action/cooldown/power/thaumaturge/cleanse
-	required_powers = list(/datum/power/thaumaturge_root)
+	required_powers = list(/datum/power/thaumaturge/root)
 	required_allow_subtypes = TRUE
 
 /datum/action/cooldown/power/thaumaturge/cleanse
 	name = "Cleanse"
 	desc = "Removes chemicals and disease from carbon targets over times. For every unit purged, the target heals toxins damage. Removes toxic chemicals from objects.\
-	Requires Affinity 3. Additional affinity increases duration. Affected by healing modifiers."
+	Requires Affinity 1. Additional affinity increases duration. Affected by healing modifiers."
 	button_icon = 'modular_doppler/modular_powers/icons/powers/actions_icons.dmi'
 	button_icon_state = "cleanse"
 
-	required_affinity = 3
-	prep_cost = 3
+	required_affinity = 1
+	prep_cost = 2
 	click_to_activate = TRUE
 
 	/// Base duration of the cleanse effect

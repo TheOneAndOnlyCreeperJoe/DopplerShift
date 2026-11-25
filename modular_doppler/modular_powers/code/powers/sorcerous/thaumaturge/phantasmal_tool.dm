@@ -10,7 +10,7 @@
 	value = 3
 
 	action_path = /datum/action/cooldown/power/thaumaturge/phantasmal_tool
-	required_powers = list(/datum/power/thaumaturge_root)
+	required_powers = list(/datum/power/thaumaturge/root)
 	required_allow_subtypes = TRUE
 
 /datum/action/cooldown/power/thaumaturge/phantasmal_tool

@@ -12,7 +12,7 @@
 	power_flags = POWER_HUMAN_ONLY | POWER_HEALING
 
 	action_path = /datum/action/cooldown/power/thaumaturge/sanguine_absorption
-	required_powers = list(/datum/power/thaumaturge_root/hemomancy)
+	required_powers = list(/datum/power/thaumaturge/root/hemomancy)
 
 /datum/action/cooldown/power/thaumaturge/sanguine_absorption
 	name = "Sanguine Absorption"

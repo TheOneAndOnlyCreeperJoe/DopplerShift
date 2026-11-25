@@ -12,6 +12,9 @@
 	/// Determines if the power should also give unholy sight. Anything that interacts with unholy should have this as TRUE
 	var/gives_unholy_sight = FALSE
 
+	/// The component that handles Piety.
+	var/datum/component/theologist_piety/piety_component
+
 /datum/power/theologist/post_add()
 	// Passes along unholy sight
 	if(gives_unholy_sight && power_holder)
@@ -23,6 +26,23 @@
 		if(!has_unholy_sight)
 			grant_action(/datum/action/cooldown/power/theologist/unholy_sight)
 	. = ..()
+
+/// Since Theologist has both 3 roots and a persistent resource system, we use a component for handling Piety
+/datum/power/theologist/proc/ValidatePietyComponent()
+	if(power_holder) // Prevents runtiming on start
+		var/mob/living/carrier = power_holder
+		piety_component = carrier.GetComponent(/datum/component/theologist_piety)
+	if(!piety_component)
+		return FALSE
+	return piety_component
+
+/// Validation handled in the piety component.
+/datum/power/theologist/proc/adjust_piety(amount, override_cap)
+	return piety_component.adjust_piety(amount, override_cap)
+
+/// Gets the current piety of the mob.
+/datum/power/theologist/proc/get_piety()
+	return piety_component.piety
 
 /// Determines whether a living mob is considered unholy by Theologist powers.
 /datum/power/theologist/proc/is_unholy(mob/living/target)

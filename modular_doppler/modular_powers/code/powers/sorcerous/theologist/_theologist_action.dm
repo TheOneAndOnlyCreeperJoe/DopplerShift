@@ -19,16 +19,13 @@
 
 /// Since Theologist has both 3 roots and a persistent resource system, we use a component for handling Piety
 /datum/action/cooldown/power/theologist/proc/ValidatePietyComponent()
-	if(owner) // Prevents runtiming on start
-		var/mob/living/carrier = owner
-		piety_component = carrier.GetComponent(/datum/component/theologist_piety)
-	if(!piety_component)
-		return FALSE
-	return TRUE
+	var/datum/power/theologist/theologist_power = origin_power
+	piety_component = theologist_power.ValidatePietyComponent()
+	return piety_component
 
 /// Validation handled in the piety component.
 /datum/action/cooldown/power/theologist/proc/adjust_piety(amount, override_cap)
-	piety_component.adjust_piety(amount, override_cap)
+	return piety_component.adjust_piety(amount, override_cap)
 
 /// Gets the current piety of the mob.
 /datum/action/cooldown/power/theologist/proc/get_piety()

@@ -9,7 +9,7 @@
 	value = 2
 
 	action_path = /datum/action/cooldown/power/thaumaturge/blend_for_me
-	required_powers = list(/datum/power/thaumaturge_root)
+	required_powers = list(/datum/power/thaumaturge/root)
 	required_allow_subtypes = TRUE
 
 /datum/action/cooldown/power/thaumaturge/blend_for_me

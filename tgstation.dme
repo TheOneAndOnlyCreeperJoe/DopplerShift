@@ -7696,6 +7696,7 @@
 #include "modular_doppler\modular_powers\code\powers\sorcerous\thaumaturge\gale_blast.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\thaumaturge\hemomancy.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\thaumaturge\magic_barrage.dm"
+#include "modular_doppler\modular_powers\code\powers\sorcerous\thaumaturge\magus_sanctus.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\thaumaturge\mending.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\thaumaturge\phantasmal_mastery.dm"
 #include "modular_doppler\modular_powers\code\powers\sorcerous\thaumaturge\phantasmal_tool.dm"
