@@ -2,7 +2,7 @@
 	name = "A Burden Twisted"
 	desc = "Channel a beam that adjust the target's body, twisting large injuries into smaller, insubstantial injuries. The beam persists so long as you remain adjacent to the target, regardless of your activities.\
 	\nA Burden Twisted heals any damage-type besides suffocation, with the healing amount scaling based on how much health is missing. This cannot heal a damage-type that only has 10% or less of the target's maximum health as damage, per damage-type. \
-	\nHalf the damage healed is dealt again as damage to a different type: this is reduced by your healing modifiers (e.g 100% healing modifiers reduces it down to a quarter of the healing dealt as damage).\
+	\nHalf the damage healed is dealt again as damage to a different type: this is divided by your healing modifiers (e.g 100% healing modifiers reduces the damage you would've dealt by half).\
 	\nGives Piety proportional to the net-positive amount of damage healed. Works on synthetic bodyparts, but cannot heal or deal toxins damage to a synthetic bodypart."
 	security_record_text = "Subject can rapidly transmute the injuries of a target into smaller, insubstantial injuries."
 	action_path = /datum/action/cooldown/power/theologist/theologist_root/twisted
@@ -158,7 +158,9 @@
 	if(current_damage <= damage_threshold)
 		return 0
 	var/healing_ratio = max(current_damage / target.maxHealth, base_healing_floor)
-	var/healing_amount = min(base_healing_amount * healing_ratio * healing_multiplier, current_damage - damage_threshold)
+	/// Base heal * ratio * (half the healing mult)
+	/// We half the mult bonus because we also already apply it to the healing to dmg, which would otherwise let you double up.
+	var/healing_amount = min(base_healing_amount * healing_ratio * (1 + ((healing_multiplier - 1) * 0.5)), current_damage - damage_threshold)
 	var/healed_amount = 0
 	switch(damage_type)
 		if("brute")
