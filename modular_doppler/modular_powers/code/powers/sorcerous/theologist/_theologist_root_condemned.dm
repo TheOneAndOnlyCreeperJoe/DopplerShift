@@ -153,7 +153,8 @@
 /datum/status_effect/power/burden_condemned/proc/on_owner_death(mob/living/source, gibbed)
 	SIGNAL_HANDLER
 	condemning_action?.ResetCooldown()
-	qdel(src)
+	// Stall deleting for just a moment so that on death listeners can still fire
+	QDEL_IN(src, 0)
 
 /// Builds Condemnation from an attack's pre-mitigation damage.
 /datum/status_effect/power/burden_condemned/proc/build_condemnation(mob/living/source, atom/movable/hit_by, damage, attack_text, attack_type, armour_penetration, damage_type, from_projectile_prehit = FALSE)

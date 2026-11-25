@@ -32,7 +32,7 @@
 	return piety_component.piety
 
 // We check to see if our piety component is actually there, because usually things will go bad if they don't.
-/datum/action/cooldown/power/theologist/try_use(mob/living/user, mob/living/target)
+/datum/action/cooldown/power/theologist/can_use(mob/living/user, mob/living/target)
 	if(!ValidatePietyComponent())
 		owner.balloon_alert(owner, "Yell at the coders; you're missing your piety system!")
 		return FALSE
