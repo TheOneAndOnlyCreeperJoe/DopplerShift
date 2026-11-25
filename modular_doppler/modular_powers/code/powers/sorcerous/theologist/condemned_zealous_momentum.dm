@@ -41,7 +41,7 @@
 	condemned_target = new_condemned_target
 	RegisterSignal(condemned_target, COMSIG_LIVING_DEATH, PROC_REF(on_condemned_target_death))
 
-/// Activates Time of Need when the observed target dies while still condemned by this power holder.
+/// Activates Time of Need when the observed target dies while still condemned (by this power's owner)
 /datum/power/theologist/zealous_momentum/proc/on_condemned_target_death(mob/living/source, gibbed)
 	SIGNAL_HANDLER
 	// only fires withotu cd
