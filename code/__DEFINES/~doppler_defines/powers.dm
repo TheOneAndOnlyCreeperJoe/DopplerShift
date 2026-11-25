@@ -78,6 +78,8 @@
 /// Additive modifiers are summed onto 1 first. Multiplicative bonuses are converted into factors, compounded together, then applied to the additive result as one factor.
 /// Args: (atom/healing_target, list/additive_healing_modifiers, list/multiplicative_healing_modifiers)
 #define COMSIG_POWER_HEALING_MODIFIERS "power_healing_modifiers"
+/// Sent after Hallow successfully completes a conversion: (datum/hallow_conversion/recipe, piety_cost)
+#define COMSIG_THEOLOGIST_HALLOW_CONVERSION "theologist_hallow_conversion"
 
 /// Any traits granted by powers.
 #define POWER_TRAIT "power_trait"
@@ -262,6 +264,9 @@
 #define THEOLOGIST_PIETY_MODERATE (THEOLOGIST_PIETY_MAX / 5)
 #define THEOLOGIST_PIETY_MAJOR (THEOLOGIST_PIETY_MAX / 2)
 #define THEOLOGIST_PIETY_CRUSHING (THEOLOGIST_PIETY_MAX)
+
+// The Faithful Prayer bonus granted by each completed ceremonial objective.
+#define THEOLOGIST_CEREMONY_REWARD 5
 
 /// Return value used by Hallow conversions that cannot complete.
 

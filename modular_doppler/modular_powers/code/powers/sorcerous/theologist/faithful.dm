@@ -1,7 +1,7 @@
 /* Piety generation for when its a quiet day.
 */
 /datum/power/theologist/faithful
-	name = "Faithful Prayer"
+	name = "Faithful"
 	desc = "You believe in, and draw power from, prayer. If you are in the Chapel, this grants you Piety unless you have 10 or more Piety. \
 	Performing prayers elsewhere only has a small chance to grant Piety. Being religious increases his chance."
 	security_record_text = "Subject fuels their powers with prayer."

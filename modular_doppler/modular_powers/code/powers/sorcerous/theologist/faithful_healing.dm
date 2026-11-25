@@ -16,7 +16,7 @@
 	menu_icon = 'icons/obj/clothing/neck.dmi'
 	menu_icon_state = "beads"
 
-	required_powers = list(/datum/action/cooldown/power/theologist/pious_prayer)
+	required_powers = list(/datum/power/theologist/faithful)
 
 	/// How much of a healing multiplier each bonus. Base healing * (1 + healing_bonus).
 	var/healing_bonus = 0.15

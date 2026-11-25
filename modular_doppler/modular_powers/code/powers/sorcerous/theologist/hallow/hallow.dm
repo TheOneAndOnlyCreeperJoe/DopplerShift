@@ -108,6 +108,7 @@
 		if(isnull(conversion_cost))
 			return FALSE
 		adjust_piety(-conversion_cost)
+		SEND_SIGNAL(src, COMSIG_THEOLOGIST_HALLOW_CONVERSION, conversion, conversion_cost)
 		converted = TRUE
 
 	// Reagent conversion
@@ -129,6 +130,7 @@
 			if(isnull(conversion_cost))
 				continue
 			adjust_piety(-conversion_cost)
+			SEND_SIGNAL(src, COMSIG_THEOLOGIST_HALLOW_CONVERSION, reagent_conversion, conversion_cost)
 			converted = TRUE
 			applied_reagent_conversions += reagent_conversion.type
 
