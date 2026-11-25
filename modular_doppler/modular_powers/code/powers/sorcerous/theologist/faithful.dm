@@ -16,7 +16,7 @@
 	var/healing_bonus = 0.2
 
 /datum/action/cooldown/power/theologist/faithful
-	name = "Faihtful"
+	name = "Faithful"
 	desc = "Perform a small prayer. If you are in the Chapel, this grants you Piety unless you have 10 or more Piety. \
 	Performing prayers elsewhere only has a small chance to grant Piety. Being religious increases this chance."
 	button_icon = 'icons/obj/antags/cult/structures.dmi'
