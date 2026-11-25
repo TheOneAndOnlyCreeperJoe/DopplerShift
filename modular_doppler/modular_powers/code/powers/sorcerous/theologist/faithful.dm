@@ -1,7 +1,7 @@
 /* Piety generation for when its a quiet day.
 */
 /datum/power/theologist/faithful
-	name = "Faithful"
+	name = "Faithful Prayer"
 	desc = "You believe in, and draw power from, prayer. If you are in the Chapel, this grants you Piety unless you have 10 or more Piety. \
 	Performing prayers elsewhere only has a small chance to grant Piety. Being religious increases his chance."
 	security_record_text = "Subject fuels their powers with prayer."
@@ -16,13 +16,15 @@
 	var/healing_bonus = 0.2
 
 /datum/action/cooldown/power/theologist/faithful
-	name = "Faithful"
+	name = "Faithful Prayer"
 	desc = "Perform a small prayer. If you are in the Chapel, this grants you Piety unless you have 10 or more Piety. \
 	Performing prayers elsewhere only has a small chance to grant Piety. Being religious increases this chance."
 	button_icon = 'icons/obj/antags/cult/structures.dmi'
 	button_icon_state = "tomealtar"
 	cooldown_time = 5
 
+	/// The base chance you get 1 piety from praying.
+	var/prayer_base_chance = 10
 	/// The maximum amount of piety you can get from praying
 	var/prayer_cap = 10
 
@@ -67,7 +69,7 @@
 /// As the name implies, we take various factors that suggest a target's devotion, as well as a few misc. factors
 /datum/action/cooldown/power/theologist/faithful/proc/check_how_religious(mob/living/user)
 	// Combined total chance.
-	var/total_chance = 10
+	var/total_chance = prayer_base_chance
 
 	// Are you the chaplain?
 	if(is_chaplain_job(user.mind?.assigned_role))

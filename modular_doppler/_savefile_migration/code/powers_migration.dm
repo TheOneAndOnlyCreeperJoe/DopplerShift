@@ -47,14 +47,14 @@
 
 /**
  * Renames "Purify" to "Hallow"
- * Renames "Pious Prayer" to "Faithful"
+ * Renames "Pious Prayer" to "Faithful Prayer"
  * Removes Entropic Mending
  * Removes Smiting Strike
  * Removes Imbue Armaments
  */
 /datum/preferences/proc/rename_and_remove_theologist_powers(list/save_data)
 	rename_saved_power(save_data, "Purify", "Hallow")
-	rename_saved_power(save_data, "Pious Prayer", "Faithful")
+	rename_saved_power(save_data, "Pious Prayer", "Faithful Prayer")
 
 	remove_saved_power(save_data, "Entropic Mending")
 	remove_saved_power(save_data, "Smiting Strike")
