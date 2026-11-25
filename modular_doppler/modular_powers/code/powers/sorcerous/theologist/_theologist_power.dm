@@ -73,3 +73,7 @@
 
 	/// CONGRATULATIONS, YOU'RE NOT A BLASPHEMER.
 	return FALSE
+
+/// Returns whether the given atom is currently inside the Chapel.
+/datum/power/theologist/proc/is_inside_chapel(atom/subject)
+	return istype(get_area(subject), /area/station/service/chapel)

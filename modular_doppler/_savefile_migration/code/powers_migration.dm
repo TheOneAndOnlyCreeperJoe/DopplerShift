@@ -46,13 +46,16 @@
 	rename_saved_power(save_data, "Beastial Body", "Bestial Body")
 
 /**
- * Renames the "Purify" power to "Hallow"
+ * Renames "Purify" to "Hallow"
+ * Renames "Pious Prayer" to "Faithful"
  * Removes Entropic Mending
  * Removes Smiting Strike
  * Removes Imbue Armaments
  */
 /datum/preferences/proc/rename_and_remove_theologist_powers(list/save_data)
 	rename_saved_power(save_data, "Purify", "Hallow")
+	rename_saved_power(save_data, "Pious Prayer", "Faithful")
+
 	remove_saved_power(save_data, "Entropic Mending")
 	remove_saved_power(save_data, "Smiting Strike")
 	remove_saved_power(save_data, "Imbue Armaments")
