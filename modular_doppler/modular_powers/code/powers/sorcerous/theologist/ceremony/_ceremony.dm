@@ -3,23 +3,23 @@
 	name = "Ceremony"
 	desc = "You are invested in performing the deeds, rituals and rites that you have faith in.\
 	\nYou have ceremonial objectives: these are drawn from a random list, up to a maximum of 5. Every objective completed increases the maximum piety restored by Faithful Prayer by 5, as well as its chance to restore Piety and its speed at which it does so.\
-	\nYour powers and your personality may affect the objectives you are given."
+	\nThe objectives given are largely driven by your personality, though quirks and powers may influence it as well."
 	security_record_text = "Subject fuels their powers through ceremonies, rite and rituals, often in the chapel."
 	value = 2
 	required_powers = list(/datum/power/theologist/faithful)
 	action_path = /datum/action/cooldown/power/theologist/ceremony
 
-	/// Ceremonial objectives currently assigned to this power holder.
+	/// Ceremonial objectives currently assigned to this mob/
 	var/list/datum/ceremonial_objective/objectives = list()
 	/// Maptext overlay displaying the Ceremony-modified Faithful Prayer cap.
 	var/mutable_appearance/faithful_prayer_cap_overlay
 
-/// Rolls this power holder's ceremonial objectives when the power is gained.
+/// Rolls this mob's ceremonial objectives when the power is gained.
 /datum/power/theologist/ceremony/add(client/client_source)
 	roll_objectives()
 	return ..()
 
-/// Deletes this power holder's ceremonial objectives when the power is removed.
+/// Deletes this mob's ceremonial objectives when the power is removed.
 /datum/power/theologist/ceremony/remove()
 	QDEL_LIST(objectives)
 	clear_ceremony_cap_overlay()
@@ -148,19 +148,17 @@
 	/// The reward bonus granted upon completion to Faithful Prayer.
 	var/reward = THEOLOGIST_CEREMONY_REWARD
 
-/// Stores the ceremony power and holder
 /datum/ceremonial_objective/New(datum/power/theologist/ceremony/new_ceremony_power)
 	ceremony_power = new_ceremony_power
 	holder = ceremony_power?.power_holder
 	return ..()
 
-/// Clears references owned by this ceremonial objective.
 /datum/ceremonial_objective/Destroy()
 	ceremony_power = null
 	holder = null
 	return ..()
 
-/// Returns whether this objective can be assigned to its current holder.
+/// Returns whether this objective can be assigned to the mob.
 /datum/ceremonial_objective/proc/eligible()
 	return TRUE
 

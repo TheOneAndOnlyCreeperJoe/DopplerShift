@@ -5,6 +5,12 @@
 	name = "Sacrifice"
 	description = "Sacrifice a living creature inside the Chapel. Extremely weak and frail creatures do not count."
 
+/// Only people that are less bothered by death. Or just plain evil.
+/datum/ceremonial_objective/sacrifice/eligible()
+	return HAS_PERSONALITY(holder, /datum/personality/callous) \
+		|| HAS_PERSONALITY(holder, /datum/personality/apathetic) \
+		|| HAS_TRAIT(holder, TRAIT_EVIL)
+
 /// Registers the global death listener used to identify eligible sacrifices.
 /datum/ceremonial_objective/sacrifice/New(datum/power/theologist/ceremony/new_ceremony_power)
 	. = ..()
@@ -15,7 +21,7 @@
 	UnregisterSignal(SSdcs, COMSIG_GLOB_MOB_DEATH)
 	return ..()
 
-/// Completes this objective when another creature with sufficient maximum health dies in the Chapel with its holder present.
+/// Completes this objective when another creature with sufficient maximum health dies in the Chapel with its mob present.
 /datum/ceremonial_objective/sacrifice/proc/on_mob_death(datum/source, mob/living/died, gibbed)
 	SIGNAL_HANDLER
 

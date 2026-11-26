@@ -12,14 +12,18 @@
 	/// Humanoids already counted toward this objective.
 	var/list/mob/living/carbon/human/hugged_humanoids = list()
 
-/// Chooses a required hug count and begins tracking completed Help interactions by the holder.
+/// You're barred if you don't like hugs. Wow. You must be a fun person.
+/datum/ceremonial_objective/hug/eligible()
+	return !HAS_PERSONALITY(holder, /datum/personality/aloof) \
+		&& !HAS_PERSONALITY(holder, /datum/personality/aromantic)
+
+/// Chooses a required hug count and begins tracking the help action.
 /datum/ceremonial_objective/hug/New(datum/power/theologist/ceremony/new_ceremony_power)
 	. = ..()
 	required_hugs = pick(3, 4)
 	description = "Hug [required_hugs] humanoid sophonts. (Headpats and other similar interactions count too!)"
 	RegisterSignal(holder, COMSIG_CARBON_HELPED, PROC_REF(on_hugged))
 
-/// Stops tracking completed Help interactions by the holder.
 /datum/ceremonial_objective/hug/Destroy()
 	UnregisterSignal(holder, COMSIG_CARBON_HELPED)
 	return ..()
@@ -41,6 +45,5 @@
 		complete()
 	SStgui.update_uis(ceremony_power)
 
-/// Returns hug progress for the ceremonial objectives interface.
 /datum/ceremonial_objective/hug/get_progress_text()
 	return "Humanoids hugged: [hugs_completed] / [required_hugs]."

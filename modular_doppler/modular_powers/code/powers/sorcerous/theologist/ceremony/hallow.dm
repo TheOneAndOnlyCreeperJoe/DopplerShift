@@ -9,7 +9,7 @@
 	/// The number of matching object conversions or reagent units needed to complete this objective.
 	var/conversions_required = 1
 
-/// Returns whether the holder has Hallow available for this objective.
+/// Returns whether the mob has Hallow available for this objective.
 /datum/ceremonial_objective/hallow/eligible()
 	return !!holder?.get_power(/datum/power/theologist/hallow)
 
@@ -87,7 +87,6 @@
 		complete()
 	SStgui.update_uis(ceremony_power)
 
-/// Returns Hallow conversion progress for the ceremonial objectives interface.
 /datum/ceremonial_objective/hallow/get_progress_text()
 	if(istype(recipe, /datum/hallow_conversion/reagent))
 		return "Reagents converted: [round(conversions_completed, 0.1)] / [conversions_required] units."

@@ -7,7 +7,7 @@
 	/// Altars this objective listens to for item interactions.
 	var/list/obj/structure/altar/of_gods/registered_altars = list()
 
-/// Registers item-use listeners on every Chapel altar currently present.
+/// Track the objective by adding an attackby tracker to all altars.
 /datum/ceremonial_objective/offering/New(datum/power/theologist/ceremony/new_ceremony_power)
 	. = ..()
 	for(var/obj/structure/altar/of_gods/altar as anything in GLOB.chaplain_altars)
@@ -16,7 +16,7 @@
 		RegisterSignal(altar, COMSIG_ATOM_ATTACKBY, PROC_REF(on_altar_item_used))
 		registered_altars += altar
 
-/// Removes item-use listeners from every altar registered to this objective.
+/// Removes lingering signalers.
 /datum/ceremonial_objective/offering/Destroy()
 	for(var/obj/structure/altar/of_gods/altar as anything in registered_altars)
 		UnregisterSignal(altar, COMSIG_ATOM_ATTACKBY)
@@ -26,7 +26,7 @@
 /datum/ceremonial_objective/offering/proc/is_valid_offering(obj/item/offered_item)
 	return FALSE
 
-/// Completes this objective and consumes the offering when its holder uses a valid item on a Chapel altar.
+/// Completes this objective and consumes the offering when its mob uses a valid item on a Chapel altar.
 /datum/ceremonial_objective/offering/proc/on_altar_item_used(obj/structure/altar/of_gods/source, obj/item/offered_item, mob/living/user, list/modifiers)
 	SIGNAL_HANDLER
 
@@ -44,14 +44,13 @@
 	/// The credit value the offering must meet or exceed.
 	var/required_credits
 
-/// Sets the required offering value from the holder's assigned job salary.
+/// Sets the required offering value from the mob's assigned job salary.
 /datum/ceremonial_objective/offering/wealth/New(datum/power/theologist/ceremony/new_ceremony_power)
 	. = ..()
 	var/datum/job/holder_job = holder?.mind?.assigned_role
 	required_credits = holder_job?.paycheck * 5
 	description = "Offer at least [required_credits] credits at the Chapel altar."
 
-/// Returns whether an item has enough monetary value for this offering.
 /datum/ceremonial_objective/offering/wealth/is_valid_offering(obj/item/offered_item)
 	return offered_item.get_item_credit_value() >= required_credits
 
