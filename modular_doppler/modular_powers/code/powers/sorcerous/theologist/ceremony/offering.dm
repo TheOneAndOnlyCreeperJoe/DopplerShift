@@ -26,14 +26,14 @@
 /datum/ceremonial_objective/offering/proc/is_valid_offering(obj/item/offered_item)
 	return FALSE
 
-/// Completes this objective when its holder uses a valid offering on a Chapel altar.
+/// Completes this objective and consumes the offering when its holder uses a valid item on a Chapel altar.
 /datum/ceremonial_objective/offering/proc/on_altar_item_used(obj/structure/altar/of_gods/source, obj/item/offered_item, mob/living/user, list/modifiers)
 	SIGNAL_HANDLER
 
 	if(completed || user != holder || !ceremony_power?.is_inside_chapel(source))
 		return
-	if(is_valid_offering(offered_item))
-		complete()
+	if(is_valid_offering(offered_item) && complete())
+		qdel(offered_item)
 
 /*
 * Offer considerable monetary wealth.
@@ -48,7 +48,7 @@
 /datum/ceremonial_objective/offering/wealth/New(datum/power/theologist/ceremony/new_ceremony_power)
 	. = ..()
 	var/datum/job/holder_job = holder?.mind?.assigned_role
-	required_credits = holder_job?.paycheck * 10
+	required_credits = holder_job?.paycheck * 5
 	description = "Offer at least [required_credits] credits at the Chapel altar."
 
 /// Returns whether an item has enough monetary value for this offering.

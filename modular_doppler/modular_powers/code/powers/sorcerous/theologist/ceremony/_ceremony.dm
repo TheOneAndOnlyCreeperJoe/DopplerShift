@@ -2,8 +2,8 @@
 /datum/power/theologist/ceremony
 	name = "Ceremony"
 	desc = "You are invested in performing the deeds, rituals and rites that you have faith in.\
-	\nYou have ceremonial objectives: these are drawn from a random list, up to a maximum of 5. Every objective completed increases the maximum piety restored by Faithful Prayer by 5, as well as its chance to restore Piety.\
-	\nYour powers and your role may affect the objectives you are given."
+	\nYou have ceremonial objectives: these are drawn from a random list, up to a maximum of 5. Every objective completed increases the maximum piety restored by Faithful Prayer by 5, as well as its chance to restore Piety and its speed at which it does so.\
+	\nYour powers and your personality may affect the objectives you are given."
 	security_record_text = "Subject fuels their powers through ceremonies, rite and rituals, often in the chapel."
 	value = 2
 	required_powers = list(/datum/power/theologist/faithful)
@@ -79,20 +79,15 @@
 	for(var/datum/ceremonial_objective/objective_type as anything in subtypesof(/datum/ceremonial_objective))
 		if(initial(objective_type.abstract_type) == objective_type)
 			continue
-		if(can_roll_objective_type(objective_type))
-			remaining_objective_types += objective_type
+		remaining_objective_types += objective_type
 
 	while(objectives.len < 5 && remaining_objective_types.len)
 		var/objective_type = pick_n_take(remaining_objective_types)
-		objectives += new objective_type(src)
-
-/// Returns whether the holder satisfies all power requirements for an objective type.
-/datum/power/theologist/ceremony/proc/can_roll_objective_type(datum/ceremonial_objective/objective_type)
-	var/list/required_powers = initial(objective_type.required_powers)
-	for(var/required_power_type as anything in required_powers)
-		if(!power_holder?.get_power(required_power_type))
-			return FALSE
-	return TRUE
+		var/datum/ceremonial_objective/objective = new objective_type(src)
+		if(!objective.eligible())
+			qdel(objective)
+			continue
+		objectives += objective
 
 /// Gets relevant date from all the objectives.
 /datum/power/theologist/ceremony/proc/get_objective_data()
@@ -152,8 +147,6 @@
 	var/completed = FALSE
 	/// The reward bonus granted upon completion to Faithful Prayer.
 	var/reward = THEOLOGIST_CEREMONY_REWARD
-	/// Powers the holder must have for this objective to be eligible for rolling.
-	var/list/required_powers = list()
 
 /// Stores the ceremony power and holder
 /datum/ceremonial_objective/New(datum/power/theologist/ceremony/new_ceremony_power)
@@ -167,6 +160,10 @@
 	holder = null
 	return ..()
 
+/// Returns whether this objective can be assigned to its current holder.
+/datum/ceremonial_objective/proc/eligible()
+	return TRUE
+
 /// Awards the objective's rewards.
 /datum/ceremonial_objective/proc/complete()
 	if(completed)
@@ -178,6 +175,7 @@
 	if(faithful_action)
 		faithful_action.prayer_cap += reward
 		faithful_action.prayer_base_chance += reward
+		faithful_action.prayer_tick -= reward
 		ceremony_power.update_ceremony_cap_overlay()
 
 	to_chat(holder, "<font color='[POWER_COLOR_THEOLOGIST]'<b>You have completed the [name] ceremonial objective!</b></font>")

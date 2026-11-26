@@ -27,6 +27,8 @@
 	var/prayer_base_chance = 10
 	/// The maximum amount of piety you can get from praying
 	var/prayer_cap = 10
+	/// Duration between prayer 'ticks'
+	var/prayer_tick = 5 SECONDS
 
 /datum/action/cooldown/power/theologist/faithful/New()
 	// Increase prayer cap based on various factors.
@@ -47,7 +49,7 @@
 	active = TRUE
 	user.apply_status_effect(/datum/status_effect/spotlight_light/divine)
 	do
-		if(do_after(owner, 50, target = user))
+		if(do_after(owner, prayer_tick, target = user))
 			if(get_piety() >= prayer_cap && !cap_warning_given)
 				// We don't actually stop people from praying cause this can be used for ROLEPLAAAAY
 				to_chat(user, span_warning("You cannot gain any more piety from prayer!"))
